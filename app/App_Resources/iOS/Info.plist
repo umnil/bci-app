@@ -47,5 +47,7 @@
 	<string>UIStatusBarStyleLightContent</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Can we use bluetooth? Thanks</string>
 </dict>
 </plist>
