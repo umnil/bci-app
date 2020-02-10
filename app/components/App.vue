@@ -2,8 +2,8 @@
     <Page @loaded="checkDevices">
         <ActionBar title="ecoglink BMI"/>
         <StackLayout>
-            <Label class="message" :text="inputDeviceText" col="0" row="0"/>
-            <Label class="message" :text="outputDeviceText" col="0" row="0"/>
+            <Label :text="inputDeviceText" @tap="checkDevices" />
+            <Label :text="outputDeviceText"/>
         </StackLayout>
     </Page>
 </template>
@@ -11,6 +11,7 @@
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
 import { EventData  } from 'tns-core-modules/data/observable';
+import connectionDelegate from '../utils/ConnectionDelegate';
 
 @Component
 export default class App extends Vue {
@@ -28,8 +29,11 @@ export default class App extends Vue {
 	}
 
 	// Methods
-	checkDevices(args: EventData) {
-		console.log("Page Loaded");
+	async checkDevices(args: EventData): Promise<void> {
+		// ConnectionDelegate.inputDeviceManager.selectedDevice.name
+		console.log('checking!');
+		await connectionDelegate.checkBluetooth();
+		return;
 	}
 };
 </script>
@@ -40,9 +44,8 @@ export default class App extends Vue {
         color: #ffffff;
     }
 
-    .message {
-        vertical-align: center;
-        text-align: center;
-        font-size: 20;
-    }
+	Label {
+		font-size: 20px;
+		margin: 5px;
+	}
 </style>
