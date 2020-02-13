@@ -31,8 +31,9 @@ export default class App extends Vue {
 	// Methods
 	async checkDevices(args: EventData): Promise<void> {
 		// ConnectionDelegate.inputDeviceManager.selectedDevice.name
-		console.log('checking!');
-		await connectionDelegate.checkBluetooth();
+		// console.log('checking!');
+		// await connectionDelegate.checkBluetooth();
+		let deviceSettings: any[] = await connectionDelegate.getDeviceSettings();
 		return;
 	}
 };
