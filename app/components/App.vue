@@ -1,52 +1,68 @@
 <template>
-    <Page @loaded="checkDevices">
-        <ActionBar title="ecoglink BMI"/>
-        <StackLayout>
-            <Label :text="inputDeviceText" @tap="checkDevices" />
-            <Label :text="outputDeviceText"/>
-        </StackLayout>
-    </Page>
+	<Page>
+	<ActionBar>
+		<ActionItem>
+			<Label :text="menuText" class="fa" @tap="toggleDrawer" />
+		</ActionItem>
+		<Label text="ecoglink BMI" />
+	</ActionBar>
+		<RadSideDrawer ref="drawer" drawerLocation="Left" :gesturesEnabled="gesturesEnabled">
+			<StackLayout ~drawerContent>
+				<component :is="drawer" :ref="drawer"></component>
+			</StackLayout>
+			<StackLayout ~mainContent>
+				<component :is="home" :ref="home"></component>
+			</StackLayout>
+		</RadSideDrawer>
+	</Page>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import { EventData  } from 'tns-core-modules/data/observable';
-import connectionDelegate from '../utils/ConnectionDelegate';
+import Drawer from './Drawer.vue';
+import Home from './Home.vue';
+
+import deviceSettings from '../utils/DeviceSettings';
 
 @Component
 export default class App extends Vue {
 
-	inputDevice: string = '';
-	outputDevice: string = '';
-	
-	// Computed Properties
-	get inputDeviceText(): string {
-		return `Input Device: ${this.inputDevice}`;
+	constructor() {
+		super();
+		(this as any).$bus.App = this;
 	}
 
-	get outputDeviceText(): string {
-		return `Output Device: ${this.outputDevice}`;
+	menuText: string = String.fromCharCode(0xf0c9);
+
+	// Components
+	drawer = Drawer;
+	home = Home;
+
+	// OLD Stuff -- Remove Later --
+	drawerIsOpen: boolean = false;
+	gesturesEnabled: boolean = false;
+	
+	// Computed Properties
+	get drawerElement() {
+		return (this.$refs && this.$refs.drawer) || null;
 	}
 
 	// Methods
-	async checkDevices(args: EventData): Promise<void> {
-		// ConnectionDelegate.inputDeviceManager.selectedDevice.name
-		// console.log('checking!');
-		// await connectionDelegate.checkBluetooth();
-		let deviceSettings: any[] = await connectionDelegate.getDeviceSettings();
-		return;
+	toggleDrawer(): void {
+		this.drawerIsOpen = !this.drawerIsOpen;
+	}
+
+	// Watches
+	@Watch('drawerIsOpen')
+	drawerWatch(): void {
+		let de: any = this.drawerElement as any;
+		let nv: any = de.nativeView as any;
+		return this.drawerIsOpen ? nv.showDrawer() : nv.closeDrawer();
 	}
 };
 </script>
 
 <style scoped>
-    ActionBar {
-        background-color: #002c15;
-        color: #ffffff;
-    }
-
-	Label {
-		font-size: 20px;
-		margin: 5px;
-	}
+    
 </style>
