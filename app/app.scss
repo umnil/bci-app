@@ -1,2 +1,34 @@
 // Global SCSS styling
 // @see https://docs.nativescript.org/ui/styling
+
+$orange: #EE9054;
+
+ActionBar {
+        background-color: #002c15;
+        color: #ffffff;
+}
+
+Label {
+	font-size: 24px;
+}
+
+@font-face {
+	font-family: "FontAwesome";
+	src: url('./fonts/FontAwesome.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.fa {
+	//font-family: "Font Awesome 5 Free solid", "fa-solid-900";
+	font-family: "FontAwesome";
+	text-align: center;
+	padding-left: 40px;
+}
+
+.ico {
+	font-family: "IcoMoon-Free";
+	font-size: 28px;
+	text-align: center;
+	padding-left: 40px;
+}
