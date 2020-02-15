@@ -8,7 +8,7 @@
 import { Vue, Component, Prop, Watch, Mixins} from 'vue-property-decorator';
 import App from './App';
 import Home from './Home';
-import BluetoothSettings from './BluetoothSettings';
+import BluetoothSettings from './BluetoothSettings/Home';
 
 @Component
 export default class Drawer extends Vue {
