@@ -1,6 +1,9 @@
 <template>
 	<StackLayout>
-		<Label v-for="(page, i) in pages" :text="page.name" @tap="goTo(page.component)" :key="i"/>
+		<StackLayout class="drawer-item" orientation="horizontal" v-for="(page, i) in pages" @tap="goTo(page.component)" :key="i">
+			<Label class="fa drawer-icon" :text="page.icon" />
+			<Label class="drawer-text" :text="page.name" />
+		</StackLayout>
 	</StackLayout>
 </template>
 
@@ -17,7 +20,11 @@ export default class Drawer extends Vue {
 	bus: any = (this as any).$bus;
 
 	pages: any[] = [
-		{ name: 'Bluetooth Settings', component: BluetoothSettings }
+		{
+			name: 'Bluetooth Settings',
+			icon: String.fromCharCode(0xf294),
+			component: BluetoothSettings
+		}
 	];
 
 	// Methods
@@ -33,4 +40,25 @@ export default class Drawer extends Vue {
 </script>
 
 <style lang="scss" scoped>
+@import "../app";
+
+.drawer-item {
+	margin: 0px;
+	padding: 50px 0px;
+	border-bottom-width: 5px;
+	border-bottom-color: gray;
+}
+
+.drawer-icon {
+	margin: 0px 0px 0px 50px;
+	padding: 0px 20px 0px 20px;
+	background-color: $orange;
+	border-radius: 20px;
+}
+
+.drawer-text {
+	width: 100%;
+	text-align: center;
+}
+
 </style>

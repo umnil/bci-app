@@ -69,9 +69,10 @@ class ConnectionManager {
 			bluetooth.startScanning(scanningOptions).then(
 				(result) => {
 					resolve(true);
-				}, (err) => {
-					//this.bluetooth_message = err;
-					dialogs.alert(`Failed to scan: ${err}`);
+				},
+				async function(err) {
+
+					await dialogs.alert(`Failed to scan: ${err}`);
 					resolve(false);
 				});
 		});
@@ -89,4 +90,5 @@ class ConnectionManager {
 	}
 };
 
-export default new ConnectionManager();
+let connectionManager = new ConnectionManager();
+export default connectionManager;
