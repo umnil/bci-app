@@ -49,5 +49,7 @@
 	<false/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Can we use bluetooth? Thanks</string>
+	<key>UIUserInterfaceStyle</key>
+    <string>Light</string>
 </dict>
 </plist>
