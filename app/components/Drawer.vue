@@ -1,5 +1,5 @@
 <template>
-	<StackLayout>
+	<StackLayout class="ns-dark">
 		<StackLayout class="drawer-item" orientation="horizontal" v-for="(page, i) in pages" @tap="goTo(page.component)" :key="i">
 			<Label class="fa drawer-icon" :text="page.icon" />
 			<Label class="drawer-text" :text="page.name" />

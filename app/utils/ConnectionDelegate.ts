@@ -1,3 +1,4 @@
+import * as appSettings from 'tns-core-modules/application-settings';
 import * as dialogs from 'tns-core-modules/ui/dialogs';
 let bluetooth = require('nativescript-bluetooth');
 
@@ -8,8 +9,10 @@ class ConnectionManager {
 	obtainedData: string = '';
 	peripheralUUID: string = '';
 	isConnected: boolean = false;
+	isConnecting: boolean = false;
 	status: string = "";
 	scannedDevices: any[] = [];
+	selectedDevice: any = {};
 	initialized: boolean = false;
 	
 	// Methods
@@ -79,9 +82,58 @@ class ConnectionManager {
 		return await scanSuccessful;
 	}
 
-	async connect(): Promise<boolean> {
-		// TODO: Complete the connection process
+	async connect(peripheral: any): Promise<boolean> {
+		let done: boolean = false;
+		this.isConnecting = true;
+		let handleConnection = (peripheral) => {
+			console.log(peripheral);
+			console.log('Connected');
+			this.selectedDevice = peripheral;
+			this.isConnected = true;
+			done = true;
+		};
+
+		let handleDisconnection = () => {
+			this.selectedDevice = {};
+			console.log('Disconnected');
+			this.isConnected = false;
+			done = true;
+		};
+
+		let connectData = {
+			UUID: peripheral['UUID'],
+			onConnected: handleConnection,
+			onDisconnected: handleDisconnection
+		};
+
+		console.log(`Connecting...`);
+		await bluetooth.connect(connectData);
+
+		while (!done) {
+			await new Promise<void>(resolve => setTimeout(resolve, 10))
+		}
+
+		appSettings.setString("UUID", peripheral['UUID']);
+		this.isConnecting = false;
 		return true;
+	}
+
+	async disconnect(): Promise<boolean> {
+		console.log(this.isConnected);
+		console.log(this.selectedDevice);
+		let connectionOptions = {
+			UUID: this.selectedDevice['UUID']
+		};
+
+		let disconnect: Promise<boolean> = new Promise<boolean>((resolve) => {
+			bluetooth.disconnect(connectionOptions).then(()=>{
+				this.isConnected = false;
+				resolve(true);
+			}, (err)=>{
+				resolve(false);
+			});
+		});
+		return await disconnect;
 	}
 
 	async updateDeviceSettings(): Promise<void> {

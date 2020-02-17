@@ -1,14 +1,20 @@
 <template>
 	<Page @loaded="startScan">
 		<ActivityIndicator row="1" :busy="isBusy" />
-		<StackLayout row="0" v-if="!isBusy">
-			<Label text="loaded!" />
-		</StackLayout>
+		<ScrollView orientation="vertical">
+			<StackLayout row="0" v-if="!isBusy">
+				<StackLayout class="device-listing" v-for="(device, i) in cm.scannedDevices" :key="i" @tap="connect(device)">
+					<Label :text="device.name" />
+					<Label class="device-details" :text="device.UUID" />
+				</StackLayout>
+			</StackLayout>
+		</ScrollView>
 	</Page>
 </template>
 
 <script lang="ts">
 import { EventData } from "tns-core-modules/data/observable";
+import { Frame } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { Vue, Component, Watch} from 'vue-property-decorator';
 import connectionDelegate from '../../utils/ConnectionDelegate';
@@ -33,13 +39,39 @@ export default class BluetoothPairing extends Vue {
 		}
 	}
 
+	async connect(peripheral: any): Promise<void> {
+		let connected: boolean = await this.cm.connect(peripheral);
+		Frame.topmost().goBack();
+	}
+
 	// Watches
 	@Watch("cm.scannedDevices")
 	scanWatch() {
-		console.log("NEW DEVICE!");
+		if(this.cm.scannedDevices.length > 0 && !this.cm.isConnecting) this.isBusy = false;
+	}
+
+	@Watch("cm.isConnecting")
+	connectingWatch() {
+		if(this.cm.isConnecting) {
+			this.isBusy = true;
+		}
+		else {
+			this.isBusy = false;
+		}
 	}
 }
 </script>
 
 <style lang="scss" scoped>
+
+.device-listing {
+	padding: 0px 30px;
+	border-width: 2px 0px;
+	border-bottom-color: gray;
+}
+
+.device-details {
+	font-color: #444444;
+	font-size: 12px;
+}
 </style>
