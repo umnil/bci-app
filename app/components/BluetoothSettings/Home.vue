@@ -47,7 +47,7 @@ export default class BluetoothSettings extends Vue {
 	}
 	
 	get status(): string {
-		return this.cm.isConnected ? 'Connected' : 'Disconnected';
+		return this.cm.status;
 	}
 }
 </script>

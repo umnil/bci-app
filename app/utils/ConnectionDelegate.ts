@@ -10,7 +10,7 @@ class ConnectionManager {
 	peripheralUUID: string = '';
 	isConnected: boolean = false;
 	isConnecting: boolean = false;
-	status: string = "";
+	status: string = "Disconnected";
 	scannedDevices: any[] = [];
 	selectedDevice: any = {};
 	initialized: boolean = false;
@@ -41,7 +41,8 @@ class ConnectionManager {
 		return true;
 	}
 
-	async scan(): Promise<boolean> {
+	async scan(timeout: number = 5): Promise<boolean> {
+		this.status = "Scanning";
 		console.log("Scanning");
 
 		let handleDiscovery = (peripheral) => {
@@ -62,7 +63,7 @@ class ConnectionManager {
 		};
 
 		let scanningOptions = {
-			seconds: 5,
+			seconds: timeout,
 			serviceUUIDs: [],
 			onDiscovered: handleDiscovery
 		};
@@ -79,7 +80,9 @@ class ConnectionManager {
 					resolve(false);
 				});
 		});
-		return await scanSuccessful;
+		let result: boolean = await scanSuccessful;
+		this.status = this.connectionStatus;
+		return result;
 	}
 
 	async connect(peripheral: any): Promise<boolean> {
@@ -90,6 +93,7 @@ class ConnectionManager {
 			console.log('Connected');
 			this.selectedDevice = peripheral;
 			this.isConnected = true;
+			this.status = this.connectionStatus;
 			done = true;
 		};
 
@@ -97,6 +101,7 @@ class ConnectionManager {
 			this.selectedDevice = {};
 			console.log('Disconnected');
 			this.isConnected = false;
+			this.status = this.connectionStatus;
 			done = true;
 		};
 
@@ -107,6 +112,7 @@ class ConnectionManager {
 		};
 
 		console.log(`Connecting...`);
+		this.status = "Connecting...";
 		await bluetooth.connect(connectData);
 
 		while (!done) {
@@ -115,6 +121,7 @@ class ConnectionManager {
 
 		appSettings.setString("UUID", peripheral['UUID']);
 		this.isConnecting = false;
+		this.status = this.connectionStatus;
 		return true;
 	}
 
@@ -139,6 +146,10 @@ class ConnectionManager {
 	async updateDeviceSettings(): Promise<void> {
 		// TODO: query the peripheral for settings
 		return;
+	}
+
+	get connectionStatus(): string {
+		return this.isConnected ? "Connected" : "Disconnected";
 	}
 };
 

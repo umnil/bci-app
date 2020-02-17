@@ -1,5 +1,5 @@
 <template>
-	<Page>
+	<Page @loaded="init">
 	<ActionBar>
 		<ActionItem>
 			<Label :text="menuText" class="fa" @tap="toggleDrawer" />
@@ -25,9 +25,15 @@ import Drawer from './Drawer.vue';
 import Home from './Home.vue';
 import * as appSettings from 'tns-core-modules/application-settings';
 import deviceSettings from '../utils/DeviceSettings';
+import connectionDelegate from "../utils/ConnectionDelegate";
 
 @Component
 export default class App extends Vue {
+
+	// Members
+	initialized: boolean = false;
+	drawerIsOpen: boolean = false;
+	gesturesEnabled: boolean = false;
 
 	constructor() {
 		super();
@@ -38,10 +44,6 @@ export default class App extends Vue {
 	drawer = Drawer;
 	home = Home;
 
-	// OLD Stuff -- Remove Later --
-	drawerIsOpen: boolean = false;
-	gesturesEnabled: boolean = false;
-	
 	// Computed Properties
 	get drawerElement() {
 		return (this.$refs && this.$refs.drawer) || null;
@@ -55,6 +57,20 @@ export default class App extends Vue {
 	// Methods
 	toggleDrawer(): void {
 		this.drawerIsOpen = !this.drawerIsOpen;
+	}
+
+	async init(): Promise<void> {
+		let UUID: string = appSettings.getString("UUID", "");
+		if( UUID == "" ) return;
+
+		if(connectionDelegate.isConnected) return;
+
+		await connectionDelegate.scan(1);
+		let peripheral: any = {
+			'UUID': UUID
+		}
+		await connectionDelegate.connect(peripheral);
+		this.initialized = true;
 	}
 
 	// Watches
