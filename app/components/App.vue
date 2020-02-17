@@ -6,8 +6,8 @@
 		</ActionItem>
 		<Label text="ecoglink BMI" />
 	</ActionBar>
-		<RadSideDrawer ref="drawer" drawerLocation="Left" :gesturesEnabled="gesturesEnabled">
-			<StackLayout ~drawerContent>
+		<RadSideDrawer class="ns-dark" ref="drawer" drawerLocation="Left" :gesturesEnabled="gesturesEnabled">
+			<StackLayout ~drawerContent class="ns-dark">
 				<component :is="drawer" :ref="drawer"></component>
 			</StackLayout>
 			<StackLayout ~mainContent>
@@ -20,9 +20,10 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import { EventData  } from 'tns-core-modules/data/observable';
+import * as dialogs from 'tns-core-modules/ui/dialogs';
 import Drawer from './Drawer.vue';
 import Home from './Home.vue';
-
+import * as appSettings from 'tns-core-modules/application-settings';
 import deviceSettings from '../utils/DeviceSettings';
 
 @Component
@@ -32,8 +33,6 @@ export default class App extends Vue {
 		super();
 		(this as any).$bus.App = this;
 	}
-
-	menuText: string = String.fromCharCode(0xf0c9);
 
 	// Components
 	drawer = Drawer;
@@ -46,6 +45,11 @@ export default class App extends Vue {
 	// Computed Properties
 	get drawerElement() {
 		return (this.$refs && this.$refs.drawer) || null;
+	}
+	get menuText(): string {
+		let bars: string = String.fromCharCode(0xf0c9);
+		let x: string = String.fromCharCode(0xf00d);
+		return this.drawerIsOpen ? x : bars
 	}
 
 	// Methods
@@ -63,6 +67,6 @@ export default class App extends Vue {
 };
 </script>
 
-<style scoped>
-    
+<style lang="scss" scoped>
+@import '../app';    
 </style>
