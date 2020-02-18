@@ -4,6 +4,7 @@
 		<StackLayout class="status">
 			<Label :text="getStatusText" />
 			<StackLayout v-if="cm.isConnected">
+				<Label :text="getDeviceName" />
 				<Label :text="getUUID" />
 			</StackLayout>
 		</StackLayout>
@@ -42,8 +43,13 @@ export default class BluetoothSettings extends Vue {
 	get getStatusText(): string {
 		return `Status: ${this.status}`;
 	}
+
 	get getUUID(): string {
 		return `UUID: ${this.cm.selectedDevice.UUID}`;
+	}
+
+	get getDeviceName(): string {
+		return `Device Name: ${this.cm.selectedDevice.name}`;
 	}
 	
 	get status(): string {
