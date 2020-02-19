@@ -6,6 +6,7 @@
 			<StackLayout v-if="cm.isConnected">
 				<Label :text="getDeviceName" />
 				<Label :text="getUUID" />
+				<Label :text="getLinkState" />
 			</StackLayout>
 		</StackLayout>
 		<StackLayout class="action-panel" horizontalAlignment="left">
@@ -50,6 +51,10 @@ export default class BluetoothSettings extends Vue {
 
 	get getDeviceName(): string {
 		return `Device Name: ${this.cm.selectedDevice.name}`;
+	}
+
+	get getLinkState(): string {
+		return `Interface Status: ${this.cm.ecoglinkStatus}`;
 	}
 	
 	get status(): string {
