@@ -12,6 +12,7 @@ import { Vue, Component, Prop, Watch, Mixins} from 'vue-property-decorator';
 import App from './App';
 import Home from './Home';
 import BluetoothSettings from './BluetoothSettings/Home';
+import Inputs from './Inputs';
 
 @Component
 export default class Drawer extends Vue {
@@ -24,6 +25,11 @@ export default class Drawer extends Vue {
 			name: 'Bluetooth Settings',
 			icon: String.fromCharCode(0xf294),
 			component: BluetoothSettings
+		},
+		{
+			name: 'Input Devices',
+			icon: null,
+			component: Inputs
 		}
 	];
 
@@ -43,6 +49,7 @@ export default class Drawer extends Vue {
 @import "../app";
 
 .drawer-item {
+	font-size: 20px;
 	margin: 0px;
 	padding: 50px 0px;
 	border-bottom-width: 5px;
