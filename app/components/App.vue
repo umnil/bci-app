@@ -2,7 +2,7 @@
 	<Page @loaded="init">
 	<ActionBar>
 		<ActionItem>
-			<Label :text="menuText" class="fa" @tap="toggleDrawer" />
+			<Label :text="menuText" class="fa menu-icon" @tap="toggleDrawer" />
 		</ActionItem>
 		<Label text="ecoglink BMI" />
 	</ActionBar>
@@ -86,4 +86,8 @@ export default class App extends Vue {
 
 <style lang="scss" scoped>
 @import '../app';    
+
+.menu-icon {
+	font-size: 28px;
+}
 </style>
