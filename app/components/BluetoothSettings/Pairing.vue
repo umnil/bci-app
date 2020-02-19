@@ -65,6 +65,7 @@ export default class BluetoothPairing extends Vue {
 <style lang="scss" scoped>
 
 .device-listing {
+	font-size: 20px;
 	padding: 0px 30px;
 	border-width: 2px 0px;
 	border-bottom-color: gray;
