@@ -1,5 +1,5 @@
 <template>
-	<Page>
+	<Page @loaded="loadDevices">
 		<StackLayout>
 			<ListView for="device in devices" @itemTap="toSettings">
 				<v-template>
@@ -17,14 +17,16 @@ import connectionDelegate from '../utils/ConnectionDelegate';
 @Component
 export default class Inputs extends Vue {
 
+
 	// Data
 	cd: any = connectionDelegate;
 	selected_device: string = "None";
-	devices: any[] = [
-		{
-			device_name: "HI!"
-		}
-	];
+	devices: any[] = [];
+
+	// Methods
+	loadDevices() {
+		this.getInputDevices();
+	}
 
 	toSettings(): void {
 
