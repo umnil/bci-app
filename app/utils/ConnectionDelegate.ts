@@ -208,12 +208,14 @@ class ConnectionManager {
 			this.getInitialValue();
 			bluetooth.startNotifying(notifyOptions)
 				.then(() => {
+					this.isNotifying = true;
 					this.ecoglinkStatus = "Synchronized";
 				})
 		}
 		else {
 			bluetooth.stopNotifying(notifyOptions)
 				.then(() => {
+					this.isNotifying = false;
 					this.ecoglinkStatus = "Disynchronized";
 				}, (err) => {
 					dialogs.alert(err);
