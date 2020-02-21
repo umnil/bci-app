@@ -1,6 +1,6 @@
 <template>
-	<StackLayout class="ns-dark">
-		<StackLayout class="drawer-item" orientation="horizontal" v-for="(page, i) in pages" @tap="goTo(page.component)" :key="i">
+	<StackLayout>
+		<StackLayout v-for="(page, i) in pages" :key="i" orientation="horizontal" class="drawer-item" v-show="page.show" @tap="goTo(page.component)">
 			<Label class="fa drawer-icon" :text="page.icon" />
 			<Label class="drawer-text" :text="page.name" />
 		</StackLayout>
@@ -13,23 +13,27 @@ import App from './App';
 import Home from './Home';
 import BluetoothSettings from './BluetoothSettings/Home';
 import Inputs from './Inputs';
+import connectionDelegate from "../utils/ConnectionDelegate";
 
 @Component
 export default class Drawer extends Vue {
 
 	// Data
+	test: boolean = false;
+	cd: any = connectionDelegate;
 	bus: any = (this as any).$bus;
-
 	pages: any[] = [
 		{
 			name: 'Bluetooth Settings',
 			icon: String.fromCharCode(0xf294),
-			component: BluetoothSettings
+			component: BluetoothSettings,
+			show: true
 		},
 		{
 			name: 'Input Devices',
 			icon: null,
-			component: Inputs
+			component: Inputs,
+			show: false
 		}
 	];
 
@@ -38,9 +42,17 @@ export default class Drawer extends Vue {
 		super();
 		this.bus.Drawer = this;
 	}
+
 	goTo(component: any) {
 		(this as any).$navigateTo(component);
 		this.bus.App.toggleDrawer();
+	}
+
+	@Watch("cd.isNotifying")
+	updatePages() {
+		if(this.cd.isNotifying) {
+			this.pages[1].show = true;
+		}
 	}
 }
 </script>
