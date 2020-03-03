@@ -27,14 +27,7 @@ export default class Outputs extends Vue {
 	cd: any = connectionDelegate;
 	marker: string = String.fromCharCode(0xf00c);
 	settings_symbol: string = String.fromCharCode(0xf013);
-	devices: any[] = [
-		{
-			device_name: 'Neomano'
-		},
-		{
-			device_name: 'FES'
-		}
-	];
+	devices: any[] = [];
 
 	// Methods
 	constructor() {
@@ -67,8 +60,6 @@ export default class Outputs extends Vue {
 		this.cd.outputDevices.selected_device = name;
 	}
 
-
-
 	// Computed
 	get selectionclass() {
 		return device_name => ({
@@ -82,7 +73,7 @@ export default class Outputs extends Vue {
 	@Watch("cd.device_settings")
 	getOutputDevices(): void {
 		let outputDevices: any = this.cd.outputDevices;
-		// this.devices = outputDevices.devices || [];
+		this.devices = outputDevices.devices || [];
 	}
 }
 </script>
