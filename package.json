@@ -8,10 +8,10 @@
     "id": "edu.miami.prasad.bmimobile",
     "templateVersion": "v2",
     "tns-android": {
-      "version": "6.0.0"
+      "version": "6.3.1"
     },
     "tns-ios": {
-      "version": "6.0.1"
+      "version": "6.4.2"
     }
   },
   "dependencies": {

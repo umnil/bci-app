@@ -13,6 +13,7 @@ import App from './App';
 import Home from './Home';
 import BluetoothSettings from './BluetoothSettings/Home';
 import Inputs from './Inputs';
+import Outputs from './Outputs';
 import connectionDelegate from "../utils/ConnectionDelegate";
 
 @Component
@@ -31,8 +32,14 @@ export default class Drawer extends Vue {
 		},
 		{
 			name: 'Input Devices',
-			icon: null,
+			icon: String.fromCharCode(0xf0ad),
 			component: Inputs,
+			show: false
+		},
+		{
+			name: 'Output Devices',
+			icon: String.fromCharCode(0xf0ad),
+			component: Outputs,
 			show: false
 		}
 	];
@@ -48,10 +55,22 @@ export default class Drawer extends Vue {
 		this.bus.App.toggleDrawer();
 	}
 
+	setPageShow(pageName: string, show: boolean): void {
+		let potentialPage: any[] = this.pages.filter(page => page.name == pageName);
+		if(potentialPage.length == 0) return;
+		let page: any = potentialPage[0];
+		page.show = show;
+	}
+
 	@Watch("cd.isNotifying")
 	updatePages() {
 		if(this.cd.isNotifying) {
-			this.pages[1].show = true;
+			this.setPageShow('Input Devices', true);
+			this.setPageShow('Output Devices', true);
+		}
+		else {
+			this.setPageShow('Input Devices', false);
+			this.setPageShow('Output Devices', false);
 		}
 	}
 }

@@ -154,12 +154,48 @@ class ConnectionManager {
 		let disconnect: Promise<boolean> = new Promise<boolean>((resolve) => {
 			bluetooth.disconnect(connectionOptions).then(()=>{
 				this.isConnected = false;
+				this.isNotifying = false;
+				this.isConnecting = false;
+				this.ecoglinkStatus = "Unavailable";
 				resolve(true);
 			}, (err)=>{
 				resolve(false);
 			});
 		});
 		return await disconnect;
+	}
+
+	async writeDeviceSettings(): Promise<void> {
+		let writeObj: any = this.serviceCharObject;
+		writeObj.value = this.value2hex(this.device_settings);
+		let setSettings: Promise<void> = new Promise(resolve => {
+			bluetooth.write(writeObj).then(result => {
+				resolve();
+			}, err => {
+				console.log(`WRITE ERROR: ${err}`);
+				resolve();
+			});
+		});
+		return await setSettings;
+	}
+
+	async setInputSettings(inputDevices: any): Promise<void> {
+		this.device_settings.inputdevices = inputDevices;
+		await this.writeDeviceSettings();
+	}
+
+	async setOutputSettings(outputDevices: any): Promise<void> {
+		this.device_settings.outputdevices = outputDevices;
+		await this.writeDeviceSettings();
+	}
+
+	value2hex(value: any): string {
+		let jsonString: string = JSON.stringify(value);
+		let arrayBuffer: ArrayBuffer = new ArrayBuffer(jsonString.length);
+		let bufferView: Uint8Array = new Uint8Array(arrayBuffer);
+		jsonString.split('').forEach((e,i) => bufferView[i]=jsonString.charCodeAt(i));
+		let result: string = Array.prototype.map.call(new Uint8Array(arrayBuffer), x => ('0x'+x.toString(16)).slice(-4)).join(',');
+		return result;
 	}
 
 	dataUpdate(result: any): void {
@@ -197,6 +233,22 @@ class ConnectionManager {
 
 		// Watches
 		this.notify();
+	}
+
+	get inputDevices(): any {
+		let result: any = {};
+		if(this.device_settings.hasOwnProperty('inputdevices')) {
+			result = this.device_settings['inputdevices']
+		}
+		return result;
+	}
+
+	get outputDevices(): any {
+		let result: any = {};
+		if(this.device_settings.hasOwnProperty('outputdevices')) {
+			result = this.device_settings['outputdevices'];
+		}
+		return result
 	}
 
 	// Watch

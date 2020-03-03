@@ -1,5 +1,6 @@
 <template>
 	<Page>
+	<ActionBar title="Bluetooth Settings"></ActionBar>
 	<StackLayout>
 		<StackLayout class="status">
 			<Label :text="getStatusText" />

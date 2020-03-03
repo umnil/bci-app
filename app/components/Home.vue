@@ -16,10 +16,18 @@ export default class Home extends Vue {
 
 	// Data
 	cd: any = connectionDelegate;
-	inputDeviceName: string = "None";
-	outputDeviceName: string = "None";
 
 	// Computed
+	get inputDeviceName(): string {
+		let inputDevices: any = this.cd.inputDevices;
+		return inputDevices.selected_device || "None";
+	}
+
+	get outputDeviceName(): string {
+		let outputDevices: any = this.cd.outputDevices;
+		return outputDevices.selected_device || "None";
+	}
+
 	get inputDeviceText(): string {
 		return `Input Device: ${this.inputDeviceName}`;
 	}
@@ -28,19 +36,19 @@ export default class Home extends Vue {
 		return `Output Device: ${this.outputDeviceName}`;
 	}
 
-	@Watch("cd.device_settings")
-	updateDevices(): void {
-		let devices: any = this.cd.device_settings;
-		if(devices.hasOwnProperty('inputdevices')) {
-			let inputdevices: any = devices.inputdevices;
-			this.inputDeviceName = inputdevices.selected_device;
-		}
+	//@Watch("cd.device_settings")
+	//updateDevices(): void {
+	//	let devices: any = this.cd.device_settings;
+	//	if(devices.hasOwnProperty('inputdevices')) {
+	//		let inputdevices: any = devices.inputdevices;
+	//		this.inputDeviceName = inputdevices.selected_device;
+	//	}
 
-		if(devices.hasOwnProperty('outputdevices')) {
-			let outputdevices: any = devices.outputdevices;
-			this.outputDeviceName = outputdevices.selected_device;
-		}
-	}
+	//	if(devices.hasOwnProperty('outputdevices')) {
+	//		let outputdevices: any = devices.outputdevices;
+	//		this.outputDeviceName = outputdevices.selected_device;
+	//	}
+	//}
 }
 </script>
 
@@ -62,6 +70,7 @@ Label {
 	border-color: $orange;
 	border-radius: 20px;
 	margin: 0px 20px;
+	padding: 10px 0px;
 }
 
 </style>

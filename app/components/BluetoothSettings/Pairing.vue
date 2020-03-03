@@ -1,10 +1,14 @@
 <template>
 	<Page @loaded="startScan">
-		<ActivityIndicator row="1" :busy="isBusy" />
-		<ScrollView orientation="vertical">
-			<StackLayout row="0" v-if="!isBusy">
+		<ActionBar title="Bluetooth Pairing"></ActionBar>
+		<ActivityIndicator row="1" :busy="isScanning" />
+		<ScrollView orientation="vertical" width="100%">
+			<StackLayout row="0" width="100%">
 				<StackLayout class="device-listing" v-for="(device, i) in cm.scannedDevices" :key="i" @tap="connect(device)">
-					<Label :text="device.name" />
+					<StackLayout orientation="horizontal" width="100%">
+						<Label :text="device.name" />
+						<ActivityIndicator :class="displayProgress(device)" :busy="isConnecting" />
+					</StackLayout>
 					<Label class="device-details" :text="device.UUID" />
 				</StackLayout>
 			</StackLayout>
@@ -25,39 +29,41 @@ export default class BluetoothPairing extends Vue {
 
 	// Members
 	cm = connectionDelegate;
-	isBusy: boolean = true;
 	nav: any = (this as any).$navigateTo;
+	selected_device: any = null;
 
 	// Methods
 	async startScan(args: EventData): Promise<void> {
+		this.selected_device = null;
 		const page: Page = args.object as Page;
 		let result: boolean = await this.cm.scan();
 
 		if(!result) {
-			console.log("DANG");
 		 	page.frame.goBack();	
 		}
 	}
 
 	async connect(peripheral: any): Promise<void> {
+		if(this.cm.isConnecting) return;
+		this.selected_device = peripheral.name;
 		let connected: boolean = await this.cm.connect(peripheral);
 		Frame.topmost().goBack();
 	}
 
-	// Watches
-	@Watch("cm.scannedDevices")
-	scanWatch() {
-		if(this.cm.scannedDevices.length > 0 && !this.cm.isConnecting) this.isBusy = false;
+	// Computed
+	get isScanning(): boolean {
+		return this.cm.status == "Scanning";
 	}
 
-	@Watch("cm.isConnecting")
-	connectingWatch() {
-		if(this.cm.isConnecting) {
-			this.isBusy = true;
-		}
-		else {
-			this.isBusy = false;
-		}
+	get isConnecting(): boolean {
+		return this.cm.isConnecting;
+	}
+
+	get displayProgress(): any {
+		return device => ({
+			"activity-icon": true,
+			"invisible": device.name != this.selected_device
+		});
 	}
 }
 </script>
@@ -66,7 +72,7 @@ export default class BluetoothPairing extends Vue {
 
 .device-listing {
 	font-size: 20px;
-	padding: 0px 30px;
+	padding: 20px;
 	border-width: 2px 0px;
 	border-bottom-color: gray;
 }
@@ -74,5 +80,14 @@ export default class BluetoothPairing extends Vue {
 .device-details {
 	font-color: #444444;
 	font-size: 12px;
+}
+
+.invisible {
+	opacity: 0.0;
+}
+
+.activity-icon {
+	width: 100%;
+	text-align: right;
 }
 </style>
