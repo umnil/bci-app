@@ -211,6 +211,7 @@ class ConnectionManager {
 		});
 	}
 
+	// Computed Properties
 	get serviceCharObject(): any {
 		let sco: any = {
 			'peripheralUUID': this.selectedDevice['UUID'],
