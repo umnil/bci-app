@@ -7,7 +7,7 @@
 					<StackLayout orientation="horizontal" width=100%>
 						<Label :class="selectionclass(device.device_name)" :text="marker"></Label>
 						<Label class="device-listing" :text="device.device_name" @tap="select(device.device_name)" />
-						<Label class="fa settings" :text="settings_symbol" @tap="toSettings"/>
+						<Label class="fa settings" :text="settings_symbol" @tap="toSettings(device)"/>
 					</StackLayout>
 				</v-template>
 			</ListView>

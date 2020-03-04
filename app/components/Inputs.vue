@@ -18,24 +18,29 @@
 <script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import connectionDelegate from '../utils/ConnectionDelegate';
+import DeviceSettings from './DeviceSettings';
 
 @Component
 export default class Inputs extends Vue {
 
 	// Data
 	cd: any = connectionDelegate;
+	bus: any = (this as any).$bus;
 	marker: string = String.fromCharCode(0xf00c);
 	settings_symbol: string = String.fromCharCode(0xf013);
+	selected_device_setting: string = "";
 	devices: any[] = [];
 
 	// Methods
 	constructor() {
 		super();
-		(this as any).$bus.Inputs = this;
+		this.bus.Inputs = this;
 	}
 
-	toSettings(): void {
-
+	toSettings(device: any): void {
+		this.bus.settings_selected_device = device.device_name;
+		this.bus.settings_io = "inputdevices";
+		(this as any).$navigateTo(DeviceSettings);
 	}
 
 	select(device: any): void {
