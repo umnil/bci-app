@@ -200,7 +200,9 @@ class ConnectionManager {
 
 	dataUpdate(result: any): void {
 		let data: string = String.fromCharCode.apply(null, new Uint8Array(result.value));
+		console.log(`DATA UPDATE: ${data}`)
 		this.device_settings = JSON.parse(data);
+		console.log(`UPDATE: ${this.device_settings}`)
 	}
 
 	getInitialValue(): void {
