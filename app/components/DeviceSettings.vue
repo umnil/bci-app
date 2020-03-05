@@ -28,6 +28,8 @@ export default class DeviceSettings extends Vue {
 	// Members & Attributes
 	cd: any = connectionDelegate;
 	bus: any = (this as any).$bus;
+	_settings: any[] = [];
+	settingComponents: object = {};
 
 	// Methods
 	constructor() {
@@ -36,7 +38,15 @@ export default class DeviceSettings extends Vue {
 	}
 
 	onChange(args): void {
-		console.log(`CHANGE! ${args.object.id}`);
+		let valueMap: object = {
+			TextField: "text"
+		};
+		let input: any = args.object;
+		let settingName: string = input.id;
+		let settingType: string = this.getSettingByName(settingName).type;
+		let value: any = input[valueMap[settingType]];
+		console.log(`CHANGE! Name: ${settingName}, value: ${value}`);
+		this.setSettingValue(settingName, value);
 	}
 
 	setting2attrs(setting: any): string {
@@ -60,17 +70,46 @@ export default class DeviceSettings extends Vue {
 		return result;
 	}
 
+	getSettingByName(settingName: string): any {
+		let device_settings: any[] = this.device_settings;
+		let potential_setting: any[] = device_settings.filter(e => e.name == settingName);
+		if(potential_setting.length < 1) return null;
+
+		return potential_setting[0];
+	}
+
+	setSettingValue(settingName: string, value: any): void {
+		let settingIndex: number = this._settings.reduce((r, c, i) => r = c.name == settingName ? i : -1, -1);
+		console.log(`Setting ${settingName}, index ${settingIndex} to ${value}`);
+		this._settings[settingIndex]['value'] = value;
+
+		let iodevice: string = this.bus.settings_io;
+		let deviceIndex: number = this.io_device_array.reduce((r, c, i) => r = c.device_name == this.selected_device ? i : -1, -1);
+		let inputSettings: any = this.cd.device_settings[iodevice]
+		inputSettings['devices'][deviceIndex]['device_settings'] = this._settings;
+		this.cd.setInputSettings(inputSettings).then();
+	}
+
 	// Computeds
 	get settingComponent(): any {
-		return setting => {
-			let template: string = `<${setting.type} id="${setting.name}" ${this.setting2attrs(setting)} ${this.actionValue(setting)} text="${setting.value}" />`;
+		return (setting) => {
+			let template: string = `<${setting.type} id="${setting.name}" class="setting-input" ${this.setting2attrs(setting)} ${this.actionValue(setting)} width="30%" v-model="value" />`;
 			console.log(template);
-			return {
+			let component = {
 				template: template,
 				data: () => ({
+					value: setting.value,
 					onChange: this.onChange.bind(this)
-				})
-			}
+				}),
+				computed: {
+					[setting.name]: {
+						get: () => this.getSettingByName(setting.name).value,
+						set: (val) => {this.setSettingValue(setting.name, val);return false;}
+					}
+				}
+			};
+			this.settingComponents[setting.name] = component;
+			return component;
 		};
 	}
 	
@@ -78,12 +117,13 @@ export default class DeviceSettings extends Vue {
 		return this.bus.settings_selected_device;
 	}
 
-	get device_settings(): any {
+	get device_settings(): any[] {
 		let cur_device: any = this.selected_device_data;
 		let device_settings: any[] = [];
 		if(cur_device.hasOwnProperty('device_settings')) {
 			device_settings = cur_device['device_settings'];
 		}
+		this._settings = device_settings;
 		return device_settings;
 	}
 
@@ -120,6 +160,7 @@ export default class DeviceSettings extends Vue {
 }
 
 .setting-input {
+	text-align:right;
 	width: 40%;
 	background: white;
 }
