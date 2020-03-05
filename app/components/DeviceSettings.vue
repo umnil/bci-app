@@ -1,13 +1,13 @@
 <template>
-	<Page @loaded="loadSettings">
-		<ActionBar :title="selected_device"></ActionBar>
+	<Page @loaded="onLoad">
+		<ActionBar id="test" :title="selected_device"></ActionBar>
 		<StackLayout>
 			<ListView ref="settingList" height="100%" for="setting in device_settings">
 				<v-template>
 					<GridLayout class="setting" rows="auto" columns="*">
 						<Label row="0" class="setting-text" :text="setting.display_name" />
-						<!--<TextField class="setting-input" hint="HI" secure="false" returnKeyType="done" maxLength="10" :text="setting.value"></TextField>-->
-						<TextField row="0" class="setting-input" horizontalAlignment="right" :text="setting.value"></TextField>
+						<component :is="settingComponent(setting)" />
+						<!--<TextField id="n_values" horizontalAlignment="right" @returnPress="onChange" text="3" />-->
 					</GridLayout>
 				</v-template>
 			</ListView>
@@ -16,6 +16,9 @@
 </template>
 
 <script lang="ts">
+import { EventData } from 'tns-core-modules/data/observable';
+import { Switch } from 'tns-core-modules/ui/Switch';
+import { Page } from 'tns-core-modules/ui/Page';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import connectionDelegate from '../utils/ConnectionDelegate';
 
@@ -32,11 +35,45 @@ export default class DeviceSettings extends Vue {
 		this.bus.DeviceSettings = this;
 	}
 
-	loadSettings(): void {
-		console.log(`settings: ${JSON.stringify(this.device_settings)}`);
+	onChange(args): void {
+		console.log(`CHANGE! ${args.object.id}`);
+	}
+
+	setting2attrs(setting: any): string {
+		let reservedValues: string[] = [
+			'type',
+			'name',
+			'display_name',
+			'value'
+		];
+		return Object.keys(setting)
+			.filter(e => !reservedValues.includes(e))
+			.map(e => `${e}="${setting[e]}"`).join(' ');
+	}
+
+	actionValue(setting: any): string {
+		let actionMap: any = {
+			TextField: "returnPress"
+		};
+
+		let result: string = `@${actionMap[setting.type]}="onChange($event)"`;
+		return result;
 	}
 
 	// Computeds
+	get settingComponent(): any {
+		return setting => {
+			let template: string = `<${setting.type} id="${setting.name}" ${this.setting2attrs(setting)} ${this.actionValue(setting)} text="${setting.value}" />`;
+			console.log(template);
+			return {
+				template: template,
+				data: () => ({
+					onChange: this.onChange.bind(this)
+				})
+			}
+		};
+	}
+	
 	get selected_device(): string {
 		return this.bus.settings_selected_device;
 	}
