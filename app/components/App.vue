@@ -24,7 +24,6 @@ import * as dialogs from 'tns-core-modules/ui/dialogs';
 import Drawer from './Drawer.vue';
 import Home from './Home.vue';
 import * as appSettings from 'tns-core-modules/application-settings';
-import deviceSettings from '../utils/DeviceSettings';
 import connectionDelegate from "../utils/ConnectionDelegate";
 
 @Component
