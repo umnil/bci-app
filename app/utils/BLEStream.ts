@@ -7,14 +7,29 @@ export default class BLEStream {
 	private dataPointer: number = 0;
 	private writeData: string = '';
 	private	transmitting: boolean = false;
+	private busy: boolean = false;
 	private options: object;
 	private chunkSize: number = 100;
+	private writeQueue: object[] = [];
+
+	async sendStream(value: object, options: object): Promise<void> {
+
+		while(this.busy) {
+			console.log("Waiting for our turn");
+			let wait: Promise<void> = new Promise<void>(resolve=>setTimeout(resolve,500));
+			await wait;
+		}
+
+		this.busy = true;
+		await this.writer(value, options);
+		this.busy = false;
+	}
 
 	async receiver(result: any, options: object): Promise<void> {
 		console.log("BLEStream: Receiving data");
 		this.options = options;
-		if(this.transmitting) await this.retrieveData(result);
-		else await this.retrieveSize(result);
+		if(this.transmitting) await this.recvData(result);
+		else await this.recvSize(result);
 	}
 
 	async writer(value: object, options: object): Promise<void> {
@@ -26,7 +41,7 @@ export default class BLEStream {
 		else this.sendSize();
 	}
 
-	async retrieveData(result: any): Promise<void> {
+	async recvData(result: any): Promise<void> {
 		let transmission: object = this.data2object(result.value)
 		let msg: string = transmission['msg'];
 		console.log(`MSG: ${msg}`);
@@ -70,7 +85,7 @@ export default class BLEStream {
 		this.transmitting = false;
 	}
 
-	async retrieveSize(result: any): Promise<void> {
+	async recvSize(result: any): Promise<void> {
 		this.transmitting = true;
 		this.dataPointer = 0;
 		let transmission: object = this.data2object(result.value);
