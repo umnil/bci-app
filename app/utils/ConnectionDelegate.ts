@@ -167,7 +167,7 @@ class ConnectionManager {
 
 	async writeDeviceSettings(): Promise<void> {
 		let writeObj: any = this.deviceSettingOptions;
-		await this.stream.writer(this.device_settings, writeObj);
+		await this.stream.sendStream(this.device_settings, writeObj);
 	}
 
 	async setInputSettings(inputDevices: any): Promise<void> {
