@@ -1,5 +1,6 @@
 import * as appSettings from 'tns-core-modules/application-settings';
 import * as dialogs from 'tns-core-modules/ui/dialogs';
+import BLEStream from './BLEStream';
 let bluetooth = require('nativescript-bluetooth');
 
 
@@ -22,6 +23,9 @@ class ConnectionManager {
 
 	target_service_UUID: string = "A07498CA-AD5B-474E-940D-16F1FBE7E8CD";
 	device_settings_UUID: string = "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B";
+	notify_char_UUID: string = "E62A479C-5184-4AEE-B2D8-C4ADCED4E0F3";
+
+	stream: BLEStream = new BLEStream();
 	
 	// Methods
 	async init(): Promise<void> {
@@ -29,12 +33,8 @@ class ConnectionManager {
 		this.initialized = true;
 		// Check Bluetooth
 		await this.checkBluetooth();
-
 		// Scan
 		await this.scan();
-
-		// Connect
-		// Register Notify!
 	}
 
 	async checkBluetooth(): Promise<boolean> {
@@ -166,17 +166,8 @@ class ConnectionManager {
 	}
 
 	async writeDeviceSettings(): Promise<void> {
-		let writeObj: any = this.serviceCharObject;
-		writeObj.value = this.value2hex(this.device_settings);
-		let setSettings: Promise<void> = new Promise(resolve => {
-			bluetooth.write(writeObj).then(result => {
-				resolve();
-			}, err => {
-				console.log(`WRITE ERROR: ${err}`);
-				resolve();
-			});
-		});
-		return await setSettings;
+		let writeObj: any = this.deviceSettingOptions;
+		await this.stream.writer(this.device_settings, writeObj);
 	}
 
 	async setInputSettings(inputDevices: any): Promise<void> {
@@ -189,38 +180,45 @@ class ConnectionManager {
 		await this.writeDeviceSettings();
 	}
 
-	value2hex(value: any): string {
-		let jsonString: string = JSON.stringify(value);
-		let arrayBuffer: ArrayBuffer = new ArrayBuffer(jsonString.length);
-		let bufferView: Uint8Array = new Uint8Array(arrayBuffer);
-		jsonString.split('').forEach((e,i) => bufferView[i]=jsonString.charCodeAt(i));
-		let result: string = Array.prototype.map.call(new Uint8Array(arrayBuffer), x => ('0x'+x.toString(16)).slice(-4)).join(',');
-		return result;
+	async dataUpdate(result: any): Promise<void> {
+		console.log("NOTIFIED!");
+		await this._dataUpdate(result);
 	}
 
-	dataUpdate(result: any): void {
-		let data: string = String.fromCharCode.apply(null, new Uint8Array(result.value));
-		console.log(`DATA UPDATE: ${data}`)
-		this.device_settings = JSON.parse(data);
+	async _dataUpdate(result: any): Promise<void> {
+		console.log("Calling for data update");
+		await this.stream.receiver(result, this.deviceSettingOptions);
+		this.device_settings = this.stream.data;
 		console.log(`UPDATE: ${this.device_settings}`)
 	}
 
 	getInitialValue(): void {
-		bluetooth.read(this.serviceCharObject).then((result) => {
-			this.dataUpdate(result);
+		bluetooth.read(this.deviceSettingOptions).then((result) => {
+			this._dataUpdate(result);
 		}, (err) => {
 			console.log(`OH NO`);
 		});
 	}
 
 	// Computed Properties
-	get serviceCharObject(): any {
+	get serviceDeviceOptions(): any {
 		let sco: any = {
 			'peripheralUUID': this.selectedDevice['UUID'],
 			'serviceUUID': this.target_service_UUID,
-			'characteristicUUID': this.device_settings_UUID,
 		};
 		return sco;
+	}
+
+	get deviceSettingOptions(): any {
+		let options: any = this.serviceDeviceOptions;
+		options['characteristicUUID'] = this.device_settings_UUID;
+		return options;
+	}
+
+	get notifySettingOptions(): any {
+		let options: any = this.serviceDeviceOptions;
+		options['characteristicUUID'] = this.notify_char_UUID;
+		return options;
 	}
 
 	get connectionStatus(): string {
@@ -256,7 +254,7 @@ class ConnectionManager {
 
 	// Watch
 	notify(): void {
-		let notifyOptions: any = this.serviceCharObject;
+		let notifyOptions: any = this.notifySettingOptions;
 		notifyOptions['onNotify'] = this.dataUpdate.bind(this);
 
 		if(this.isEcoglinkAvailable) {
