@@ -167,16 +167,7 @@ class ConnectionManager {
 
 	async writeDeviceSettings(): Promise<void> {
 		let writeObj: any = this.deviceSettingOptions;
-		writeObj.value = this.value2hex(this.device_settings);
-		let setSettings: Promise<void> = new Promise(resolve => {
-			bluetooth.write(writeObj).then(result => {
-				resolve();
-			}, err => {
-				console.log(`WRITE ERROR: ${err}`);
-				resolve();
-			});
-		});
-		return await setSettings;
+		await this.stream.writer(this.device_settings, writeObj);
 	}
 
 	async setInputSettings(inputDevices: any): Promise<void> {
@@ -189,21 +180,13 @@ class ConnectionManager {
 		await this.writeDeviceSettings();
 	}
 
-	value2hex(value: any): string {
-		let jsonString: string = JSON.stringify(value);
-		let arrayBuffer: ArrayBuffer = new ArrayBuffer(jsonString.length);
-		let bufferView: Uint8Array = new Uint8Array(arrayBuffer);
-		jsonString.split('').forEach((e,i) => bufferView[i]=jsonString.charCodeAt(i));
-		let result: string = Array.prototype.map.call(new Uint8Array(arrayBuffer), x => ('0x'+x.toString(16)).slice(-4)).join(',');
-		return result;
-	}
-
 	async dataUpdate(result: any): Promise<void> {
 		console.log("NOTIFIED!");
 		await this._dataUpdate(result);
 	}
 
 	async _dataUpdate(result: any): Promise<void> {
+		console.log("Calling for data update");
 		await this.stream.receiver(result, this.deviceSettingOptions);
 		this.device_settings = this.stream.data;
 		console.log(`UPDATE: ${this.device_settings}`)
