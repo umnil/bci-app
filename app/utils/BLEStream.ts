@@ -14,14 +14,49 @@ export default class BLEStream {
 
 	async sendStream(value: object, options: object): Promise<void> {
 
+		let streamRequestData: object = {
+			value: value,
+			options: options
+		};
+
+		// Has this exact request already been submitted?
+		if(this.writeQueue.filter(e => JSON.stringify(e)==JSON.stringify(streamRequestData)).length > 0) return;
+
+		// Add to back of queue
+		this.writeQueue.unshift(streamRequestData);
+
+		// define an asynchronous sleep function
+		// This will allow other process to continue if there are any
+		let sleep = async function(timeout: number): Promise<void> {
+			await new Promise<void>(resolve=>setTimeout(resolve, timeout));
+		};
+
 		while(this.busy) {
+			let charRequests: object[] = this.writeQueue.filter(e => e['options']['characteristicUUID'] == options['characteristicUUID']);
+			let mostRecentCharRequest: object = charRequests[0];
+			
+			// Ensure that our options is the most recent thing added to the queue
+			// if it's not, we're no longer relavent, aslo filter so that charUUIDs match
+			if(JSON.stringify(mostRecentCharRequest) != JSON.stringify(streamRequestData)) {
+				console.log("Updated values... removing request");
+				let curRequestIndex: number = this.writeQueue.map(e => JSON.stringify(e)).indexOf(JSON.stringify(streamRequestData));
+				let first: object[] = this.writeQueue.slice(0,curRequestIndex);
+				let last: object[] = this.writeQueue.slice(curRequestIndex+1);
+				this.writeQueue = first.concat(last);
+				return;
+			}
+
 			console.log("Waiting for our turn");
-			let wait: Promise<void> = new Promise<void>(resolve=>setTimeout(resolve,500));
-			await wait;
+			await sleep(10);
 		}
 
 		this.busy = true;
+		this.writeQueue.pop();
 		await this.writer(value, options);
+		while(this.transmitting) {
+			console.log("Waiting for transmission to finish");
+			await sleep(10);
+		}
 		this.busy = false;
 	}
 

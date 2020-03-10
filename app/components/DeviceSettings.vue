@@ -1,5 +1,5 @@
 <template>
-	<Page @loaded="onLoad">
+	<Page>
 		<ActionBar id="test" :title="selected_device"></ActionBar>
 		<StackLayout>
 			<ListView ref="settingList" height="100%" for="setting in device_settings">
@@ -21,6 +21,7 @@ import { Switch } from 'tns-core-modules/ui/Switch';
 import { Page } from 'tns-core-modules/ui/Page';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import connectionDelegate from '../utils/ConnectionDelegate';
+const WorkerScript = require('nativescript-worker-loader!../utils/workers/ble.ts');
 
 @Component
 export default class DeviceSettings extends Vue {
@@ -30,6 +31,8 @@ export default class DeviceSettings extends Vue {
 	bus: any = (this as any).$bus;
 	_settings: any[] = [];
 	settingComponents: object = {};
+	test: number = 0;
+	worker: any = new WorkerScript();
 
 	// Methods
 	constructor() {
@@ -39,7 +42,8 @@ export default class DeviceSettings extends Vue {
 
 	onChange(args): void {
 		let valueMap: object = {
-			TextField: "text"
+			TextField: "text",
+			Slider: "value"
 		};
 		let input: any = args.object;
 		let settingName: string = input.id;
@@ -63,7 +67,8 @@ export default class DeviceSettings extends Vue {
 
 	actionValue(setting: any): string {
 		let actionMap: any = {
-			TextField: "returnPress"
+			TextField: "returnPress",
+			Slider: "valueChange"
 		};
 
 		let result: string = `@${actionMap[setting.type]}="onChange($event)"`;
@@ -81,12 +86,16 @@ export default class DeviceSettings extends Vue {
 	setSettingValue(settingName: string, value: any): void {
 		let settingIndex: number = this._settings.reduce((r, c, i) => r = c.name == settingName ? i : -1, -1);
 		console.log(`Setting ${settingName}, index ${settingIndex} to ${value}`);
-		this._settings[settingIndex]['value'] = value;
+		let curSettings: any = JSON.parse(JSON.stringify(this._settings))
+		curSettings[settingIndex]['value'] = value;
 
 		let iodevice: string = this.bus.settings_io;
-		let deviceIndex: number = this.io_device_array.reduce((r, c, i) => r = c.device_name == this.selected_device ? i : -1, -1);
-		let inputSettings: any = this.cd.device_settings[iodevice]
-		inputSettings['devices'][deviceIndex]['device_settings'] = this._settings;
+		let deviceIndex: number = this.io_device_array.reduce((r, c, i) => {r = c.device_name == this.selected_device ? i : r;return r;}, -1);
+		let inputSettings: any = JSON.parse(JSON.stringify(this.cd.device_settings[iodevice]));
+		inputSettings['devices'][deviceIndex]['device_settings'] = curSettings;
+
+		// WORKER message HERE
+		/// this.worker.postMessage({data:inputSettings});
 		this.cd.setInputSettings(inputSettings).then();
 	}
 
@@ -101,12 +110,6 @@ export default class DeviceSettings extends Vue {
 					value: setting.value,
 					onChange: this.onChange.bind(this)
 				}),
-				computed: {
-					[setting.name]: {
-						get: () => this.getSettingByName(setting.name).value,
-						set: (val) => {this.setSettingValue(setting.name, val);return false;}
-					}
-				}
 			};
 			this.settingComponents[setting.name] = component;
 			return component;
