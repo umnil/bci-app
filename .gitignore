@@ -7,3 +7,9 @@ node_modules
 # NativeScript application
 hooks
 platforms
+
+# Reports
+report.*.json
+
+# Backups
+.update_backup/
