@@ -30,47 +30,30 @@ import connectionDelegate from "../utils/ConnectionDelegate";
 export default class App extends Vue {
 
 	// Members
-	initialized: boolean = false;
 	drawerIsOpen: boolean = false;
 	gesturesEnabled: boolean = false;
+	drawer = Drawer;
+	home = Home;
 
 	constructor() {
 		super();
 		(this as any).$bus.App = this;
 	}
-
-	// Components
-	drawer = Drawer;
-	home = Home;
-
-	// Computed Properties
-	get drawerElement() {
-		return (this.$refs && this.$refs.drawer) || null;
-	}
-	get menuText(): string {
-		let bars: string = String.fromCharCode(0xf0c9);
-		let x: string = String.fromCharCode(0xf00d);
-		return this.drawerIsOpen ? x : bars
-	}
-
+	
 	// Methods
 	toggleDrawer(): void {
 		this.drawerIsOpen = !this.drawerIsOpen;
 	}
 
-	async init(): Promise<void> {
-		if(this.initialized) return;
-		let UUID: string = appSettings.getString("UUID", "");
-		if( UUID == "" ) return;
+	// Computed Properties
+	get drawerElement() {
+		return (this.$refs && this.$refs.drawer) || null;
+	}
 
-		if(connectionDelegate.isConnected) return;
-
-		await connectionDelegate.scan(1);
-		let peripheral: any = {
-			'UUID': UUID
-		}
-		await connectionDelegate.connect(peripheral);
-		this.initialized = true;
+	get menuText(): string {
+		let bars: string = String.fromCharCode(0xf0c9);
+		let x: string = String.fromCharCode(0xf00d);
+		return this.drawerIsOpen ? x : bars
 	}
 
 	// Watches
