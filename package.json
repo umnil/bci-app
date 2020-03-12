@@ -18,14 +18,15 @@
     "nativescript-fontawesome": "^1.0.0",
     "nativescript-ui-sidedrawer": "^8.0.0",
     "nativescript-vue": "^2.4.0",
-    "tns-core-modules": "^6.0.0"
+    "tns-core-modules": "^6.0.0",
+    "uuidv4": "^6.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "@types/node": "^12.12.16",
     "babel-loader": "^8.0.2",
-    "nativescript-bluetooth": "^1.3.1",
+    "nativescript-bluetooth": "^3.0.0-beta.10",
     "nativescript-dev-webpack": "^1.0.0",
     "nativescript-vue-template-compiler": "^2.0.0",
     "nativescript-worker-loader": "^0.11.0",
