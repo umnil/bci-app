@@ -20,8 +20,7 @@ import connectionDelegate from "../utils/ConnectionDelegate";
 export default class Drawer extends Vue {
 
 	// Data
-	test: boolean = false;
-	cd: any = connectionDelegate;
+	cd: ConnectionDelegate = connectionDelegate;
 	bus: any = (this as any).$bus;
 	pages: any[] = [
 		{
@@ -50,7 +49,7 @@ export default class Drawer extends Vue {
 		this.bus.Drawer = this;
 	}
 
-	goTo(component: any) {
+	goTo(component: Vue) {
 		(this as any).$navigateTo(component);
 		this.bus.App.toggleDrawer();
 	}
