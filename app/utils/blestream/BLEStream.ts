@@ -34,6 +34,15 @@ export class BLEStream extends Bluetooth {
 
 	async streamWrite(writeOptions: WriteOptions): Promise<any> {
 
+		let requestID: string = this.requestQueue.addRequest(writeOptions);
+
+		while(this.requestQueue.checkQueue(requestID)) {
+			await sleep(10);
+		}
+
+		let result: WriteResult = await this.executeStreamWrite(requestID);
+		this.requestQueue.popWriteQueue();
+		return resul;
 	}
 
 	private async executeStreamRead(id: string): Promise<ReadResult> {
@@ -54,7 +63,10 @@ export class BLEStream extends Bluetooth {
 	}
 
 	private async executeStreamWrite(id: string): Promise<void> {
+		let writeRequest: WriteRequest = <WriteRequest>this.requestQueue.getRequest(id);
 
+		if(writeRequest.transmitting) this.sendData(writeRequest);
+		else this.sendSize(writeRequest);
 	}
 
 	// processRead
@@ -78,6 +90,13 @@ export class BLEStream extends Bluetooth {
 	}
 	//
 	// sendSize
+	private async sendSize(writeRequest: WriteRequest): Promise<void> {
+
+		writeRequest.transmitting = true;
+		(writeRequest as any).pointer = 0;
+
+		let size: number = writeRequest.value.byteLength;
+	}
 	//
 	// recvData
 	private async recvData(readRequest: ReadRequest, result: ReadResult): Promise<void> {
