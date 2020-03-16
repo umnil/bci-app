@@ -3,16 +3,21 @@ import { ReadRequest, WriteRequest } from './RequestQueue';
 
 export default class DataUtil {
 
-	value2hex(value: any): string[] {
+	value2hex(value: any): string {
 		let jsonString: string = JSON.stringify(value);
 		return this.str2hex(jsonString);
 	}
 
-	str2hex(str: string): string[] {
+	str2hex(str: string): string {
 		let arrayBuffer: ArrayBuffer = new ArrayBuffer(str.length);
 		let bufferView: Uint8Array = new Uint8Array(arrayBuffer);
 		str.split('').forEach((e,i) => bufferView[i]=str.charCodeAt(i));
-		let result: string[] = Array.prototype.map.call(new Uint8Array(arrayBuffer), x => ('0x'+x.toString(16)).slice(-4)).join(',');
+		let result: string = Array.prototype.map.call(new Uint8Array(arrayBuffer), x => ('0x'+x.toString(16)).slice(-4)).join(',');
+		return result;
+	}
+
+	hex2str(hex: string): string {
+		let result: string = hex.split(",").map(e=>String.fromCharCode(parseInt(e))).join("");
 		return result;
 	}
 
@@ -27,6 +32,10 @@ export default class DataUtil {
 		let bufView: Uint8Array = new Uint8Array(result);
 		datastr.split('').forEach((e,i)=>{bufView[i]=datastr.charCodeAt(i);});
 		return result;
+	}
+
+	arraybuffer2str(data: ArrayBuffer): string {
+		return String.fromCharCode.apply(null, new Uint8Array(data));		
 	}
 
 	// Append to a data ArrayBuffer
