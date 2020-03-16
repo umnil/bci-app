@@ -20,7 +20,7 @@ import connectionDelegate from "../utils/ConnectionDelegate";
 export default class Drawer extends Vue {
 
 	// Data
-	cd: ConnectionDelegate = connectionDelegate;
+	cd: any = connectionDelegate;
 	bus: any = (this as any).$bus;
 	pages: any[] = [
 		{

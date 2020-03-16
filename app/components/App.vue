@@ -1,5 +1,5 @@
 <template>
-	<Page @loaded="init">
+	<Page>
 	<ActionBar>
 		<ActionItem>
 			<Label :text="menuText" class="fa menu-icon" @tap="toggleDrawer" />
@@ -25,6 +25,7 @@ import Drawer from './Drawer.vue';
 import Home from './Home.vue';
 import * as appSettings from 'tns-core-modules/application-settings';
 import connectionDelegate from "../utils/ConnectionDelegate";
+const WorkerScript = require('nativescript-worker-loader!../utils/workers/ble.ts');
 
 @Component
 export default class App extends Vue {
@@ -38,6 +39,7 @@ export default class App extends Vue {
 	constructor() {
 		super();
 		(this as any).$bus.App = this;
+		(this as any).$bus.worker = new WorkerScript();
 	}
 	
 	// Methods

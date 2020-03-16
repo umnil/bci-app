@@ -31,14 +31,21 @@ export default class BluetoothSettings extends Vue {
 	// Members
 	nav: any = (this as any).$navigateTo;
 	cm: any = connectionDelegate;
+	bus: any = (this as any).$bus;
+	worker: any;
 
 	// Methods
+	constructor() {
+		super();
+		this.worker = this.bus.worker;
+	}
+
 	pair(): void {
 		this.nav(Pairing);
 	}
 
 	async disconnect(): Promise<void> {
-		await this.cm.disconnect();
+		// await this.cm.disconnect();
 	}
 
 	// Computed
@@ -47,19 +54,19 @@ export default class BluetoothSettings extends Vue {
 	}
 
 	get getUUID(): string {
-		return `UUID: ${this.cm.selectedDevice.UUID}`;
+		return `UUID: `; // this.cm.selectedDevice.UUID};
 	}
 
 	get getDeviceName(): string {
-		return `Device Name: ${this.cm.selectedDevice.name}`;
+		return `Device Name: `; //this.cm.selectedDevice.name};
 	}
 
 	get getLinkState(): string {
-		return `Interface Status: ${this.cm.ecoglinkStatus}`;
+		return `Interface Status: `; // this.cm.ecoglinkStatus};
 	}
 	
 	get status(): string {
-		return this.cm.status;
+		return ''; // this.cm.status;
 	}
 }
 </script>

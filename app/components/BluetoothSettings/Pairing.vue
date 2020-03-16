@@ -21,26 +21,37 @@ import { EventData } from "tns-core-modules/data/observable";
 import { Frame } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { Vue, Component, Watch} from 'vue-property-decorator';
-import connectionDelegate from '../../utils/ConnectionDelegate';
+import { WorkerMessage } from '../../utils/workers/ble';
 import BTHome from './Home.vue';
 
 @Component
 export default class BluetoothPairing extends Vue {
 
 	// Members
-	cm = connectionDelegate;
+	private bus: any = (this as any).$bus;
+	private worker: any;
 	nav: any = (this as any).$navigateTo;
 	selected_device: any = null;
 
 	// Methods
+	constructor() {
+		super();
+		this.worker = this.bus.worker;
+	}
+
 	async startScan(args: EventData): Promise<void> {
 		this.selected_device = null;
 		const page: Page = args.object as Page;
-		let result: boolean = await this.cm.scan();
+		let workerMessage: WorkerMessage = {
+			type: 'scan',
+			data: null
+		};
+		this.worker.postMessage(workerMessage);
+		// let result: boolean = await this.cm.scan();
 
-		if(!result) {
-		 	page.frame.goBack();	
-		}
+		// if(!result) {
+		//  	page.frame.goBack();	
+		// }
 	}
 
 	async connect(peripheral: any): Promise<void> {

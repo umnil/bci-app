@@ -28,7 +28,10 @@ export class RequestQueue {
 		request.time = time;
 		request.transmitting = false;
 		request.result = new ArrayBuffer(null);
-		if((request as WriteRequest).value != undefined) this.writeQueue.unshift(request);
+		if(request.hasOwnProperty('value')) {
+			let r: WriteRequest = <WriteRequest>request;
+			this.writeQueue.unshift(r);
+		}
 		else this.readQueue.unshift(request);
 		return newUUID;
 	}
