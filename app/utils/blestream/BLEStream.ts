@@ -5,7 +5,7 @@ import {
 	Bluetooth,
 	ReadOptions,
 	WriteOptions,
-	ReadResult
+	ReadResult,
 } from 'nativescript-bluetooth';
 
 export interface Transmission {
@@ -17,8 +17,14 @@ export class BLEStream extends Bluetooth {
 
 	private dataUtil: DataUtil = new DataUtil();
 	private requestQueue: RequestQueue = new RequestQueue();
+	private chunkSize: number;
 
 	// Methods
+	constructor(chunkSize=500) {
+		super();
+		this.chunkSize = chunkSize;
+	}
+
 	async streamRead(readOptions: ReadOptions): Promise<ReadResult> {
 
 		let requestID: string = this.requestQueue.addRequest(readOptions);
@@ -40,9 +46,9 @@ export class BLEStream extends Bluetooth {
 			await sleep(10);
 		}
 
-		let result: WriteResult = await this.executeStreamWrite(requestID);
+		let result: any = await this.executeStreamWrite(requestID);
 		this.requestQueue.popWriteQueue();
-		return resul;
+		return result;
 	}
 
 	private async executeStreamRead(id: string): Promise<ReadResult> {
@@ -85,7 +91,7 @@ export class BLEStream extends Bluetooth {
 		if(msg != 'SIZE') return;
 
 		let size: number = <number>transmission['payload'];
-		readRequest.value = new ArrayBuffer(size);
+		readRequest.result = new ArrayBuffer(size);
 		await this.executeStreamRead(readRequest.id);
 	}
 	//
@@ -95,7 +101,20 @@ export class BLEStream extends Bluetooth {
 		writeRequest.transmitting = true;
 		(writeRequest as any).pointer = 0;
 
-		let size: number = writeRequest.value.byteLength;
+		let strData: string = this.dataUtil.hex2str(writeRequest.value);
+		let size: number = strData.length;
+		writeRequest.result = this.dataUtil.str2arraybuffer(strData);
+
+		let transmission: Transmission = {
+			'msg': 'SIZE',
+			'payload': size
+		};
+
+		let writeValue: string = this.dataUtil.value2hex(transmission);
+		let tempWriteOptions: WriteOptions = <WriteOptions>JSON.parse(JSON.stringify(writeRequest));
+		tempWriteOptions.value = writeValue;
+		await this.write(tempWriteOptions);
+		await this.executeStreamWrite(writeRequest.id);
 	}
 	//
 	// recvData
@@ -121,4 +140,23 @@ export class BLEStream extends Bluetooth {
 	}
 	//
 	// sendData
+	private async sendData(writeRequest: WriteRequest): Promise<any> {
+		let pointer: number = (writeRequest as any).pointer;
+		let remainingBytes: number = writeRequest.result.byteLength - pointer;
+		let dataSize: number = remainingBytes > this.chunkSize ? this.chunkSize : remainingBytes;
+		let curChunk: string = this.dataUtil.arraybuffer2str(writeRequest.result).substr(pointer, dataSize);
+		pointer += dataSize;
+
+		let transmission: Transmission = {
+			'msg': 'DATA',
+			'payload': curChunk
+		};
+		remainingBytes = writeRequest.result.byteLength - pointer;
+
+		let writeValue: string = this.dataUtil.value2hex(transmission);
+		let tempWriteOptions: WriteOptions = <WriteOptions>JSON.parse(JSON.stringify(writeRequest));
+		tempWriteOptions.value = writeValue;
+		await this.write(tempWriteOptions);
+		await this.executeStreamWrite(writeRequest.id);
+	}
 }
