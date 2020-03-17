@@ -1,4 +1,4 @@
-import sleep from './Sleep';
+import sleep from '../Sleep';
 import DataUtil from './DataUtil';
 import { RequestQueue, ReadRequest, WriteRequest } from './RequestQueue';
 import { 

@@ -4,7 +4,7 @@
 	<StackLayout>
 		<StackLayout class="status">
 			<Label :text="getStatusText" />
-			<StackLayout v-if="cm.isConnected">
+			<StackLayout v-if="cd.isConnected">
 				<Label :text="getDeviceName" />
 				<Label :text="getUUID" />
 				<Label :text="getLinkState" />
@@ -12,7 +12,7 @@
 		</StackLayout>
 		<StackLayout class="action-panel" horizontalAlignment="left">
 			<Button @tap="pair">Pair Devices</Button>
-			<StackLayout v-if="cm.isConnected">
+			<StackLayout v-if="cd.isConnected">
 				<Button @tap="disconnect">Disconnect</Button>
 			</StackLayout>
 		</StackLayout>
@@ -22,22 +22,21 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import connectionDelegate from '../../utils/ConnectionDelegate';
+import ConnectionDelegate from '../../utils/ConnectionDelegate';
 import Pairing from './Pairing';
 
 @Component
 export default class BluetoothSettings extends Vue {
 
 	// Members
-	nav: any = (this as any).$navigateTo;
-	cm: any = connectionDelegate;
-	bus: any = (this as any).$bus;
-	worker: any;
+	private nav: any = (this as any).$navigateTo;
+	private bus: any = (this as any).$bus;
+	cd: ConnectionDelegate;
 
 	// Methods
 	constructor() {
 		super();
-		this.worker = this.bus.worker;
+		this.cd = this.bus.cd;
 	}
 
 	pair(): void {

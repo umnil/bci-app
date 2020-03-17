@@ -24,7 +24,7 @@ import DeviceSettings from './DeviceSettings';
 export default class Inputs extends Vue {
 
 	// Data
-	cd: any = connectionDelegate;
+	// cd: any = connectionDelegate;
 	bus: any = (this as any).$bus;
 	marker: string = String.fromCharCode(0xf00c);
 	settings_symbol: string = String.fromCharCode(0xf013);
@@ -51,7 +51,7 @@ export default class Inputs extends Vue {
 	}
 
 	loadDevices(): void {
-		this.getInputDevices();
+		// this.getInputDevices();
 	}
 
 	setInputSettings(): void {
@@ -59,19 +59,19 @@ export default class Inputs extends Vue {
 			'selected_device': this.selected_device,
 			'devices': this.devices
 		}
-		this.cd.setInputSettings(inputSettings);
+		// this.cd.setInputSettings(inputSettings);
 	}
 
 	get selected_device(): string {
-		let inputDevices: any = this.cd.inputDevices;
-		return inputDevices.selected_device || "None";
+		let inputDevices: any = null; // this.cd.inputDevices;
+		return ""; // inputDevices.selected_device || "None";
 	}
 
 	set selected_device(name: string) {
-		let inputDevices: any = this.cd.inputDevices;
-		let check: any = inputDevices.selected_device || null;
+		let inputDevices: any = null; // this.cd.inputDevices;
+		let check: any = null; //inputDevices.selected_device || null;
 		if(check == null) return;
-		this.cd.inputDevices.selected_device = name;
+		// this.cd.inputDevices.selected_device = name;
 	}
 
 	// Computed
@@ -83,12 +83,12 @@ export default class Inputs extends Vue {
 		});
 	}
 
-	@Watch("cd.device_settings")
-	getInputDevices(): void {
-		let inputDevices: any = this.cd.inputDevices;
-		console.log(`INPUTS: ${inputDevices.devices}`);
-		this.devices = inputDevices.devices || [];
-	}
+	// @Watch("cd.device_settings")
+	// getInputDevices(): void {
+	// 	let inputDevices: any = null; // this.cd.inputDevices;
+	// 	console.log(`INPUTS: ${inputDevices.devices}`);
+	// 	this.devices = []; // inputDevices.devices || [];
+	// }
 }
 </script>
 

@@ -17,7 +17,6 @@
 
 <script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator';
-import connectionDelegate from '../utils/ConnectionDelegate';
 import DeviceSettings from './DeviceSettings';
 
 @Component
@@ -25,7 +24,6 @@ export default class DeviceList extends Vue {
 
 	// Members
 	listSet: string = "";  // Input or Output
-	cd: any = connectionDelegate;
 	bus: any = (this as any).$bus;
 	selection_marker: string = String.fromCharCode(0xf00c);
 	settings_symbol: string = String.fromCharCode(0xf013);
@@ -75,17 +73,17 @@ export default class DeviceList extends Vue {
 
 	get selected_device(): string {
 		// call to worker func
-		let devices: any = this.cd.inputDevices;
+		let devices: any = null; // this.cd.inputDevices;
 		return devices.selected_device || "None";
 	}
 
 	set selected_device(name: string) {
 		// Call to worker func
-		let devices: any = this.cd.inputDevices;
+		let devices: any = null; // this.cd.inputDevices;
 		let check: any = devices.selected_device || null;
 		if(check == null) return;
 		// Call to worker func
-		this.cd.inputDevices.selected_device = name;
+		// this.cd.inputDevices.selected_device = name;
 	}
 
 	// Computed
@@ -100,7 +98,7 @@ export default class DeviceList extends Vue {
 	@Watch("cd.device_settings")
 	getDevices(): void {
 		// call to worker func
-		let devices: any = this.cd.inputDevices;
+		let devices: any = null; // this.cd.inputDevices;
 		console.log(`${this.listSet.toUpperCase()}S: ${devices.devices}`);
 		this.devices = devices.devices || [];
 	}

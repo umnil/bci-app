@@ -1,54 +1,35 @@
 import * as appSettings from 'tns-core-modules/application-settings';
 import * as dialogs from 'tns-core-modules/ui/dialogs';
-import BLEStream from './blestream/BLEStream';
+import WorkerDelegate from './workers/WorkerDelegate';
 
-export enum ConnectionStatus {
-	Disconnected = "Disconnected",
-	Connecting = "Connecting",
-	Connected = "Connected"
-}
-
-export enum ScanningStatus {
-	NotScanning = "Not Scanning",
-	Scanning = "Scanning"
-}
-
-export enum ECOGLINKStatus {
-	Unavailable = "Unavailable",
-	Available = "Available",
-	Linked = "Linked"
-}
-
-export default class ConnectionManager {
+export default class ConnectionDelegate {
 
 	// Class Properties
-	private _isEcoglinkAvailable: boolean = false;
-	private blueooth: BLEStream = new BLEStream();
+	// private bluetooth: BLEStream = new BLEStream();
+	private bluetoothWorker: WorkerDelegate = new WorkerDelegate();
 
-	// Status and States
-	initialized: boolean = false;
-	scanningStatus: ScanningStatus = ScanningStatus.NotScanning;
-	connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected;
-	private _ecoglinkStatus: ECOGLINKStatus = ECOGLINKStatus.Unavailable;
-	isNotifying: boolean = false;
+	// Connection States
+	private initialized: boolean = false;
+	private isScanning: boolean = false;
+	private isConnecting: boolean = false;
+	private isConnected: boolean = false
+	private _isEcoglinkAvailable: boolean = false;
+	private isNotifying: boolean = false;
 
 	// collections
 	scannedDevices: any[] = [];
+	device_settings: any = {};
+	workerIDs: string[] = [];
 
 	// Values
 	selectedDevice: any = {};
+	peripheralUUID: string = '';
 
 	// BLE Service and Characteristic UUIDs
 	target_service_UUID: string = "A07498CA-AD5B-474E-940D-16F1FBE7E8CD";
 	device_settings_UUID: string = "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B";
 	notify_char_UUID: string = "E62A479C-5184-4AEE-B2D8-C4ADCED4E0F3";
 
-	// ========OLD========
-
-	obtainedData: string = '';
-	peripheralUUID: string = '';
-	device_settings: any = {};
-	
 	// Methods
 	async init(): Promise<void> {
 		if(this.initialized) return;
@@ -62,19 +43,19 @@ export default class ConnectionManager {
 	}
 
 	async checkBluetooth(): Promise<boolean> {
-		let enabled: boolean = await this.bluetooth.isBluetoothEnabled();
+		let enabled: boolean = false; // await this.bluetoothWorker.awaitJob('isBluetoothEnabled', []);
 
 		while(!enabled) {
 			await dialogs.alert("Your bluetooth device is off. Please turn it on.");
-			enabled = await bluetooth.isBluetoothEnabled();
+			//enabled = await this.bluetooth.isBluetoothEnabled();
 		}
 		return true;
 	}
 
 	async scan(timeout: number = 5): Promise<boolean> {
-		if(this.scanningStatus == ScanningStatus.Scanning) return;
+		if(this.isScanning) return;
 
-		this.scanningStatus = ScanningStatus.Scanning
+		this.isScanning = true;
 
 		let handleDiscovery = (peripheral) => {
 			this.log(peripheral);
@@ -101,25 +82,24 @@ export default class ConnectionManager {
 
 		let scanSuccessful: Promise < boolean > = new Promise < boolean > ((resolve) => {
 			this.log('bluetooth.startScanning');
-			bluetooth.startScanning(scanningOptions).then(
-				(result) => {
-					resolve(true);
-				},
-				async function(err) {
-
-					await dialogs.alert(`Failed to scan: ${err}`);
-					resolve(false);
-				});
+			// this.bluetooth.startScanning(scanningOptions).then(
+			// 	(result) => {
+			// 		resolve(true);
+			// 	},
+			// 	async function(err) {
+			// 		await dialogs.alert(`Failed to scan: ${err}`);
+			// 		resolve(false);
+			// 	});
 		});
 		let result: boolean = await scanSuccessful;
-		this.scanningStatus = scanningStatus.NotScanning;
+		this.isScanning = false;
 		return result;
 	}
 
 	async connect(peripheral: any): Promise<boolean> {
-		if(this.connectionStatus == ConnectionStatus.Connecting) return;
+		if(this.isConnecting) return;
 		
-		this.connectionStatus = ConnectionStatus.Connecting;
+		this.isConnecting = true;
 		let done: boolean = false;
 
 		let handleConnection = (peripheral) => {
@@ -127,14 +107,14 @@ export default class ConnectionManager {
 			this.log('Connected');
 
 			this.selectedDevice = peripheral;
-			this.connectionStatus = ConnectionStatus.Connected;
+			this.isConnected = true;
 			done = true;
 		};
 
 		let handleDisconnection = () => {
 			this.selectedDevice = {};
 			this.log('Disconnected');
-			this.connectionStatus = ConnectionStatus.Disconnected;
+			this.isConnected = false;
 			done = true;
 		};
 
@@ -145,7 +125,7 @@ export default class ConnectionManager {
 		};
 
 		this.log(`Connecting...`);
-		await bluetooth.connect(connectData);
+		//await this.bluetooth.connect(connectData);
 
 		while (!done) {
 			await new Promise<void>(resolve => setTimeout(resolve, 10))
@@ -161,31 +141,33 @@ export default class ConnectionManager {
 		});
 
 		if(ecoglinkService.length > 0) {
-			this.ecoglinkStatus = ECOGLINKStatus.Available;
+			this.isEcoglinkAvailable = true;
 		}
 		
+		this.isConnecting = false;
 		return true;
 	}
 
 	async disconnect(): Promise<boolean> {
-		this.log(this.connectionStatus);
 		this.log(this.selectedDevice);
 		let connectionOptions = {
 			UUID: this.selectedDevice['UUID']
 		};
 
 		let disconnect: Promise<boolean> = new Promise<boolean>((resolve) => {
-			bluetooth.disconnect(connectionOptions).then(()=>{
-				this.connectionStatus = ConnectionStatus.Disconnected;
-				this.isNotifying = false;
-				this.ecoglinkStatus = ECOGLINKStatus.Unavailable;
-				resolve(true);
-			}, (err)=>{
-				resolve(false);
-			});
+			// this.bluetooth.disconnect(connectionOptions).then(()=>{
+			// 	this.isConnected = false;
+			// 	this.isNotifying = false;
+			// 	this.isEcoglinkAvailable = false;
+			// 	resolve(true);
+			// }, (err)=>{
+			// 	resolve(false);
+			// });
 		});
 		return await disconnect;
 	}
+
+	// ======== OLD METHODS ==========
 
 	async writeDeviceSettings(): Promise<void> {
 		//let writeObj: any = this.deviceSettingOptions;
@@ -215,14 +197,45 @@ export default class ConnectionManager {
 	}
 
 	getInitialValue(): void {
-		this.bluetooth.read(this.deviceSettingOptions).then((result) => {
-			this._dataUpdate(result);
-		}, (err) => {
-			console.log(`OH NO`);
-		});
+		// this.bluetooth.read(this.deviceSettingOptions).then((result) => {
+		// 	this._dataUpdate(result);
+		// }, (err) => {
+		// 	console.log(`OH NO`);
+		// });
 	}
 
 	// Computed Properties
+	private get isEcoglinkAvailable(): boolean {
+		return this._isEcoglinkAvailable;
+	}
+
+	private set isEcoglinkAvailable(value: boolean) {
+		this._isEcoglinkAvailable = value;
+
+		// Watches
+		this.notify();
+	}
+
+	get scanningStatus(): string {
+		return this.isScanning ? "Scanning" : "Not Scanning";
+	}
+
+	get connectingStatus(): string {
+		return this.isConnecting ? "Connecting" : "Not Connecting";
+	}
+
+	get connectionStatus(): string {
+		return this.isConnected ? "Connected" : "Disconnected";
+	}
+
+	ecoglinkAvailableStatus(): string {
+		return this.isEcoglinkAvailable ? "Available" : "Unavailable";
+	}
+	
+	notifyStatus(): string {
+		return this.isNotifying ? "Notyfing" : "Not Notifying";
+	}
+
 	get serviceDeviceOptions(): any {
 		let sco: any = {
 			'peripheralUUID': this.selectedDevice['UUID'],
@@ -243,27 +256,13 @@ export default class ConnectionManager {
 		return options;
 	}
 
-	get connectionStatus(): string {
-		return this.isConnected ? "Connected" : "Disconnected";
-	}
-
-	get ecoglinkStatus(): ECOGLINKStatus {
-		return this._ecoglinkStatus;
-	}
-
-	set ecoglinkStatus(value: ECOGLINKStatus) {
-		this._ecoglinkStatus = value;
-
-		// Watches
-		this.notify();
-	}
-
 	get inputDevices(): any {
-		let result: any = {};
-		if(this.device_settings.hasOwnProperty('inputdevices')) {
-			result = this.device_settings['inputdevices']
-		}
-		return result;
+		// let result: any = {};
+		// if(this.device_settings.hasOwnProperty('inputdevices')) {
+		// 	result = this.device_settings['inputdevices']
+		// }
+		// return result;
+		return null;
 	}
 
 	get outputDevices(): any {
@@ -279,20 +278,20 @@ export default class ConnectionManager {
 		let notifyOptions: any = this.notifySettingOptions;
 		notifyOptions['onNotify'] = this.dataUpdate.bind(this);
 
-		if(this.ecoglinkStatus != ECOGLINKStatus.Unavailable) {
+		if(this.isEcoglinkAvailable) {
 			this.getInitialValue();
-			bluetooth.startNotifying(notifyOptions)
-				.then(() => {
-					this.isNotifying = true;
-				})
+			// this.bluetooth.startNotifying(notifyOptions)
+			// 	.then(() => {
+			// 		this.isNotifying = true;
+			// 	})
 		}
 		else {
-			bluetooth.stopNotifying(notifyOptions)
-				.then(() => {
-					this.isNotifying = false;
-				}, (err) => {
-					dialogs.alert(err);
-				});
+			// this.bluetooth.stopNotifying(notifyOptions)
+			// 	.then(() => {
+			// 		this.isNotifying = false;
+			// 	}, (err) => {
+			// 		dialogs.alert(err);
+			// 	});
 		}
 	}
 };

@@ -27,7 +27,7 @@ const WorkerScript = require('nativescript-worker-loader!../utils/workers/ble.ts
 export default class DeviceSettings extends Vue {
 	
 	// Members & Attributes
-	cd: any = connectionDelegate;
+	// cd: any = connectionDelegate;
 	bus: any = (this as any).$bus;
 	_settings: any[] = [];
 	settingComponents: object = {};
@@ -91,12 +91,12 @@ export default class DeviceSettings extends Vue {
 
 		let iodevice: string = this.bus.settings_io;
 		let deviceIndex: number = this.io_device_array.reduce((r, c, i) => {r = c.device_name == this.selected_device ? i : r;return r;}, -1);
-		let inputSettings: any = JSON.parse(JSON.stringify(this.cd.device_settings[iodevice]));
+		let inputSettings: any = null; // JSON.parse(JSON.stringify(this.cd.device_settings[iodevice]));
 		inputSettings['devices'][deviceIndex]['device_settings'] = curSettings;
 
 		// WORKER message HERE
 		/// this.worker.postMessage({data:inputSettings});
-		this.cd.setInputSettings(inputSettings).then();
+		// this.cd.setInputSettings(inputSettings).then();
 	}
 
 	// Computeds
@@ -143,9 +143,9 @@ export default class DeviceSettings extends Vue {
 	get io_device_array(): any[] {
 		let iodevices: string = this.bus.settings_io;
 		let result_device_array: any[] = [];
-		if(this.cd.device_settings.hasOwnProperty(iodevices)) {
-			result_device_array = this.cd.device_settings[iodevices]['devices'];
-		}
+		// if(this.cd.device_settings.hasOwnProperty(iodevices)) {
+		// 	result_device_array = this.cd.device_settings[iodevices]['devices'];
+		// }
 		return result_device_array;
 	}
 

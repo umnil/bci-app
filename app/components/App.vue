@@ -24,8 +24,7 @@ import * as dialogs from 'tns-core-modules/ui/dialogs';
 import Drawer from './Drawer.vue';
 import Home from './Home.vue';
 import * as appSettings from 'tns-core-modules/application-settings';
-import connectionDelegate from "../utils/ConnectionDelegate";
-const WorkerScript = require('nativescript-worker-loader!../utils/workers/ble.ts');
+import ConnectionDelegate from "../utils/ConnectionDelegate"
 
 @Component
 export default class App extends Vue {
@@ -39,7 +38,7 @@ export default class App extends Vue {
 	constructor() {
 		super();
 		(this as any).$bus.App = this;
-		(this as any).$bus.worker = new WorkerScript();
+		(this as any).$bus.cd = new ConnectionDelegate();
 	}
 	
 	// Methods

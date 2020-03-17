@@ -9,23 +9,30 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import connectionDelegate from '../utils/ConnectionDelegate';
+import ConnectionDelegate from '../utils/ConnectionDelegate';
 
 @Component
 export default class Home extends Vue {
 
 	// Data
-	cd: any = connectionDelegate;
+	private bus: any = (this as any).$bus;
+	private cd: ConnectionDelegate;
+
+	// Methods
+	constructor() {
+		super();
+		this.cd = this.bus.cd;
+	}
 
 	// Computed
 	get inputDeviceName(): string {
-		let inputDevices: any = this.cd.inputDevices;
-		return inputDevices.selected_device || "None";
+		let inputDevices: any = null; // this.cd.inputDevices;
+		return "None"; // inputDevices.selected_device || "None";
 	}
 
 	get outputDeviceName(): string {
-		let outputDevices: any = this.cd.outputDevices;
-		return outputDevices.selected_device || "None";
+		let outputDevices: any = null; // this.cd.outputDevices;
+		return "None"; // outputDevices.selected_device || "None";
 	}
 
 	get inputDeviceText(): string {

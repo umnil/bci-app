@@ -24,7 +24,7 @@ import DeviceSettings from './DeviceSettings';
 export default class Outputs extends Vue {
 
 	// Data
-	cd: any = connectionDelegate;
+	// cd: any = connectionDelegate;
 	bus: any = (this as any).$bus;
 	marker: string = String.fromCharCode(0xf00c);
 	settings_symbol: string = String.fromCharCode(0xf013);
@@ -50,7 +50,7 @@ export default class Outputs extends Vue {
 	}
 
 	loadDevices(): void {
-		this.getOutputDevices();
+		// this.getOutputDevices();
 	}
 
 	setOutputSettings(): void {
@@ -58,19 +58,19 @@ export default class Outputs extends Vue {
 			'selected_device': this.selected_device,
 			'devices': this.devices
 		}
-		this.cd.setOutputSettings(outputSettings);
+		// this.cd.setOutputSettings(outputSettings);
 	}
 
 	get selected_device(): string {
-		let outputDevice: any = this.cd.outputDevices;
+		let outputDevice: any = null; // this.cd.outputDevices;
 		return outputDevice.selected_device || "None";
 	}
 
 	set selected_device(name: string) {
-		let outputDevices: any = this.cd.outputDevices;
+		let outputDevices: any = null; // this.cd.outputDevices;
 		let check: any = outputDevices.selected_device || null;
 		if(check == null) return;
-		this.cd.outputDevices.selected_device = name;
+		// this.cd.outputDevices.selected_device = name;
 	}
 
 	// Computed
@@ -83,11 +83,11 @@ export default class Outputs extends Vue {
 	}
 
 	// Watches
-	@Watch("cd.device_settings")
-	getOutputDevices(): void {
-		let outputDevices: any = this.cd.outputDevices;
-		this.devices = outputDevices.devices || [];
-	}
+	// @Watch("cd.device_settings")
+	// getOutputDevices(): void {
+	// 	let outputDevices: any = this.cd.outputDevices;
+	// 	this.devices = outputDevices.devices || [];
+	// }
 }
 </script>
 

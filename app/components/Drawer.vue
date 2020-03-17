@@ -20,7 +20,7 @@ import connectionDelegate from "../utils/ConnectionDelegate";
 export default class Drawer extends Vue {
 
 	// Data
-	cd: any = connectionDelegate;
+	// cd: any = connectionDelegate;
 	bus: any = (this as any).$bus;
 	pages: any[] = [
 		{
@@ -61,17 +61,17 @@ export default class Drawer extends Vue {
 		page.show = show;
 	}
 
-	@Watch("cd.isNotifying")
-	updatePages() {
-		if(this.cd.isNotifying) {
-			this.setPageShow('Input Devices', true);
-			this.setPageShow('Output Devices', true);
-		}
-		else {
-			this.setPageShow('Input Devices', false);
-			this.setPageShow('Output Devices', false);
-		}
-	}
+	// @Watch("cd.isNotifying")
+	// updatePages() {
+	// 	if(this.cd.isNotifying) {
+	// 		this.setPageShow('Input Devices', true);
+	// 		this.setPageShow('Output Devices', true);
+	// 	}
+	// 	else {
+	// 		this.setPageShow('Input Devices', false);
+	// 		this.setPageShow('Output Devices', false);
+	// 	}
+	// }
 }
 </script>
 
