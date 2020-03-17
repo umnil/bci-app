@@ -29,8 +29,8 @@ export default class BluetoothPairing extends Vue {
 
 	// Members
 	private bus: any = (this as any).$bus;
+	private nav: any = (this as any).$navigateTo;
 	cd: ConnectionDelegate;
-	nav: any = (this as any).$navigateTo;
 	selected_device: any = null;
 
 	// Methods
