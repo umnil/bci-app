@@ -39,6 +39,7 @@ export default class App extends Vue {
 		super();
 		(this as any).$bus.App = this;
 		(this as any).$bus.cd = new ConnectionDelegate();
+		setTimeout(()=>(this as any).$bus.cd.checkBluetooth(), 1000);
 	}
 	
 	// Methods
