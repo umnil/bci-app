@@ -38,6 +38,10 @@ export default class DataUtil {
 		return String.fromCharCode.apply(null, new Uint8Array(data));		
 	}
 
+	arraybuffer2obj(data: ArrayBuffer): object {
+		return JSON.parse(this.arraybuffer2str(data));
+	}
+
 	// Append to a data ArrayBuffer
 	appendData(request: ReadRequest, data: ArrayBuffer): void {
 		let dataView: Uint8Array = new Uint8Array(request.result);
