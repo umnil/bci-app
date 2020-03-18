@@ -1,13 +1,14 @@
 import * as appSettings from 'tns-core-modules/application-settings';
 import * as dialogs from 'tns-core-modules/ui/dialogs';
 import { BLEStream } from './blestream/BLEStream';
-// import WorkerDelegate from './workers/WorkerDelegate';
+import { ReadResult } from 'nativescript-bluetooth';
+import DataUtil from './blestream/DataUtil';
 
 export default class ConnectionDelegate {
 
 	// Class Properties
+	private dataUtility: DataUtil = new DataUtil();
 	private bluetooth: BLEStream = new BLEStream();
-	// private bluetoothWorker: WorkerDelegate = new WorkerDelegate();
 
 	// Connection States
 	private initialized: boolean = false;
@@ -23,10 +24,11 @@ export default class ConnectionDelegate {
 	// Values
 	selectedPeripheral: any = {};
 	peripheralUUID: string = '';
+	device_data: any = {};
 
 	// BLE Service and Characteristic UUIDs
-	target_service_UUID: string = "A07498CA-AD5B-474E-940D-16F1FBE7E8CD";
-	device_settings_UUID: string = "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B";
+	target_service_UUID: string = "a07498ca-ad5b-474e-940d-16f1fbe7e8cd";
+	device_data_UUID: string = "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B";
 	notify_char_UUID: string = "E62A479C-5184-4AEE-B2D8-C4ADCED4E0F3";
 
 	// Methods
@@ -37,9 +39,7 @@ export default class ConnectionDelegate {
 		await this.scan();
 	}
 
-	log(message: string): void {
-		console.log(`BLE Connection: ${message}`);
-	}
+	log: (message: any) => void = console.log.bind(console, "BLE Connection: ");
 
 	async checkBluetooth(): Promise<boolean> {
 		let enabled: boolean = await this.bluetooth.isBluetoothEnabled();
@@ -135,7 +135,7 @@ export default class ConnectionDelegate {
 		// Now check for appropriate services
 		let services: any[] = this.selectedPeripheral.services;
 		let ecoglinkService: any[] = services.filter(s => {
-			this.log(s.UUID);
+			this.log(`Service: ${s.UUID}`);
 			return s.UUID == this.target_service_UUID
 		});
 
@@ -154,65 +154,75 @@ export default class ConnectionDelegate {
 		};
 
 		let disconnect: Promise<boolean> = new Promise<boolean>((resolve) => {
-			// this.bluetooth.disconnect(connectionOptions).then(()=>{
-			// 	this.isConnected = false;
-			// 	this.isNotifying = false;
-			// 	this.isEcoglinkAvailable = false;
-			// 	resolve(true);
-			// }, (err)=>{
-			// 	resolve(false);
-			// });
+			this.bluetooth.disconnect(connectionOptions).then(()=>{
+				this.isConnected = false;
+				this.isConnecting = false;
+				this.isNotifying = false;
+				this.isEcoglinkAvailable = false;
+				resolve(true);
+			}, (err)=>{
+				resolve(false);
+			});
 		});
+
 		return await disconnect;
+	}
+
+	private getInitialValue(): void {
+		this.log("Getting Initial Value!");
+		this.bluetooth.streamRead(this.deviceSettingRequestOptions).then(
+			(result: ReadResult) => {
+				this.updateDeviceSettings(result);
+			}
+		);
+	}
+
+	private updateDeviceSettings(result: ReadResult): void {
+		this.device_data = this.dataUtility.arraybuffer2obj(result.value);
+	}
+
+	private handleNotifyUpdate(result: ReadResult): void {
+		this.log("NOTIFIED!");
+		this.updateDeviceSettings(result);
+	}
+
+	async setInputDeviceData(inputDevicesData: any): Promise<void> {
+		this.device_data.inputdevices = inputDevicesData;
+		await this.writeDeviceData();
+	}
+
+	async writeDeviceData(): Promise<void> {
+		let writeObj: any = this.standardRequestOptions;
+		writeObj['value'] = this.dataUtility.value2hex(this.device_data);
+		await this.bluetooth.streamWrite(writeObj);
 	}
 
 	// ======== OLD METHODS ==========
 
-	async writeDeviceSettings(): Promise<void> {
-		//let writeObj: any = this.deviceSettingOptions;
-		//await this.stream.sendStream(this.device_settings, writeObj);
-	}
-
-	async setInputSettings(inputDevices: any): Promise<void> {
-		//this.device_settings.inputdevices = inputDevices;
-		//await this.writeDeviceSettings();
-	}
 
 	async setOutputSettings(outputDevices: any): Promise<void> {
-		//this.device_settings.outputdevices = outputDevices;
+		//this.device_data.outputdevices = outputDevices;
 		//await this.writeDeviceSettings();
-	}
-
-	async dataUpdate(result: any): Promise<void> {
-		this.log("NOTIFIED!");
-		await this._dataUpdate(result);
-	}
-
-	async _dataUpdate(result: any): Promise<void> {
-		this.log("Calling for data update");
-		//await this.stream.receiver(result, this.deviceSettingOptions);
-		//this.device_settings = this.stream.data;
-		// this.log(`UPDATE: ${this.device_settings}`)
-	}
-
-	getInitialValue(): void {
-		// this.bluetooth.read(this.deviceSettingOptions).then((result) => {
-		// 	this._dataUpdate(result);
-		// }, (err) => {
-		// 	console.log(`OH NO`);
-		// });
 	}
 
 	// Computed Properties
-	private get isEcoglinkAvailable(): boolean {
-		return this._isEcoglinkAvailable;
+	get standardRequestOptions(): any {
+		return {
+			'peripheralUUID': this.selectedPeripheral['UUID'],
+			'serviceUUID': this.target_service_UUID,
+		};
 	}
 
-	private set isEcoglinkAvailable(value: boolean) {
-		this._isEcoglinkAvailable = value;
+	get deviceSettingRequestOptions(): any {
+		let options: any = this.standardRequestOptions;
+		options['characteristicUUID'] = this.device_data_UUID;
+		return options;
+	}
 
-		// Watches
-		this.notify();
+	get notifyCharRequestOptions(): any {
+		let options: any = this.standardRequestOptions;
+		options['characteristicUUID'] = this.notify_char_UUID;
+		return options;
 	}
 
 	get scanningStatus(): string {
@@ -232,7 +242,7 @@ export default class ConnectionDelegate {
 	}
 	
 	get notifyStatus(): string {
-		return this.isNotifying ? "Notyfing" : "Not Notifying";
+		return this.isNotifying ? "Notifying" : "Not Notifying";
 	}
 
 	get status(): string {
@@ -241,62 +251,51 @@ export default class ConnectionDelegate {
 		else return this.connectionStatus;
 	}
 
-	get serviceDeviceOptions(): any {
-		let sco: any = {
-			'peripheralUUID': this.selectedPeripheral['UUID'],
-			'serviceUUID': this.target_service_UUID,
-		};
-		return sco;
-	}
-
-	get deviceSettingOptions(): any {
-		let options: any = this.serviceDeviceOptions;
-		options['characteristicUUID'] = this.device_settings_UUID;
-		return options;
-	}
-
-	get notifySettingOptions(): any {
-		let options: any = this.serviceDeviceOptions;
-		options['characteristicUUID'] = this.notify_char_UUID;
-		return options;
-	}
-
 	get inputDevices(): any {
-		// let result: any = {};
-		// if(this.device_settings.hasOwnProperty('inputdevices')) {
-		// 	result = this.device_settings['inputdevices']
-		// }
-		// return result;
-		return null;
+		let result: any = {};
+		if(this.device_data.hasOwnProperty('inputdevices')) {
+			result = this.device_data['inputdevices']
+		}
+		return result;
 	}
 
 	get outputDevices(): any {
 		let result: any = {};
-		// if(this.device_settings.hasOwnProperty('outputdevices')) {
-		// 	result = this.device_settings['outputdevices'];
-		// }
+		if(this.device_data.hasOwnProperty('outputdevices')) {
+			result = this.device_data['outputdevices'];
+		}
 		return result
+	}
+
+	private get isEcoglinkAvailable(): boolean {
+		return this._isEcoglinkAvailable;
+	}
+
+	private set isEcoglinkAvailable(value: boolean) {
+		this._isEcoglinkAvailable = value;
+		this.notify();
 	}
 
 	// Watch
 	notify(): void {
-		let notifyOptions: any = this.notifySettingOptions;
-		notifyOptions['onNotify'] = this.dataUpdate.bind(this);
+		let notifyOptions: any = this.notifyCharRequestOptions;
+		notifyOptions['onNotify'] = this.handleNotifyUpdate.bind(this);
 
 		if(this.isEcoglinkAvailable) {
 			this.getInitialValue();
-			// this.bluetooth.startNotifying(notifyOptions)
-			// 	.then(() => {
-			// 		this.isNotifying = true;
-			// 	})
+			this.bluetooth.startNotifying(notifyOptions)
+				.then(() => {
+					this.isNotifying = true;
+				})
 		}
 		else {
-			// this.bluetooth.stopNotifying(notifyOptions)
-			// 	.then(() => {
-			// 		this.isNotifying = false;
-			// 	}, (err) => {
-			// 		dialogs.alert(err);
-			// 	});
+			if(!this.isNotifying) return;
+			this.bluetooth.stopNotifying(notifyOptions)
+				.then(() => {
+					this.isNotifying = false;
+				}, (err) => {
+					dialogs.alert(err);
+				});
 		}
 	}
 };
