@@ -14,14 +14,14 @@ import Home from './Home';
 import BluetoothSettings from './BluetoothSettings/Home';
 import Inputs from './Inputs';
 import Outputs from './Outputs';
-import connectionDelegate from "../utils/ConnectionDelegate";
+import ConnectionDelegate from "../utils/ConnectionDelegate";
 
 @Component
 export default class Drawer extends Vue {
 
 	// Data
-	// cd: any = connectionDelegate;
-	bus: any = (this as any).$bus;
+	private bus: any = (this as any).$bus;
+	private cd: ConnectionDelegate = this.bus.cd; 
 	pages: any[] = [
 		{
 			name: 'Bluetooth Settings',
@@ -61,17 +61,17 @@ export default class Drawer extends Vue {
 		page.show = show;
 	}
 
-	// @Watch("cd.isNotifying")
-	// updatePages() {
-	// 	if(this.cd.isNotifying) {
-	// 		this.setPageShow('Input Devices', true);
-	// 		this.setPageShow('Output Devices', true);
-	// 	}
-	// 	else {
-	// 		this.setPageShow('Input Devices', false);
-	// 		this.setPageShow('Output Devices', false);
-	// 	}
-	// }
+	@Watch("cd.notifyStatus")
+	updatePages() {
+		if(this.cd.notifyStatus == "Notifying") {
+			this.setPageShow('Input Devices', true);
+			this.setPageShow('Output Devices', true);
+		}
+		else {
+			this.setPageShow('Input Devices', false);
+			this.setPageShow('Output Devices', false);
+		}
+	}
 }
 </script>
 

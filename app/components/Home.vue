@@ -26,12 +26,12 @@ export default class Home extends Vue {
 
 	// Computed
 	get inputDeviceName(): string {
-		let inputDevices: any = null; // this.cd.inputDevices;
+		// let inputDevices: any = this.cd.inputDevices;
 		return "None"; // inputDevices.selected_device || "None";
 	}
 
 	get outputDeviceName(): string {
-		let outputDevices: any = null; // this.cd.outputDevices;
+		// let outputDevices: any = null; // this.cd.outputDevices;
 		return "None"; // outputDevices.selected_device || "None";
 	}
 
