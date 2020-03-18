@@ -1,5 +1,5 @@
 <template>
-	<Page>
+	<Page @loaded="init">
 	<ActionBar>
 		<ActionItem>
 			<Label :text="menuText" class="fa menu-icon" @tap="toggleDrawer" />
@@ -30,6 +30,9 @@ import ConnectionDelegate from "../utils/ConnectionDelegate"
 export default class App extends Vue {
 
 	// Members
+	private bus: any = (this as any).$bus;
+	private cd: ConnectionDelegate = new ConnectionDelegate();
+	private initialized: boolean = false;
 	drawerIsOpen: boolean = false;
 	gesturesEnabled: boolean = false;
 	drawer = Drawer;
@@ -37,12 +40,28 @@ export default class App extends Vue {
 
 	constructor() {
 		super();
-		(this as any).$bus.App = this;
-		(this as any).$bus.cd = new ConnectionDelegate();
-		setTimeout(()=>(this as any).$bus.cd.checkBluetooth(), 1000);
+		this.bus.App = this;
+		this.bus.cd = this.cd;
 	}
 	
 	// Methods
+	async init(): Promise<void> {
+		if(this.initialized) return;
+
+		this.cd.init();
+		let UUID: string = appSettings.getString("UUID", "");
+		if( UUID == "" ) return;
+
+		if(this.cd.connectionStatus == "Connected") return;
+
+		await this.cd.scan(1);
+		let peripheral: any = {
+			'UUID': UUID
+		}
+		await this.cd.connect(peripheral);
+		this.initialized = true;
+	}
+
 	toggleDrawer(): void {
 		this.drawerIsOpen = !this.drawerIsOpen;
 	}
