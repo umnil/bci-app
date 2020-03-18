@@ -1,12 +1,13 @@
 import * as appSettings from 'tns-core-modules/application-settings';
 import * as dialogs from 'tns-core-modules/ui/dialogs';
-import WorkerDelegate from './workers/WorkerDelegate';
+import { BLEStream } from './blestream/BLEStream';
+// import WorkerDelegate from './workers/WorkerDelegate';
 
 export default class ConnectionDelegate {
 
 	// Class Properties
-	// private bluetooth: BLEStream = new BLEStream();
-	private bluetoothWorker: WorkerDelegate = new WorkerDelegate();
+	private bluetooth: BLEStream = new BLEStream();
+	// private bluetoothWorker: WorkerDelegate = new WorkerDelegate();
 
 	// Connection States
 	private initialized: boolean = false;
@@ -17,12 +18,10 @@ export default class ConnectionDelegate {
 	private isNotifying: boolean = false;
 
 	// collections
-	scannedDevices: any[] = [];
-	device_settings: any = {};
-	workerIDs: string[] = [];
+	scannedPeripherals: any[] = [];
 
 	// Values
-	selectedDevice: any = {};
+	selectedPeripheral: any = {};
 	peripheralUUID: string = '';
 
 	// BLE Service and Characteristic UUIDs
@@ -43,11 +42,11 @@ export default class ConnectionDelegate {
 	}
 
 	async checkBluetooth(): Promise<boolean> {
-		let enabled: boolean = false; // await this.bluetoothWorker.awaitJob('isBluetoothEnabled', []);
+		let enabled: boolean = await this.bluetooth.isBluetoothEnabled();
 
 		while(!enabled) {
 			await dialogs.alert("Your bluetooth device is off. Please turn it on.");
-			//enabled = await this.bluetooth.isBluetoothEnabled();
+			enabled = await this.bluetooth.isBluetoothEnabled();
 		}
 		return true;
 	}
@@ -59,19 +58,19 @@ export default class ConnectionDelegate {
 
 		let handleDiscovery = (peripheral) => {
 			this.log(peripheral);
-			let potentialDevice = this.scannedDevices.filter( device => device['UUID']==peripheral['UUID'] );
-			let deviceFound = potentialDevice.length > 0;
-			if ( !deviceFound ) {
+			let potentialPeripheral = this.scannedPeripherals.filter( device => device['UUID']==peripheral['UUID'] );
+			let peripheralFound = potentialPeripheral.length > 0;
+			if ( !peripheralFound ) {
 				peripheral['name'] = peripheral['name'] ? peripheral['name'] : 'Unknown';
-				this.scannedDevices.push(peripheral);
+				this.scannedPeripherals.push(peripheral);
 			}
 			else {
-				let device = potentialDevice[0];
-				let deviceIndex = this.scannedDevices.indexOf(device);
-				this.scannedDevices[deviceIndex] = peripheral;
-				this.scannedDevices[deviceIndex]['name'] = this.scannedDevices[deviceIndex]['name'] ? this.scannedDevices[deviceIndex]['name'] : 'Unknown';
+				let curPeripheral = potentialPeripheral[0];
+				let peripheralIndex = this.scannedPeripherals.indexOf(curPeripheral);
+				this.scannedPeripherals[peripheralIndex] = peripheral;
+				this.scannedPeripherals[peripheralIndex]['name'] = this.scannedPeripherals[peripheralIndex]['name'] ? this.scannedPeripherals[peripheralIndex]['name'] : 'Unknown';
 			}
-			this.scannedDevices.sort( (a, b) => b['RSSI'] - a['RSSI'] );
+			this.scannedPeripherals.sort( (a, b) => b['RSSI'] - a['RSSI'] );
 		};
 
 		let scanningOptions = {
@@ -82,14 +81,14 @@ export default class ConnectionDelegate {
 
 		let scanSuccessful: Promise < boolean > = new Promise < boolean > ((resolve) => {
 			this.log('bluetooth.startScanning');
-			// this.bluetooth.startScanning(scanningOptions).then(
-			// 	(result) => {
-			// 		resolve(true);
-			// 	},
-			// 	async function(err) {
-			// 		await dialogs.alert(`Failed to scan: ${err}`);
-			// 		resolve(false);
-			// 	});
+			this.bluetooth.startScanning(scanningOptions).then(
+				(result) => {
+					resolve(true);
+				},
+				async function(err) {
+					await dialogs.alert(`Failed to scan: ${err}`);
+					resolve(false);
+				});
 		});
 		let result: boolean = await scanSuccessful;
 		this.isScanning = false;
@@ -106,13 +105,13 @@ export default class ConnectionDelegate {
 			this.log(peripheral);
 			this.log('Connected');
 
-			this.selectedDevice = peripheral;
+			this.selectedPeripheral = peripheral;
 			this.isConnected = true;
 			done = true;
 		};
 
 		let handleDisconnection = () => {
-			this.selectedDevice = {};
+			this.selectedPeripheral = {};
 			this.log('Disconnected');
 			this.isConnected = false;
 			done = true;
@@ -125,7 +124,7 @@ export default class ConnectionDelegate {
 		};
 
 		this.log(`Connecting...`);
-		//await this.bluetooth.connect(connectData);
+		await this.bluetooth.connect(connectData);
 
 		while (!done) {
 			await new Promise<void>(resolve => setTimeout(resolve, 10))
@@ -134,7 +133,7 @@ export default class ConnectionDelegate {
 		appSettings.setString("UUID", peripheral['UUID']);
 
 		// Now check for appropriate services
-		let services: any[] = this.selectedDevice.services;
+		let services: any[] = this.selectedPeripheral.services;
 		let ecoglinkService: any[] = services.filter(s => {
 			this.log(s.UUID);
 			return s.UUID == this.target_service_UUID
@@ -149,9 +148,9 @@ export default class ConnectionDelegate {
 	}
 
 	async disconnect(): Promise<boolean> {
-		this.log(this.selectedDevice);
+		this.log(this.selectedPeripheral);
 		let connectionOptions = {
-			UUID: this.selectedDevice['UUID']
+			UUID: this.selectedPeripheral['UUID']
 		};
 
 		let disconnect: Promise<boolean> = new Promise<boolean>((resolve) => {
@@ -193,7 +192,7 @@ export default class ConnectionDelegate {
 		this.log("Calling for data update");
 		//await this.stream.receiver(result, this.deviceSettingOptions);
 		//this.device_settings = this.stream.data;
-		this.log(`UPDATE: ${this.device_settings}`)
+		// this.log(`UPDATE: ${this.device_settings}`)
 	}
 
 	getInitialValue(): void {
@@ -228,17 +227,23 @@ export default class ConnectionDelegate {
 		return this.isConnected ? "Connected" : "Disconnected";
 	}
 
-	ecoglinkAvailableStatus(): string {
+	get ecoglinkAvailableStatus(): string {
 		return this.isEcoglinkAvailable ? "Available" : "Unavailable";
 	}
 	
-	notifyStatus(): string {
+	get notifyStatus(): string {
 		return this.isNotifying ? "Notyfing" : "Not Notifying";
+	}
+
+	get status(): string {
+		if(this.isScanning) return this.scanningStatus;
+		else if(this.isConnecting) return this.connectingStatus;
+		else return this.connectionStatus;
 	}
 
 	get serviceDeviceOptions(): any {
 		let sco: any = {
-			'peripheralUUID': this.selectedDevice['UUID'],
+			'peripheralUUID': this.selectedPeripheral['UUID'],
 			'serviceUUID': this.target_service_UUID,
 		};
 		return sco;
@@ -267,9 +272,9 @@ export default class ConnectionDelegate {
 
 	get outputDevices(): any {
 		let result: any = {};
-		if(this.device_settings.hasOwnProperty('outputdevices')) {
-			result = this.device_settings['outputdevices'];
-		}
+		// if(this.device_settings.hasOwnProperty('outputdevices')) {
+		// 	result = this.device_settings['outputdevices'];
+		// }
 		return result
 	}
 
