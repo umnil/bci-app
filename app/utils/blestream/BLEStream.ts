@@ -25,6 +25,8 @@ export class BLEStream extends Bluetooth {
 		this.chunkSize = chunkSize;
 	}
 
+	log: (message: any) => void = console.log.bind(console, 'BLEStream: ');
+
 	async streamRead(readOptions: ReadOptions): Promise<ReadResult> {
 
 		let requestID: string = this.requestQueue.addRequest(readOptions);
@@ -54,10 +56,11 @@ export class BLEStream extends Bluetooth {
 	private async executeStreamRead(id: string): Promise<ReadResult> {
 		
 		let readRequest: ReadRequest = <ReadRequest>this.requestQueue.getRequest(id);
+		this.log(`readRequest: ${readRequest}`);
 		let readResult: ReadResult = await this.read(<ReadOptions>readRequest);
 
-		if(readRequest.transmitting) this.recvData(readRequest, readResult);
-		else this.recvSize(readRequest, readResult);
+		if(readRequest.transmitting) await this.recvData(readRequest, readResult);
+		else await this.recvSize(readRequest, readResult);
 
 		// We're finished with this request, pop it off the stack
 		this.requestQueue.popReadQueue;
@@ -87,6 +90,7 @@ export class BLEStream extends Bluetooth {
 
 		let transmission: Transmission = this.dataUtil.data2object(result.value);
 		let msg: string = transmission['msg'];
+		this.log(msg);
 		
 		if(msg != 'SIZE') return;
 
@@ -121,6 +125,7 @@ export class BLEStream extends Bluetooth {
 	private async recvData(readRequest: ReadRequest, result: ReadResult): Promise<void> {
 		let transmission: Transmission = this.dataUtil.data2object(result.value);
 		let msg: string = transmission['msg'];
+		this.log(msg);
 
 		if(msg != 'DATA') return;
 
@@ -130,6 +135,9 @@ export class BLEStream extends Bluetooth {
 
 		let remainingBytes: number = readRequest.result.byteLength - (readRequest as any).pointer;
 
+		this.log(`requestLength: ${readRequest.result.byteLength}`);
+		this.log(`pointer: ${(readRequest as any).pointer}`);
+		this.log(`Remaining Bytes: ${remainingBytes}`)
 		if(remainingBytes > 0) {
 			await this.executeStreamRead(readRequest.id);
 			return;
