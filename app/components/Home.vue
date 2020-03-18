@@ -26,13 +26,13 @@ export default class Home extends Vue {
 
 	// Computed
 	get inputDeviceName(): string {
-		// let inputDevices: any = this.cd.inputDevices;
-		return "None"; // inputDevices.selected_device || "None";
+		let inputDevices: any = this.cd.inputDevices;
+		return this.cd.inputDevices.selected_device || "None";
 	}
 
 	get outputDeviceName(): string {
-		// let outputDevices: any = null; // this.cd.outputDevices;
-		return "None"; // outputDevices.selected_device || "None";
+		let outputDevices: any = null; // this.cd.outputDevices;
+		return this.cd.outputDevices.selected_device || "None";
 	}
 
 	get inputDeviceText(): string {
@@ -42,20 +42,6 @@ export default class Home extends Vue {
 	get outputDeviceText(): string {
 		return `Output Device: ${this.outputDeviceName}`;
 	}
-
-	//@Watch("cd.device_settings")
-	//updateDevices(): void {
-	//	let devices: any = this.cd.device_settings;
-	//	if(devices.hasOwnProperty('inputdevices')) {
-	//		let inputdevices: any = devices.inputdevices;
-	//		this.inputDeviceName = inputdevices.selected_device;
-	//	}
-
-	//	if(devices.hasOwnProperty('outputdevices')) {
-	//		let outputdevices: any = devices.outputdevices;
-	//		this.outputDeviceName = outputdevices.selected_device;
-	//	}
-	//}
 }
 </script>
 
