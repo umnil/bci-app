@@ -29,6 +29,7 @@ export default class Inputs extends Vue {
 	marker: string = String.fromCharCode(0xf00c);
 	settings_symbol: string = String.fromCharCode(0xf013);
 	selected_device_setting: string = "";
+	devices: any[] = [];
 
 	// Methods
 	constructor() {
@@ -51,7 +52,7 @@ export default class Inputs extends Vue {
 	}
 
 	loadDevices(): void {
-		// this.getInputDevices();
+		this.getInputDevices();
 	}
 
 	setInputDeviceData(): void {
@@ -83,8 +84,10 @@ export default class Inputs extends Vue {
 		});
 	}
 
-	get devices() {
-		return this.cd.inputDevices || [];
+	@Watch('cd.inputDevices')
+	getInputDevices(): void {
+		let inputDevices: any = this.cd.inputDevices;
+		this.devices = inputDevices.devices || [];
 	}
 }
 </script>
