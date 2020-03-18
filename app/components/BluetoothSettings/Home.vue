@@ -5,9 +5,9 @@
 		<StackLayout class="status">
 			<Label :text="getStatusText" />
 			<StackLayout v-if="cd.isConnected">
-				<Label :text="getDeviceName" />
-				<Label :text="getUUID" />
-				<Label :text="getLinkState" />
+				<Label :text="getPeripheralName" />
+				<Label :text="getPeripheralUUID" />
+				<Label :text="getPeripheralLinkState" />
 			</StackLayout>
 		</StackLayout>
 		<StackLayout class="action-panel" horizontalAlignment="left">
@@ -44,7 +44,7 @@ export default class BluetoothSettings extends Vue {
 	}
 
 	async disconnect(): Promise<void> {
-		// await this.cm.disconnect();
+		await this.cd.disconnect();
 	}
 
 	// Computed
@@ -52,20 +52,20 @@ export default class BluetoothSettings extends Vue {
 		return `Status: ${this.status}`;
 	}
 
-	get getUUID(): string {
-		return `UUID: `; // this.cm.selectedDevice.UUID};
+	get getPeripheralUUID(): string {
+		return `UUID: ${this.cd.selectedPeripheral.UUID}`;
 	}
 
-	get getDeviceName(): string {
-		return `Device Name: `; //this.cm.selectedDevice.name};
+	get getPeripheralName(): string {
+		return `Device Name: ${this.cd.selectedPeripheral.name}`;
 	}
 
-	get getLinkState(): string {
-		return `Interface Status: `; // this.cm.ecoglinkStatus};
+	get getPeripheralLinkState(): string {
+		return `Interface Status: ${this.cd.ecoglinkAvailableStatus}`;
 	}
 	
 	get status(): string {
-		return ''; // this.cm.status;
+		return this.cd.status;
 	}
 }
 </script>
