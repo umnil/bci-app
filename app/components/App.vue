@@ -48,7 +48,7 @@ export default class App extends Vue {
 	async init(): Promise<void> {
 		if(this.initialized) return;
 
-		this.cd.init();
+		await this.cd.init();
 		let UUID: string = appSettings.getString("UUID", "");
 		if( UUID == "" ) return;
 

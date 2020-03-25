@@ -1,6 +1,6 @@
 <template>
 	<StackLayout>
-		<StackLayout v-for="(page, i) in pages" :key="i" orientation="horizontal" class="drawer-item" v-show="page.show" @tap="goTo(page.component)">
+		<StackLayout v-for="(page, i) in pages" :key="i" orientation="horizontal" class="drawer-item" v-show="page.show" @tap="goTo(page)">
 			<Label class="fa drawer-icon" :text="page.icon" />
 			<Label class="drawer-text" :text="page.name" />
 		</StackLayout>
@@ -12,8 +12,7 @@ import { Vue, Component, Prop, Watch, Mixins} from 'vue-property-decorator';
 import App from './App';
 import Home from './Home';
 import BluetoothSettings from './BluetoothSettings/Home';
-import Inputs from './Inputs';
-import Outputs from './Outputs';
+import DeviceList from './DeviceList';
 import ConnectionDelegate from "../utils/ConnectionDelegate";
 
 @Component
@@ -32,13 +31,13 @@ export default class Drawer extends Vue {
 		{
 			name: 'Input Devices',
 			icon: String.fromCharCode(0xf0ad),
-			component: Inputs,
+			component: DeviceList,
 			show: false
 		},
 		{
 			name: 'Output Devices',
 			icon: String.fromCharCode(0xf0ad),
-			component: Outputs,
+			component: DeviceList,
 			show: false
 		}
 	];
@@ -49,8 +48,10 @@ export default class Drawer extends Vue {
 		this.bus.Drawer = this;
 	}
 
-	goTo(component: Vue) {
-		(this as any).$navigateTo(component);
+	goTo(page: any) {
+		this.bus.listSet = page.name.split(' ')[0];
+		console.log((this as any).$bus.listSet);
+		(this as any).$navigateTo(page.component);
 		this.bus.App.toggleDrawer();
 	}
 

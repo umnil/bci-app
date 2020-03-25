@@ -17,14 +17,16 @@
 
 <script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator';
+import ConnectionDelegate from '../utils/ConnectionDelegate';
 import DeviceSettings from './DeviceSettings';
 
 @Component
 export default class DeviceList extends Vue {
 
 	// Members
-	listSet: string = "";  // Input or Output
-	bus: any = (this as any).$bus;
+	private listSet: string = "";  // Input or Output
+	private bus: any = (this as any).$bus;
+	private cd: ConnectionDelegate = this.bus.cd;
 	selection_marker: string = String.fromCharCode(0xf00c);
 	settings_symbol: string = String.fromCharCode(0xf013);
 	selected_device_setting: string = "";
@@ -33,16 +35,11 @@ export default class DeviceList extends Vue {
 	// Methods
 	constructor() {
 		super();
-		if(this.listSet == "") {
-			throw "Cannot create this component without a defined list set";
-		}
-
-		this.bus[`${this.listSet}s`] = this;
 	}
 
 	toSettings(device: any): void {
 		this.bus.settings_selected_device = device.device_name;
-		this.bus.settings_io = `${this.listSet.tolowercase()}devices`;
+		this.bus.settings_io = `${this.listSet.toLowerCase()}devices`;
 		(this as any).$navigateTo(DeviceSettings);
 	}
 
@@ -54,6 +51,12 @@ export default class DeviceList extends Vue {
 	}
 
 	loadDevices(): void {
+		this.getListSet();
+		if(this.listSet == "") {
+			throw "Cannot create this component without a defined list set";
+		}
+
+		this.bus[`${this.listSet}s`] = this;
 		this.getDevices();
 	}
 
@@ -71,19 +74,25 @@ export default class DeviceList extends Vue {
 		return `${this.listSet} Devices`;
 	}
 
+	get deviceIndex(): string {
+		return `${this.listSet}Devices`;
+	}
+
 	get selected_device(): string {
 		// call to worker func
-		let devices: any = null; // this.cd.inputDevices;
+		let devices: any = this.cd[this.deviceIndex];
+		console.log(devices);
 		return devices.selected_device || "None";
 	}
 
 	set selected_device(name: string) {
 		// Call to worker func
-		let devices: any = null; // this.cd.inputDevices;
+		let devices: any = this.cd[this.deviceIndex];
+		console.log(devices);
 		let check: any = devices.selected_device || null;
 		if(check == null) return;
 		// Call to worker func
-		// this.cd.inputDevices.selected_device = name;
+		this.cd[this.deviceIndex].selected_device = name;
 	}
 
 	// Computed
@@ -95,10 +104,16 @@ export default class DeviceList extends Vue {
 		});
 	}
 
+	@Watch("bus.listSet")
+	getListSet(): void {
+		this.listSet = (this as any).$bus.listSet;
+		console.log(`listSet: ${this.listSet}`);
+	}
+
 	@Watch("cd.device_settings")
 	getDevices(): void {
 		// call to worker func
-		let devices: any = null; // this.cd.inputDevices;
+		let devices: any = this.listSet == "Input" ? this.cd.inputDevices : this.cd.outputDevices;
 		console.log(`${this.listSet.toUpperCase()}S: ${devices.devices}`);
 		this.devices = devices.devices || [];
 	}
