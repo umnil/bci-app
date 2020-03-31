@@ -5,7 +5,7 @@
 			<ListView ref="deviceList" for="device in devices" height="100%">
 				<v-template>
 					<StackLayout orientation="horizontal" width="100%">
-						<Label :class="selectionclass(device.device_name)" :text="marker" />
+						<Label :class="selectionclass(device.device_name)" :text="selection_marker" />
 						<Label class="device-listing" :text="device.device_name" @tap="select(device)"/>
 						<Label class="fa settings" :text="settings_symbol" @tap="toSettings(device)" />
 					</StackLayout>
@@ -46,7 +46,7 @@ export default class DeviceList extends Vue {
 	select(device: any): void {
 		console.log(`Selected: ${device.device_name}`);
 		this.selected_device = device.device_name;
-		this.setSettings();
+		this.setDevice();
 		(this.$refs.deviceList as any).refresh();
 	}
 
@@ -60,13 +60,12 @@ export default class DeviceList extends Vue {
 		this.getDevices();
 	}
 
-	setSettings(): void {
-		let settings: any = {
+	setDevice(): void {
+		let deviceData: any = {
 			'selected_device': this.selected_device,
 			'devices': this.devices
 		}
-		// this.cd.setInputSettings(inputSettings);
-		// Call to worker function
+		this.cd[`set${this.listSet}DeviceData`](deviceData);
 	}
 
 	// Computed Properties
@@ -75,23 +74,16 @@ export default class DeviceList extends Vue {
 	}
 
 	get deviceIndex(): string {
-		return `${this.listSet}Devices`;
+		return `${this.listSet.toLowerCase()}Devices`;
 	}
 
 	get selected_device(): string {
 		// call to worker func
 		let devices: any = this.cd[this.deviceIndex];
-		console.log(devices);
 		return devices.selected_device || "None";
 	}
 
 	set selected_device(name: string) {
-		// Call to worker func
-		let devices: any = this.cd[this.deviceIndex];
-		console.log(devices);
-		let check: any = devices.selected_device || null;
-		if(check == null) return;
-		// Call to worker func
 		this.cd[this.deviceIndex].selected_device = name;
 	}
 
