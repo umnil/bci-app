@@ -24,53 +24,58 @@ import * as dialogs from 'tns-core-modules/ui/dialogs';
 import Drawer from './Drawer.vue';
 import Home from './Home.vue';
 import * as appSettings from 'tns-core-modules/application-settings';
-import connectionDelegate from "../utils/ConnectionDelegate";
+import ConnectionDelegate from "../utils/ConnectionDelegate"
 
 @Component
 export default class App extends Vue {
 
 	// Members
-	initialized: boolean = false;
+	private bus: any = (this as any).$bus;
+	private cd: ConnectionDelegate = new ConnectionDelegate();
+	private initialized: boolean = false;
 	drawerIsOpen: boolean = false;
 	gesturesEnabled: boolean = false;
+	drawer = Drawer;
+	home = Home;
 
 	constructor() {
 		super();
-		(this as any).$bus.App = this;
+		this.bus.App = this;
+		this.bus.cd = this.cd;
+	}
+	
+	// Methods
+	async init(): Promise<void> {
+		this.cd.checkBluetooth();
+		if(this.initialized) return;
+
+		await this.cd.init();
+		let UUID: string = appSettings.getString("UUID", "");
+		if( UUID == "" ) return;
+
+		if(this.cd.connectionStatus == "Connected") return;
+
+		await this.cd.scan(1);
+		let peripheral: any = {
+			'UUID': UUID
+		}
+		await this.cd.connect(peripheral);
+		this.initialized = true;
 	}
 
-	// Components
-	drawer = Drawer;
-	home = Home;
+	toggleDrawer(): void {
+		this.drawerIsOpen = !this.drawerIsOpen;
+	}
 
 	// Computed Properties
 	get drawerElement() {
 		return (this.$refs && this.$refs.drawer) || null;
 	}
+
 	get menuText(): string {
 		let bars: string = String.fromCharCode(0xf0c9);
 		let x: string = String.fromCharCode(0xf00d);
 		return this.drawerIsOpen ? x : bars
-	}
-
-	// Methods
-	toggleDrawer(): void {
-		this.drawerIsOpen = !this.drawerIsOpen;
-	}
-
-	async init(): Promise<void> {
-		if(this.initialized) return;
-		let UUID: string = appSettings.getString("UUID", "");
-		if( UUID == "" ) return;
-
-		if(connectionDelegate.isConnected) return;
-
-		await connectionDelegate.scan(1);
-		let peripheral: any = {
-			'UUID': UUID
-		}
-		await connectionDelegate.connect(peripheral);
-		this.initialized = true;
 	}
 
 	// Watches

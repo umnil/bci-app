@@ -1,11 +1,11 @@
 <template>
 	<Page @loaded="loadDevices">
-		<ActionBar title="Input Devices" />
+		<ActionBar :title="title" />
 		<StackLayout>
 			<ListView ref="deviceList" for="device in devices" height="100%">
 				<v-template>
 					<StackLayout orientation="horizontal" width="100%">
-						<Label :class="selectionclass(device.device_name)" :text="marker" />
+						<Label :class="selectionclass(device.device_name)" :text="selection_marker" />
 						<Label class="device-listing" :text="device.device_name" @tap="select(device)"/>
 						<Label class="fa settings" :text="settings_symbol" @tap="toSettings(device)" />
 					</StackLayout>
@@ -17,16 +17,17 @@
 
 <script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator';
-import connectionDelegate from '../utils/ConnectionDelegate';
+import ConnectionDelegate from '../utils/ConnectionDelegate';
 import DeviceSettings from './DeviceSettings';
 
 @Component
-export default class Inputs extends Vue {
+export default class DeviceList extends Vue {
 
-	// Data
-	cd: any = connectionDelegate;
-	bus: any = (this as any).$bus;
-	marker: string = String.fromCharCode(0xf00c);
+	// Members
+	private listSet: string = "";  // Input or Output
+	private bus: any = (this as any).$bus;
+	private cd: ConnectionDelegate = this.bus.cd;
+	selection_marker: string = String.fromCharCode(0xf00c);
 	settings_symbol: string = String.fromCharCode(0xf013);
 	selected_device_setting: string = "";
 	devices: any[] = [];
@@ -34,44 +35,56 @@ export default class Inputs extends Vue {
 	// Methods
 	constructor() {
 		super();
-		this.bus.Inputs = this;
 	}
 
 	toSettings(device: any): void {
 		this.bus.settings_selected_device = device.device_name;
-		this.bus.settings_io = "inputdevices";
+		this.bus.settings_io = `${this.listSet.toLowerCase()}Devices`;
 		(this as any).$navigateTo(DeviceSettings);
 	}
 
 	select(device: any): void {
 		console.log(`Selected: ${device.device_name}`);
 		this.selected_device = device.device_name;
-		this.setInputSettings();
+		this.setDevice();
 		(this.$refs.deviceList as any).refresh();
 	}
 
 	loadDevices(): void {
-		this.getInputDevices();
+		this.getListSet();
+		if(this.listSet == "") {
+			throw "Cannot create this component without a defined list set";
+		}
+
+		this.bus[`${this.listSet}s`] = this;
+		this.getDevices();
 	}
 
-	setInputSettings(): void {
-		let inputSettings: any = {
+	setDevice(): void {
+		let deviceData: any = {
 			'selected_device': this.selected_device,
 			'devices': this.devices
 		}
-		this.cd.setInputSettings(inputSettings);
+		this.cd[`set${this.listSet}DeviceData`](deviceData);
+	}
+
+	// Computed Properties
+	get title(): string {
+		return `${this.listSet} Devices`;
+	}
+
+	get deviceIndex(): string {
+		return `${this.listSet.toLowerCase()}Devices`;
 	}
 
 	get selected_device(): string {
-		let inputDevices: any = this.cd.inputDevices;
-		return inputDevices.selected_device || "None";
+		// call to worker func
+		let devices: any = this.cd[this.deviceIndex];
+		return devices.selected_device || "None";
 	}
 
 	set selected_device(name: string) {
-		let inputDevices: any = this.cd.inputDevices;
-		let check: any = inputDevices.selected_device || null;
-		if(check == null) return;
-		this.cd.inputDevices.selected_device = name;
+		this.cd[this.deviceIndex].selected_device = name;
 	}
 
 	// Computed
@@ -83,11 +96,18 @@ export default class Inputs extends Vue {
 		});
 	}
 
+	@Watch("bus.listSet")
+	getListSet(): void {
+		this.listSet = (this as any).$bus.listSet;
+		console.log(`listSet: ${this.listSet}`);
+	}
+
 	@Watch("cd.device_settings")
-	getInputDevices(): void {
-		let inputDevices: any = this.cd.inputDevices;
-		console.log(`INPUTS: ${inputDevices.devices}`);
-		this.devices = inputDevices.devices || [];
+	getDevices(): void {
+		// call to worker func
+		let devices: any = this.listSet == "Input" ? this.cd.inputDevices : this.cd.outputDevices;
+		console.log(`${this.listSet.toUpperCase()}S: ${devices.devices}`);
+		this.devices = devices.devices || [];
 	}
 }
 </script>

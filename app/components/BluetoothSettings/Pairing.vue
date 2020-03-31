@@ -4,12 +4,12 @@
 		<ActivityIndicator row="1" :busy="isScanning" />
 		<ScrollView orientation="vertical" width="100%">
 			<StackLayout row="0" width="100%">
-				<StackLayout class="device-listing" v-for="(device, i) in cm.scannedDevices" :key="i" @tap="connect(device)">
+				<StackLayout class="peripheral-listing" v-for="(peripheral, i) in cd.scannedPeripherals" :key="i" @tap="connect(peripheral)">
 					<StackLayout orientation="horizontal" width="100%">
-						<Label :text="device.name" />
-						<ActivityIndicator :class="displayProgress(device)" :busy="isConnecting" />
+						<Label :text="peripheral.name" />
+						<ActivityIndicator :class="displayProgress(peripheral)" :busy="isConnecting" />
 					</StackLayout>
-					<Label class="device-details" :text="device.UUID" />
+					<Label class="peripheral-details" :text="peripheral.UUID" />
 				</StackLayout>
 			</StackLayout>
 		</ScrollView>
@@ -21,22 +21,28 @@ import { EventData } from "tns-core-modules/data/observable";
 import { Frame } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { Vue, Component, Watch} from 'vue-property-decorator';
-import connectionDelegate from '../../utils/ConnectionDelegate';
+import ConnectionDelegate from '../../utils/ConnectionDelegate';
 import BTHome from './Home.vue';
 
 @Component
 export default class BluetoothPairing extends Vue {
 
 	// Members
-	cm = connectionDelegate;
-	nav: any = (this as any).$navigateTo;
-	selected_device: any = null;
+	private bus: any = (this as any).$bus;
+	private nav: any = (this as any).$navigateTo;
+	cd: ConnectionDelegate;
+	selected_peripheral: string = null;
 
 	// Methods
+	constructor() {
+		super();
+		this.cd = this.bus.cd;
+	}
+
 	async startScan(args: EventData): Promise<void> {
-		this.selected_device = null;
+		this.selected_peripheral = null;
 		const page: Page = args.object as Page;
-		let result: boolean = await this.cm.scan();
+		let result: boolean = await this.cd.scan();
 
 		if(!result) {
 		 	page.frame.goBack();	
@@ -44,25 +50,24 @@ export default class BluetoothPairing extends Vue {
 	}
 
 	async connect(peripheral: any): Promise<void> {
-		if(this.cm.isConnecting) return;
-		this.selected_device = peripheral.name;
-		let connected: boolean = await this.cm.connect(peripheral);
-		Frame.topmost().goBack();
+		this.selected_peripheral = peripheral.UUID;
+		let connected: boolean = await this.cd.connect(peripheral);
+		if(connected) Frame.topmost().goBack();
 	}
 
 	// Computed
 	get isScanning(): boolean {
-		return this.cm.status == "Scanning";
+		return this.cd.scanningStatus == "Scanning";
 	}
 
 	get isConnecting(): boolean {
-		return this.cm.isConnecting;
+		return this.cd.connectingStatus == "Connecting";
 	}
 
 	get displayProgress(): any {
-		return device => ({
+		return peripheral => ({
 			"activity-icon": true,
-			"invisible": device.name != this.selected_device
+			"invisible": peripheral.UUID != this.selected_peripheral
 		});
 	}
 }
@@ -70,14 +75,14 @@ export default class BluetoothPairing extends Vue {
 
 <style lang="scss" scoped>
 
-.device-listing {
+.peripheral-listing {
 	font-size: 20px;
 	padding: 20px;
 	border-width: 2px 0px;
 	border-bottom-color: gray;
 }
 
-.device-details {
+.peripheral-details {
 	font-color: #444444;
 	font-size: 12px;
 }

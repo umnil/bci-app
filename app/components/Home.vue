@@ -9,23 +9,30 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import connectionDelegate from '../utils/ConnectionDelegate';
+import ConnectionDelegate from '../utils/ConnectionDelegate';
 
 @Component
 export default class Home extends Vue {
 
 	// Data
-	cd: any = connectionDelegate;
+	private bus: any = (this as any).$bus;
+	private cd: ConnectionDelegate;
+
+	// Methods
+	constructor() {
+		super();
+		this.cd = this.bus.cd;
+	}
 
 	// Computed
 	get inputDeviceName(): string {
 		let inputDevices: any = this.cd.inputDevices;
-		return inputDevices.selected_device || "None";
+		return this.cd.inputDevices.selected_device || "None";
 	}
 
 	get outputDeviceName(): string {
-		let outputDevices: any = this.cd.outputDevices;
-		return outputDevices.selected_device || "None";
+		let outputDevices: any = null; // this.cd.outputDevices;
+		return this.cd.outputDevices.selected_device || "None";
 	}
 
 	get inputDeviceText(): string {
@@ -35,20 +42,6 @@ export default class Home extends Vue {
 	get outputDeviceText(): string {
 		return `Output Device: ${this.outputDeviceName}`;
 	}
-
-	//@Watch("cd.device_settings")
-	//updateDevices(): void {
-	//	let devices: any = this.cd.device_settings;
-	//	if(devices.hasOwnProperty('inputdevices')) {
-	//		let inputdevices: any = devices.inputdevices;
-	//		this.inputDeviceName = inputdevices.selected_device;
-	//	}
-
-	//	if(devices.hasOwnProperty('outputdevices')) {
-	//		let outputdevices: any = devices.outputdevices;
-	//		this.outputDeviceName = outputdevices.selected_device;
-	//	}
-	//}
 }
 </script>
 
