@@ -21,7 +21,6 @@ import { Switch } from 'tns-core-modules/ui/Switch';
 import { Page } from 'tns-core-modules/ui/Page';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
-const WorkerScript = require('nativescript-worker-loader!../utils/workers/ble.ts');
 
 @Component
 export default class DeviceSettings extends Vue {
@@ -32,7 +31,7 @@ export default class DeviceSettings extends Vue {
 	_settings: any[] = [];
 	settingComponents: object = {};
 	test: number = 0;
-	worker: any = new WorkerScript();
+	// worker: any = new WorkerScript();
 
 	// Methods
 	constructor() {
