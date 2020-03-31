@@ -46,6 +46,7 @@ export default class App extends Vue {
 	
 	// Methods
 	async init(): Promise<void> {
+		this.cd.checkBluetooth();
 		if(this.initialized) return;
 
 		await this.cd.init();
