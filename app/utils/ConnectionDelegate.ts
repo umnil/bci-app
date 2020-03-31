@@ -35,7 +35,6 @@ export default class ConnectionDelegate {
 	async init(): Promise<void> {
 		if(this.initialized) return;
 		this.initialized = true;
-		await this.checkBluetooth();
 		await this.scan();
 	}
 
@@ -45,7 +44,7 @@ export default class ConnectionDelegate {
 		let enabled: boolean = await this.bluetooth.isBluetoothEnabled();
 
 		while(!enabled) {
-			await dialogs.alert("Your bluetooth device is off. Please turn it on.");
+			await dialogs.alert("Your bluetooth device may be off. Please turn it on.");
 			enabled = await this.bluetooth.isBluetoothEnabled();
 		}
 		return true;
@@ -191,18 +190,15 @@ export default class ConnectionDelegate {
 		await this.writeDeviceData();
 	}
 
-	async writeDeviceData(): Promise<void> {
-		let writeObj: any = this.standardRequestOptions;
-		writeObj['value'] = this.dataUtility.value2hex(this.device_data);
-		await this.bluetooth.streamWrite(writeObj);
+	async setOutputDeviceData(outputDeviceData: any): Promise<void> {
+		this.device_data.outputdevices = outputDeviceData;
+		await this.writeDeviceData();
 	}
 
-	// ======== OLD METHODS ==========
-
-
-	async setOutputSettings(outputDevices: any): Promise<void> {
-		//this.device_data.outputdevices = outputDevices;
-		//await this.writeDeviceSettings();
+	async writeDeviceData(): Promise<void> {
+		let writeObj: any = this.deviceSettingRequestOptions;
+		writeObj['value'] = this.dataUtility.value2hex(this.device_data);
+		await this.bluetooth.streamWrite(writeObj);
 	}
 
 	// Computed Properties
