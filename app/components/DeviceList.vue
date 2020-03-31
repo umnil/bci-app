@@ -39,7 +39,7 @@ export default class DeviceList extends Vue {
 
 	toSettings(device: any): void {
 		this.bus.settings_selected_device = device.device_name;
-		this.bus.settings_io = `${this.listSet.toLowerCase()}devices`;
+		this.bus.settings_io = `${this.listSet.toLowerCase()}Devices`;
 		(this as any).$navigateTo(DeviceSettings);
 	}
 
