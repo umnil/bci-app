@@ -1,5 +1,4 @@
 import { ReadOptions, WriteOptions } from 'nativescript-bluetooth';
-// import uuidv4 from 'uuidv4';
 
 export interface ReadRequest extends ReadOptions {
 	id: string;
@@ -21,7 +20,7 @@ export class RequestQueue {
 	private writeQueue: WriteRequest[] = [];
 
 	addRequest(readOptions: ReadOptions | WriteOptions): string {
-		let newUUID: string = ""; // uuidv4.uuid();
+		let newUUID: string = String(Math.round(Math.random()*36*100000));
 		let time: number = Date.now();
 		let request: ReadRequest | WriteRequest = <ReadRequest | WriteRequest>readOptions;
 		request.id = newUUID;
@@ -105,5 +104,6 @@ export class RequestQueue {
 		if(this.writeQueue.length < 1) return null;
 		return this.writeQueue[0];
 	}
-}
 
+	log: (message: any) => void = console.log.bind(console, 'RequestQueue: ');
+}
