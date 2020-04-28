@@ -22,6 +22,7 @@ import { Switch } from 'tns-core-modules/ui/Switch';
 import { Page } from 'tns-core-modules/ui/Page';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
+import Calibrate from './Calibrate';
 
 @Component
 export default class DeviceSettings extends Vue {
@@ -50,6 +51,16 @@ export default class DeviceSettings extends Vue {
 		this.settingComponents[settingName] = value;
 	}
 
+	switchValue(args): void {
+		let input: any = args.object;
+		let settingName: string = input.id;
+		let settingType: string = this.getSettingByName(settingName).type;
+		this.settingComponents[settingName] = !this.settingComponents[settingName];
+		if(this.settingComponents[settingName] == true) {
+			if(settingName == 'calibrating') this.startCalibration();
+		}
+	}
+
 	setting2attrs(setting: any): string {
 		let reservedValues: string[] = [
 			'type',
@@ -70,7 +81,7 @@ export default class DeviceSettings extends Vue {
 		};
 
 		let processMap: any = {
-			Button: "",
+			Button: "switchValue($event)",
 			TextField: "onChange($event)",
 			Slider: "onChange($event)"
 		}
@@ -123,6 +134,14 @@ export default class DeviceSettings extends Vue {
 		this.device_settings = this.settings;
 	}
 
+	startCalibration(): void {
+		// save settings
+		//this.saveSettings();
+
+		// navigate to the calibration screen
+		(this as any).$navigateTo(Calibrate);
+	}
+
 	// Computeds
 	get settingComponent(): any {
 		return (setting) => {
@@ -133,7 +152,8 @@ export default class DeviceSettings extends Vue {
 				template: template,
 				data: () => ({
 					value: setting.value,
-					onChange: this.onChange.bind(this)
+					onChange: this.onChange.bind(this),
+					switchValue: this.switchValue.bind(this)
 				}),
 			};
 			this.settingComponents[setting.name] = setting.value;
