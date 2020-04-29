@@ -30,7 +30,10 @@ export default class ConnectionDelegate {
 	target_service_UUID: string = "a07498ca-ad5b-474e-940d-16f1fbe7e8cd";
 	device_data_UUID: string = "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B";
 	notify_char_UUID: string = "E62A479C-5184-4AEE-B2D8-C4ADCED4E0F3";
+	calibration_char_UUID: string = "E58AC8E3-615A-45C4-A96B-590F64D3492A";
 
+	calibration_callback: (any)=>void;
+	
 	// Methods
 	async init(): Promise<void> {
 		if(this.initialized) return;
@@ -185,6 +188,11 @@ export default class ConnectionDelegate {
 		this.updateDeviceSettings(result);
 	}
 
+	handleCalibrationUpdate(result: ReadResult): void {
+		let data: any = this.dataUtility.arraybuffer2obj(result.value);
+		this.calibration_callback(data);
+	}
+
 	async setInputDeviceData(inputDevicesData: any): Promise<void> {
 		this.device_data.inputdevices = inputDevicesData;
 		await this.writeDeviceData();
@@ -199,6 +207,18 @@ export default class ConnectionDelegate {
 		let writeObj: any = this.deviceSettingRequestOptions;
 		writeObj['value'] = this.dataUtility.value2hex(this.device_data);
 		await this.bluetooth.streamWrite(writeObj);
+	}
+
+	async calibrationSubscribe(cb: (any)=>void): Promise<void> {
+		this.calibration_callback = cb;
+		let requestOptions: any = this.standardRequestOptions;
+		requestOptions['characteristicUUID'] = this.calibration_char_UUID;
+		requestOptions['onNotify'] = this.handleCalibrationUpdate.bind(this);
+		await this.bluetooth.startNotifying(requestOptions).then(()=>{
+			this.log("Calibration Subscribed!");
+		}, (err)=>{
+			this.log(`Calibration Subscription error: ${err}`);
+		});
 	}
 
 	// Computed Properties
