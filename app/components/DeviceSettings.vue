@@ -136,10 +136,15 @@ export default class DeviceSettings extends Vue {
 
 	startCalibration(): void {
 		// save settings
-		//this.saveSettings();
+		this.saveSettings();
 
 		// navigate to the calibration screen
 		(this as any).$navigateTo(Calibrate);
+	}
+
+	stopCalibrating(): void {
+		this.settingComponents['calibrating'] = false;
+		this.saveSettings();
 	}
 
 	// Computeds
