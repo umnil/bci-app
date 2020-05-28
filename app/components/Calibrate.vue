@@ -35,6 +35,11 @@ export default class Calibrate extends Vue {
 	}
 
 	recvCalibrationUpdate(new_value: any): void {
+		if(new_value == "END") {
+			(this as any).$navigateBack();
+			return this.stopCalibrating();
+		}
+
 		this.instruction = new_value;
 	}
 }
