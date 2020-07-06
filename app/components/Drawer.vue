@@ -64,7 +64,7 @@ export default class Drawer extends Vue {
 
 	@Watch("cd.notifyStatus")
 	updatePages() {
-		if(this.cd.notifyStatus == "Notifying") {
+		if(this.cd.notifyStatus == "Notifying" && this.cd.connectionStatus == "Connected") {
 			this.setPageShow('Input Devices', true);
 			this.setPageShow('Output Devices', true);
 		}

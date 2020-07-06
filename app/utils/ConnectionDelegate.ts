@@ -132,6 +132,9 @@ export default class ConnectionDelegate {
 			await new Promise<void>(resolve => setTimeout(resolve, 10))
 		}
 
+		// Now check that we succesfully connected
+		if(!this.isConnected) return false;
+
 		appSettings.setString("UUID", peripheral['UUID']);
 
 		// Now check for appropriate services
