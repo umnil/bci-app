@@ -57,7 +57,10 @@ export default class DeviceSettings extends Vue {
 		let settingType: string = this.getSettingByName(settingName).type;
 		this.settingComponents[settingName] = !this.settingComponents[settingName];
 		if(this.settingComponents[settingName] == true) {
-			if(settingName == 'calibrating') this.startCalibration();
+			if(
+				settingName == 'calibrating' ||
+				settingName == 'assessingAccuracy'
+			) this.startCalibration();
 		}
 	}
 
