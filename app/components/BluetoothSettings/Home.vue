@@ -10,10 +10,11 @@
 				<Label :text="getPeripheralLinkState" />
 			</StackLayout>
 		</StackLayout>
-		<StackLayout class="action-panel" horizontalAlignment="left">
-			<Button @tap="pair">Pair Devices</Button>
+		<StackLayout class="action-panel" horizontalAlignment="center">
+			<Button @tap="pair" text="Pair Devices" />
 			<StackLayout v-if="cd.isConnected">
-				<Button @tap="disconnect">Disconnect</Button>
+				<Button @tap="disconnect" text="Disconnect" />
+				<Button @tap="reconnect" text="Reconnect" />
 			</StackLayout>
 		</StackLayout>
 	</StackLayout>
@@ -47,6 +48,10 @@ export default class BluetoothSettings extends Vue {
 		await this.cd.disconnect();
 	}
 
+	reconnect(): void {
+		this.cd.connect(this.cd.selectedPeripheral);
+	}
+
 	// Computed
 	get getStatusText(): string {
 		return `Status: ${this.status}`;
@@ -72,17 +77,12 @@ export default class BluetoothSettings extends Vue {
 
 <style lang="scss" scoped>
 
-Button {
-	margin: 10px;
-}
-
 .status {
-	border-size: 2px;
+	border-width: 2px;
 	border-color: black;
 }
 
 .action-panel {
-	border-size: 2px;
-	border-color: black;
+	margin: 10px;
 }
 </style>

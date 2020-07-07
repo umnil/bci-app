@@ -6,10 +6,9 @@
 		<StackLayout>
 			<ListView ref="settingList" height="100%" for="setting in device_settings">
 				<v-template>
-					<GridLayout class="setting" rows="auto" columns="*">
-						<Label row="0" class="setting-text" :text="setting.display_name" />
-						<component :is="settingComponent(setting)" />
-						<!--<TextField id="n_values" horizontalAlignment="right" @returnPress="onChange" text="3" />-->
+					<GridLayout class="setting" rows="auto" columns="*, *, *" width="100%">
+						<Label col="0" colSpan="1" class="setting-text" :text="setting.display_name" />
+						<component col="1" colSpan="2" :is="settingComponent(setting)" />
 					</GridLayout>
 				</v-template>
 			</ListView>
@@ -23,6 +22,7 @@ import { Switch } from 'tns-core-modules/ui/Switch';
 import { Page } from 'tns-core-modules/ui/Page';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
+import Calibrate from './Calibrate';
 
 @Component
 export default class DeviceSettings extends Vue {
@@ -48,8 +48,17 @@ export default class DeviceSettings extends Vue {
 		let settingName: string = input.id;
 		let settingType: string = this.getSettingByName(settingName).type;
 		let value: any = input[valueMap[settingType]];
-		// console.log(`CHANGE! Name: ${settingName}, value: ${value}`);
 		this.settingComponents[settingName] = value;
+	}
+
+	switchValue(args): void {
+		let input: any = args.object;
+		let settingName: string = input.id;
+		let settingType: string = this.getSettingByName(settingName).type;
+		this.settingComponents[settingName] = !this.settingComponents[settingName];
+		if(this.settingComponents[settingName] == true) {
+			if(settingName == 'calibrating') this.startCalibration();
+		}
 	}
 
 	setting2attrs(setting: any): string {
@@ -66,12 +75,32 @@ export default class DeviceSettings extends Vue {
 
 	actionValue(setting: any): string {
 		let actionMap: any = {
+			Button: "tap",
 			TextField: "returnPress",
 			Slider: "valueChange"
 		};
 
-		let result: string = `@${actionMap[setting.type]}="onChange($event)"`;
+		let processMap: any = {
+			Button: "switchValue($event)",
+			TextField: "onChange($event)",
+			Slider: "onChange($event)"
+		}
+
+		let action: string = actionMap[setting.type];
+		let process: string = processMap[setting.type];
+		let result: string = `@${action}="${process}"`;
 		return result;
+	}
+
+	reactiveValue(setting: any): string {
+		let includedTypes: any[] = [
+			"TextField",
+			"Slider"
+		];
+
+		if(includedTypes.indexOf(setting.type) != -1) return 'v-model="value"';
+
+		return "";
 	}
 
 	getSettingByName(settingName: string): any {
@@ -92,10 +121,6 @@ export default class DeviceSettings extends Vue {
 		let deviceIndex: number = this.io_device_array.reduce((r, c, i) => {r = c.device_name == this.selected_device ? i : r;return r;}, -1);
 		let inputSettings: any = null; // JSON.parse(JSON.stringify(this.cd.device_settings[iodevice]));
 		inputSettings['devices'][deviceIndex]['device_settings'] = curSettings;
-
-		// WORKER message HERE
-		/// this.worker.postMessage({data:inputSettings});
-		// this.cd.setInputSettings(inputSettings).then();
 	}
 
 	saveSettings(): void {
@@ -109,16 +134,31 @@ export default class DeviceSettings extends Vue {
 		this.device_settings = this.settings;
 	}
 
+	startCalibration(): void {
+		// save settings
+		this.saveSettings();
+
+		// navigate to the calibration screen
+		(this as any).$navigateTo(Calibrate);
+	}
+
+	stopCalibrating(): void {
+		this.settingComponents['calibrating'] = false;
+		this.saveSettings();
+	}
+
 	// Computeds
 	get settingComponent(): any {
 		return (setting) => {
-			let template: string = `<${setting.type} id="${setting.name}" class="setting-input" ${this.setting2attrs(setting)} ${this.actionValue(setting)} width="30%" v-model="value" />`;
+			console.log(JSON.stringify(setting));
+			let template: string = `<${setting.type} id="${setting.name}" class="setting-input" col="1" colSpan="2" ${this.setting2attrs(setting)} ${this.actionValue(setting)} ${this.reactiveValue(setting)} />`;
 			console.log(template);
 			let component = {
 				template: template,
 				data: () => ({
 					value: setting.value,
-					onChange: this.onChange.bind(this)
+					onChange: this.onChange.bind(this),
+					switchValue: this.switchValue.bind(this)
 				}),
 			};
 			this.settingComponents[setting.name] = setting.value;
@@ -197,15 +237,29 @@ export default class DeviceSettings extends Vue {
 </script>
 
 <style lang="scss">
+@import "../app";
 
 .setting {
-	padding: 20px;
+	border-width: 0px;
+	padding: 40px;
 	font-size: 18px;
 }
 
 .setting-input {
+	border-width: 0px;
 	text-align:right;
-	width: 40%;
+	width: 100%;
 	background: white;
 }
+
+Button.setting-input {
+	width: 100%;
+	text-align: center;
+	padding: 20px;
+	background: $orange;
+	color: white;
+	border-radius: 20px;
+	border-color: $orange;
+}
+
 </style>
