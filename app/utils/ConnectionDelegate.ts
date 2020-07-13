@@ -13,6 +13,7 @@ export default class ConnectionDelegate {
 	// Connection States
 	private initialized: boolean = false;
 	private isScanning: boolean = false;
+	private done_connecting: boolean = false;
 	private isConnecting: boolean = false;
 	private isConnected: boolean = false
 	private _isEcoglinkAvailable: boolean = false;
@@ -99,9 +100,9 @@ export default class ConnectionDelegate {
 
 	async connect(peripheral: any): Promise<boolean> {
 		if(this.isConnecting) return;
-		
+				
 		this.isConnecting = true;
-		let done: boolean = false;
+		this.done_connecting = false;
 
 		let handleConnection = (peripheral) => {
 			this.log(peripheral);
@@ -109,14 +110,14 @@ export default class ConnectionDelegate {
 
 			this.selectedPeripheral = peripheral;
 			this.isConnected = true;
-			done = true;
+			this.done_connecting = true;
 		};
 
 		let handleDisconnection = () => {
 			this.selectedPeripheral = {};
 			this.log('Disconnected');
 			this.isConnected = false;
-			done = true;
+			this.done_connecting = true;
 		};
 
 		let connectData = {
@@ -128,7 +129,7 @@ export default class ConnectionDelegate {
 		this.log(`Connecting...`);
 		await this.bluetooth.connect(connectData);
 
-		while (!done) {
+		while (!this.done_connecting) {
 			await new Promise<void>(resolve => setTimeout(resolve, 10))
 		}
 
@@ -153,6 +154,7 @@ export default class ConnectionDelegate {
 	}
 
 	async disconnect(): Promise<boolean> {
+		this.done_connecting = false;
 		this.log(this.selectedPeripheral);
 		let connectionOptions = {
 			UUID: this.selectedPeripheral['UUID']
@@ -160,12 +162,19 @@ export default class ConnectionDelegate {
 
 		let disconnect: Promise<boolean> = new Promise<boolean>((resolve) => {
 			this.bluetooth.disconnect(connectionOptions).then(()=>{
+				this.selectedPeripheral = {};
 				this.isConnected = false;
 				this.isConnecting = false;
 				this.isNotifying = false;
 				this.isEcoglinkAvailable = false;
 				resolve(true);
 			}, (err)=>{
+				this.selectedPeripheral = {};
+				this.isConnected = false;
+				this.isConnecting = false;
+				this.isNotifying = false;
+				this.isEcoglinkAvailable = false;
+				resolve(true);
 				resolve(false);
 			});
 		});
@@ -305,7 +314,9 @@ export default class ConnectionDelegate {
 			this.bluetooth.startNotifying(notifyOptions)
 				.then(() => {
 					this.isNotifying = true;
-				})
+				}, (err) => {
+					this.log(`ERR: ${err}`);
+				});
 		}
 		else {
 			if(!this.isNotifying) return;

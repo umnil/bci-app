@@ -96,7 +96,12 @@ export class BLEStream extends Bluetooth {
 		let msg: string = transmission['msg'];
 		this.log(msg);
 		
-		if(msg != 'SIZE') return;
+		if(msg != 'SIZE') {
+			// Keep going until we get SIZE msg
+			readRequest.transmitting = false;
+			await this.executeStreamRead(readRequest.id);
+			return;
+		}
 
 		let size: number = <number>transmission['payload'];
 		readRequest.result = new ArrayBuffer(size);
