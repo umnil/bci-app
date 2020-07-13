@@ -48,8 +48,10 @@ export default class BluetoothSettings extends Vue {
 		await this.cd.disconnect();
 	}
 
-	reconnect(): void {
-		this.cd.connect(this.cd.selectedPeripheral);
+	async reconnect(): Promise<void> {
+		let selectedPeripheral = this.cd.selectedPeripheral;
+		await this.disconnect();
+		this.cd.connect(selectedPeripheral);
 	}
 
 	// Computed
