@@ -13,6 +13,7 @@ import App from './App';
 import Home from './Home';
 import BluetoothSettings from './BluetoothSettings/Home';
 import DeviceList from './DeviceList';
+import SystemSettings from './SystemSettings';
 import ConnectionDelegate from "../utils/ConnectionDelegate";
 
 @Component
@@ -38,6 +39,12 @@ export default class Drawer extends Vue {
 			name: 'Output Devices',
 			icon: String.fromCharCode(0xf0ad),
 			component: DeviceList,
+			show: false
+		},
+		{
+			name: 'System Settings',
+			icon: String.fromCharCode(0xf1de),
+			component: SystemSettings,
 			show: false
 		}
 	];
@@ -67,10 +74,12 @@ export default class Drawer extends Vue {
 		if(this.cd.notifyStatus == "Notifying" && this.cd.connectionStatus == "Connected") {
 			this.setPageShow('Input Devices', true);
 			this.setPageShow('Output Devices', true);
+			this.setPageShow('System Settings', true);
 		}
 		else {
 			this.setPageShow('Input Devices', false);
 			this.setPageShow('Output Devices', false);
+			this.setPageShow('System Settings', false);
 		}
 	}
 }
