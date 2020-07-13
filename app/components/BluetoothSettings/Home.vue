@@ -12,8 +12,8 @@
 		</StackLayout>
 		<StackLayout class="action-panel" horizontalAlignment="center">
 			<Button @tap="pair" text="Pair Devices" />
+			<Button @tap="disconnect" text="Disconnect" />
 			<StackLayout v-if="cd.isConnected">
-				<Button @tap="disconnect" text="Disconnect" />
 				<Button @tap="reconnect" text="Reconnect" />
 			</StackLayout>
 		</StackLayout>
