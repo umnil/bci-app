@@ -32,6 +32,7 @@ export default class ConnectionDelegate {
 	device_data_UUID: string = "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B";
 	notify_char_UUID: string = "E62A479C-5184-4AEE-B2D8-C4ADCED4E0F3";
 	calibration_char_UUID: string = "E58AC8E3-615A-45C4-A96B-590F64D3492A";
+	sys_ctrl_char_UUID: string = "2389DB49-5CA4-443F-8EC8-55DB9AC79143";
 
 	calibration_callback: (any)=>void;
 	
@@ -221,6 +222,12 @@ export default class ConnectionDelegate {
 		await this.bluetooth.streamWrite(writeObj);
 	}
 
+	async writeSysCtrl(cmd: string): Promise<void> {
+		let writeObj: any = this.sysCtrlRequestOptions;
+		writeObj['value'] = JSON.stringify(cmd); // this.dataUtility.str2hex(cmd);
+		await this.bluetooth.write(writeObj);
+	}
+
 	async calibrationSubscribe(cb: (any)=>void): Promise<void> {
 		this.calibration_callback = cb;
 		let requestOptions: any = this.standardRequestOptions;
@@ -250,6 +257,12 @@ export default class ConnectionDelegate {
 	get notifyCharRequestOptions(): any {
 		let options: any = this.standardRequestOptions;
 		options['characteristicUUID'] = this.notify_char_UUID;
+		return options;
+	}
+
+	get sysCtrlRequestOptions(): any {
+		let options: any = this.standardRequestOptions;
+		options['characteristicUUID'] = this.sys_ctrl_char_UUID;
 		return options;
 	}
 
