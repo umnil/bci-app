@@ -8,6 +8,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
+import { keepAwake, allowSleepAgain } from 'nativescript-insomnia';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
 import DeviceSettings from './DeviceSettings';
 
@@ -26,11 +27,15 @@ export default class Calibrate extends Vue {
 		super();
 	}
 
+	log: (message: any) => void = console.log.bind(console, "Calibrate: ");
+
 	onOpen(): void {
 		this.cd.calibrationSubscribe(this.recvCalibrationUpdate.bind(this));
+		keepAwake().then(() => {this.log("Keep Awake");});
 	}
 
 	stopCalibrating(): void {
+		allowSleepAgain().then(() => {this.log("Sleep again");});
 		this.bus.DeviceSettings.stopCalibrating();
 	}
 
