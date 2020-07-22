@@ -358,8 +358,10 @@ export default class ConnectionDelegate {
 				.then(() => {
 					this.isNotifying = false;
 				}, (err) => {
-					dialogs.alert(err);
+					this.isNotifying = false;
+					this.log(`notify err: ${err}`);
 				});
+			this.device_data = {};
 		}
 	}
 };
