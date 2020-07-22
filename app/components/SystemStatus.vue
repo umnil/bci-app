@@ -7,6 +7,7 @@
 <script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
+import sleep from '../utils/Sleep';
 
 enum Status {
 	DISCONNECTED,
@@ -23,6 +24,7 @@ export default class SystemStatus extends Vue {
 	private cd: ConnectionDelegate = this.bus.cd;
 	private status: number = Status.DISCONNECTED;
 	private classStatus: string = this.getClassStatus();
+	private pulseCheck: number = 30;
 
 	// Class Methods
 	constructor() {
@@ -30,16 +32,10 @@ export default class SystemStatus extends Vue {
 		this.bus.systemStatus = this;
 		this.updateClassStatus();
 		this.cd = this.bus.cd;
+		this.startChecking();
 	}
 
-	private check(): void {
-		if(this.status == undefined) {
-			this.status = Status.DISCONNECTED;
-		}
-
-		// Send a read request to the notify characteristic
-		// this.cd.readNotify();
-	}
+	log: (any)=>void = console.log.bind(console, "SystemStatus: ");
 
 	setStatus(status: number): void {
 		console.log(`Status call! = ${status}`);
@@ -47,7 +43,10 @@ export default class SystemStatus extends Vue {
 	}
 
 	getClassStatus(): string {
-		this.check();
+		if(this.status == undefined) {
+			this.status = Status.DISCONNECTED;
+		}
+
 		let result: string = "status-indicator";
 		let statusClasses: string[] = [
 			"status-disconnected",
@@ -74,6 +73,15 @@ export default class SystemStatus extends Vue {
 			}
 		}
 		this.setStatus(s);
+	}
+
+	async startChecking(): Promise<void> {
+		while(true) {
+			await sleep(this.pulseCheck*1000);
+			if(this.status == 3) {
+				await this.cd.readSysCtrl();
+			}
+		}
 	}
 
 	// Class Computed Properties (Getters/Setters)
