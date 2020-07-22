@@ -9,6 +9,7 @@ export default class ConnectionDelegate {
 	// Class Properties
 	private dataUtility: DataUtil = new DataUtil();
 	private bluetooth: BLEStream = new BLEStream();
+	textlog: string = "";
 
 	// Connection States
 	private initialized: boolean = false;
@@ -37,13 +38,14 @@ export default class ConnectionDelegate {
 	calibration_callback: (any)=>void;
 	
 	// Methods
+
 	async init(): Promise<void> {
 		if(this.initialized) return;
 		this.initialized = true;
 		await this.scan();
 	}
 
-	log: (message: any) => void = console.log.bind(console, "BLE Connection: ");
+	log: (message: any) => void = (message: any) => {console.log("BLE Connection: ", message);this.textlog = `${JSON.stringify(message)}\n${this.textlog}`;};
 
 	async checkBluetooth(): Promise<boolean> {
 		let enabled: boolean = await this.bluetooth.isBluetoothEnabled();
@@ -128,7 +130,11 @@ export default class ConnectionDelegate {
 		};
 
 		this.log(`Connecting...`);
-		await this.bluetooth.connect(connectData);
+		await this.bluetooth.connect(connectData).then(()=>{
+			this.log(`Connecting: Success!`);
+		}, (err)=>{
+			this.log(`Error connecting! ${err}`);
+		});
 
 		while (!this.done_connecting) {
 			await new Promise<void>(resolve => setTimeout(resolve, 10))

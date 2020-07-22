@@ -16,6 +16,7 @@
 			<StackLayout v-if="cd.isConnected">
 				<Button @tap="reconnect" text="Reconnect" />
 			</StackLayout>
+			<Button @tap="log" text="Log" />
 		</StackLayout>
 	</StackLayout>
 	</Page>
@@ -23,6 +24,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
+import BluetoothLog from './Log';
 import ConnectionDelegate from '../../utils/ConnectionDelegate';
 import Pairing from './Pairing';
 
@@ -52,6 +54,10 @@ export default class BluetoothSettings extends Vue {
 		let selectedPeripheral = this.cd.selectedPeripheral;
 		await this.disconnect();
 		this.cd.connect(selectedPeripheral);
+	}
+
+	log(): void {
+		this.nav(BluetoothLog);
 	}
 
 	// Computed
