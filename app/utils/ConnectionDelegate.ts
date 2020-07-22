@@ -240,6 +240,21 @@ export default class ConnectionDelegate {
 		});
 	}
 
+	async readNotify(): Promise<boolean> {
+		let result: boolean = false;
+		let readObj: any = this.notifyCharRequestOptions;
+		let r: any = await this.bluetooth.read(readObj).then((rslt: any)=>{
+			result = true;
+			return rslt;
+		},(err)=>{
+			result = false;
+			this.log(`ReadNotify ERR: ${err}`);
+		});
+		this.log(`Read Notify: ${result}`);
+
+		return result;
+	}
+
 	// Computed Properties
 	get standardRequestOptions(): any {
 		return {
