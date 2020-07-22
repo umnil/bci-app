@@ -17,6 +17,8 @@ export default class Home extends Vue {
 	// Data
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate;
+	private inputDeviceName: string = "None";
+	private outputDeviceName: string = "None";
 
 	// Methods
 	constructor() {
@@ -24,23 +26,42 @@ export default class Home extends Vue {
 		this.cd = this.bus.cd;
 	}
 
-	// Computed
-	get inputDeviceName(): string {
-		let inputDevices: any = this.cd.inputDevices;
+	getInputDeviceName(): string {
 		return this.cd.inputDevices.selected_device || "None";
 	}
 
-	get outputDeviceName(): string {
-		let outputDevices: any = null; // this.cd.outputDevices;
+	getOutputDeviceName(): string {
 		return this.cd.outputDevices.selected_device || "None";
 	}
 
+	// Computed
 	get inputDeviceText(): string {
 		return `Input Device: ${this.inputDeviceName}`;
 	}
 
 	get outputDeviceText(): string {
 		return `Output Device: ${this.outputDeviceName}`;
+	}
+
+	updateNames(): void {
+		this.inputDeviceName = this.getInputDeviceName();
+		this.outputDeviceName = this.getOutputDeviceName();
+	}
+
+	// Watched Properties
+	@Watch("cd.status")
+	updateByStatus(): void {
+		this.updateNames();
+	}
+
+	@Watch("cd.inputDevices.selected_device")
+	updateByInputDevice(): void {
+		this.updateNames();
+	}
+
+	@Watch("cd.outputDevices.selected_device")
+	updateByOutputDevice(): void {
+		this.updateNames();
 	}
 }
 </script>
