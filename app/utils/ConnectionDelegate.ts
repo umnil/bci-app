@@ -246,17 +246,19 @@ export default class ConnectionDelegate {
 		});
 	}
 
-	async readNotify(): Promise<boolean> {
+	async readSysCtrl(): Promise<boolean> {
+		this.log("readSysCtrl");
 		let result: boolean = false;
-		let readObj: any = this.notifyCharRequestOptions;
+		let readObj: any = this.sysCtrlRequestOptions;
 		let r: any = await this.bluetooth.read(readObj).then((rslt: any)=>{
 			result = true;
 			return rslt;
 		},(err)=>{
 			result = false;
+			this.isEcoglinkAvailable = false;
 			this.log(`ReadNotify ERR: ${err}`);
 		});
-		this.log(`Read Notify: ${result}`);
+		this.log(`Read Sys Ctrl: ${result}`);
 
 		return result;
 	}
