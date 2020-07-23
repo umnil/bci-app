@@ -1,10 +1,12 @@
-import Vue from 'nativescript-vue'
-import App from './components/App'
+import Vue from 'nativescript-vue';
+import App from './components/App';
+import SystemStatus from './components/SystemStatus';
 
 import { Fontawesome } from 'nativescript-fontawesome';
 Fontawesome.init();
 
 Vue.registerElement('RadSideDrawer', () => require('nativescript-ui-sidedrawer').RadSideDrawer);
+Vue.component('SystemStatus', SystemStatus)
 
 
 // Prints Vue logs when --env.production is *NOT* set while building

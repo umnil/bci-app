@@ -5,6 +5,7 @@
 			<Label :text="menuText" class="fa menu-icon" @tap="toggleDrawer" />
 		</ActionItem>
 		<Label text="ecoglink BMI" />
+		<SystemStatus />
 	</ActionBar>
 		<RadSideDrawer class="ns-dark" ref="drawer" drawerLocation="Left" :gesturesEnabled="gesturesEnabled">
 			<StackLayout ~drawerContent class="ns-dark">

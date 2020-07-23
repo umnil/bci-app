@@ -53,6 +53,7 @@ export default class Drawer extends Vue {
 	constructor() {
 		super();
 		this.bus.Drawer = this;
+		this.cd = this.bus.cd;
 	}
 
 	goTo(page: any) {
@@ -69,7 +70,6 @@ export default class Drawer extends Vue {
 		page.show = show;
 	}
 
-	@Watch("cd.notifyStatus")
 	updatePages() {
 		if(this.cd.notifyStatus == "Notifying" && this.cd.connectionStatus == "Connected") {
 			this.setPageShow('Input Devices', true);
@@ -82,6 +82,22 @@ export default class Drawer extends Vue {
 			this.setPageShow('System Settings', false);
 		}
 	}
+
+	@Watch("cd.status")
+	updateOnStatus(): void{
+		this.updatePages();
+	}
+
+	@Watch("cd.ecoglinkAvailableStatus")
+	updateOnECOGSTAT(): void {
+		this.updatePages();
+	}
+
+	@Watch("cd.notifyStatus")
+	updateOnNotifyStatus(): void {
+		this.updatePages();
+	}
+
 }
 </script>
 
