@@ -194,6 +194,9 @@ export default class ConnectionDelegate {
 		this.bluetooth.streamRead(this.deviceSettingRequestOptions).then(
 			(result: ReadResult) => {
 				this.updateDeviceSettings(result);
+			},
+			(err) => {
+				this.log(`Failed to get initial avlue | ${err}`);
 			}
 		);
 	}
