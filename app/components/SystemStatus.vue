@@ -78,7 +78,7 @@ export default class SystemStatus extends Vue {
 	async startChecking(): Promise<void> {
 		while(true) {
 			await sleep(this.pulseCheck*1000);
-			if(this.status == 3) {
+			if(this.status > 1) {
 				await this.cd.readSysCtrl();
 			}
 		}
