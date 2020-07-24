@@ -63,7 +63,7 @@ export default class ConnectionDelegate {
 		this.isScanning = true;
 
 		let handleDiscovery = (peripheral) => {
-			this.log(peripheral);
+			//this.log(peripheral);
 			let potentialPeripheral = this.scannedPeripherals.filter( device => device['UUID']==peripheral['UUID'] );
 			let peripheralFound = potentialPeripheral.length > 0;
 			if ( !peripheralFound ) {
@@ -234,7 +234,10 @@ export default class ConnectionDelegate {
 	async writeSysCtrl(cmd: string): Promise<void> {
 		let writeObj: any = this.sysCtrlRequestOptions;
 		writeObj['value'] = JSON.stringify(cmd); // this.dataUtility.str2hex(cmd);
-		await this.bluetooth.write(writeObj);
+		await this.bluetooth.write(writeObj).then(
+			()=>this.log("writeSysCtrl: Success"),
+			(err)=>this.log(`writeSysCtrl: Error | ${err}`)
+		);
 	}
 
 	async calibrationSubscribe(cb: (any)=>void): Promise<void> {

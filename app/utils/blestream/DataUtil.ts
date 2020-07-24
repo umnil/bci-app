@@ -24,6 +24,7 @@ export default class DataUtil {
 	// Convert Transmitted Data to the object the data represents
 	data2object(data: ArrayBuffer): Transmission {
 		let strData: string = String.fromCharCode.apply(null, new Uint8Array(data));
+		console.log(strData);
 		return JSON.parse(strData);
 	}
 

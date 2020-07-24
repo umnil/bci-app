@@ -58,7 +58,10 @@ export class BLEStream extends Bluetooth {
 		
 		let readRequest: ReadRequest = <ReadRequest>this.requestQueue.getRequest(id);
 		this.log(`readRequest: ${readRequest}`);
-		let readResult: ReadResult = await this.read(<ReadOptions>readRequest);
+		let readResult: ReadResult | null = await this.read(<ReadOptions>readRequest).then(
+			(rr: ReadResult) => rr,
+			(err) => {this.log(`executeStreadRead: ERR ${err}`);return null;}
+		);
 
 		if(readRequest.transmitting) await this.recvData(readRequest, readResult);
 		else await this.recvSize(readRequest, readResult);
@@ -104,6 +107,7 @@ export class BLEStream extends Bluetooth {
 		}
 
 		let size: number = <number>transmission['payload'];
+		this.log(`Message SIZE: ${size}`);
 		readRequest.result = new ArrayBuffer(size);
 		await this.executeStreamRead(readRequest.id);
 	}
