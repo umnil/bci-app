@@ -238,6 +238,7 @@ export default class ConnectionDelegate {
 			()=>this.log("writeSysCtrl: Success"),
 			(err)=>this.log(`writeSysCtrl: Error | ${err}`)
 		);
+		this.getInitialValue();
 	}
 
 	async calibrationSubscribe(cb: (any)=>void): Promise<void> {

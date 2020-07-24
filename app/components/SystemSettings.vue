@@ -2,7 +2,7 @@
 	<Page>
 		<ActionBar id="SystemSettingsAction" title="System Settings" />
 		<StackLayout>
-			<ListView for="setting in settings">
+			<ListView for="setting in settings" v-show="!busy">
 				<v-template>
 					<GridLayout class="settingItem" rows="auto" columns="*,*,*" width="100%">
 						<Label col="0" colSpan="1" :text="setting.name" />
@@ -10,6 +10,8 @@
 					</GridLayout>
 				</v-template>
 			</ListView>
+			<Label text="Please Wait..." v-show="busy" horizontalAlignment="center"/>
+			<ActivityIndicator :busy="busy"></ActivityIndicator>
 		</StackLayout>
 	</Page>
 </template>
@@ -24,6 +26,7 @@ export default class SystemSettings extends Vue {
 	// Attributes
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate = this.bus.cd;
+	private busy: boolean = false;
 
 	settings = [
 		{
@@ -58,9 +61,11 @@ export default class SystemSettings extends Vue {
 		return potential_setting[0];
 	}
 
-	reloadDevices(): void {
+	async reloadDevices(): Promise<void> {
 		this.log("Reload Devices");
-		this.cd.writeSysCtrl("RELOAD_DEVICE");
+		this.busy = true;
+		await this.cd.writeSysCtrl("RELOAD_DEVICE");
+		this.busy = false;
 	}
 
 	actionValue(setting): string {
