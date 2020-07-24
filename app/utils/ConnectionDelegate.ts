@@ -9,6 +9,7 @@ export default class ConnectionDelegate {
 	// Class Properties
 	private dataUtility: DataUtil = new DataUtil();
 	private bluetooth: BLEStream = new BLEStream();
+	textlog: string = "";
 
 	// Connection States
 	private initialized: boolean = false;
@@ -37,13 +38,14 @@ export default class ConnectionDelegate {
 	calibration_callback: (any)=>void;
 	
 	// Methods
+
 	async init(): Promise<void> {
 		if(this.initialized) return;
 		this.initialized = true;
 		await this.scan();
 	}
 
-	log: (message: any) => void = console.log.bind(console, "BLE Connection: ");
+	log: (message: any) => void = (message: any) => {console.log("BLE Connection: ", message);this.textlog = `${JSON.stringify(message)}\n${this.textlog}`;};
 
 	async checkBluetooth(): Promise<boolean> {
 		let enabled: boolean = await this.bluetooth.isBluetoothEnabled();
@@ -61,7 +63,7 @@ export default class ConnectionDelegate {
 		this.isScanning = true;
 
 		let handleDiscovery = (peripheral) => {
-			this.log(peripheral);
+			//this.log(peripheral);
 			let potentialPeripheral = this.scannedPeripherals.filter( device => device['UUID']==peripheral['UUID'] );
 			let peripheralFound = potentialPeripheral.length > 0;
 			if ( !peripheralFound ) {
@@ -128,7 +130,11 @@ export default class ConnectionDelegate {
 		};
 
 		this.log(`Connecting...`);
-		await this.bluetooth.connect(connectData);
+		await this.bluetooth.connect(connectData).then(()=>{
+			this.log(`Connecting: Success!`);
+		}, (err)=>{
+			this.log(`Error connecting! ${err}`);
+		});
 
 		while (!this.done_connecting) {
 			await new Promise<void>(resolve => setTimeout(resolve, 10))
@@ -188,6 +194,9 @@ export default class ConnectionDelegate {
 		this.bluetooth.streamRead(this.deviceSettingRequestOptions).then(
 			(result: ReadResult) => {
 				this.updateDeviceSettings(result);
+			},
+			(err) => {
+				this.log(`Failed to get initial avlue | ${err}`);
 			}
 		);
 	}
@@ -225,7 +234,11 @@ export default class ConnectionDelegate {
 	async writeSysCtrl(cmd: string): Promise<void> {
 		let writeObj: any = this.sysCtrlRequestOptions;
 		writeObj['value'] = JSON.stringify(cmd); // this.dataUtility.str2hex(cmd);
-		await this.bluetooth.write(writeObj);
+		await this.bluetooth.write(writeObj).then(
+			()=>this.log("writeSysCtrl: Success"),
+			(err)=>this.log(`writeSysCtrl: Error | ${err}`)
+		);
+		this.getInitialValue();
 	}
 
 	async calibrationSubscribe(cb: (any)=>void): Promise<void> {
@@ -238,6 +251,23 @@ export default class ConnectionDelegate {
 		}, (err)=>{
 			this.log(`Calibration Subscription error: ${err}`);
 		});
+	}
+
+	async readSysCtrl(): Promise<boolean> {
+		this.log("readSysCtrl");
+		let result: boolean = false;
+		let readObj: any = this.sysCtrlRequestOptions;
+		let r: any = await this.bluetooth.read(readObj).then((rslt: any)=>{
+			result = true;
+			return rslt;
+		},(err)=>{
+			result = false;
+			this.log(`ReadNotify ERR: ${err}`);
+			this.isEcoglinkAvailable = false;
+		});
+		this.log(`Read Sys Ctrl: ${result}`);
+
+		return result;
 	}
 
 	// Computed Properties
@@ -337,8 +367,10 @@ export default class ConnectionDelegate {
 				.then(() => {
 					this.isNotifying = false;
 				}, (err) => {
-					dialogs.alert(err);
+					this.isNotifying = false;
+					this.log(`notify err: ${err}`);
 				});
+			this.device_data = {};
 		}
 	}
 };
