@@ -1,6 +1,6 @@
 <template>
 	<ActionItem ios.position="right">
-		<Button ref="b" :class="classStatus" @tap="n"/>
+		<Button ref="b" :class="classStatus" />
 	</ActionItem>
 </template>
 

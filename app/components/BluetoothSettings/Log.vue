@@ -35,7 +35,6 @@ export default class BluetoothLog extends Vue {
 	// Watched Properties
 	@Watch("cd.textlog")
 	updateLog(): void {
-		this.log("WHAT!");
 		this._log = this.cd.textlog;
 	}
 }

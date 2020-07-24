@@ -258,8 +258,8 @@ export default class ConnectionDelegate {
 			return rslt;
 		},(err)=>{
 			result = false;
-			this.isEcoglinkAvailable = false;
 			this.log(`ReadNotify ERR: ${err}`);
+			this.isEcoglinkAvailable = false;
 		});
 		this.log(`Read Sys Ctrl: ${result}`);
 
