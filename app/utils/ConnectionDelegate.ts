@@ -81,7 +81,7 @@ export default class ConnectionDelegate {
 
 		let scanningOptions = {
 			seconds: timeout,
-			serviceUUIDs: [],
+			serviceUUIDs: [this.target_service_UUID],
 			onDiscovered: handleDiscovery
 		};
 
