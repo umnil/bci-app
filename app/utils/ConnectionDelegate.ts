@@ -81,7 +81,7 @@ export default class ConnectionDelegate {
 
 		let scanningOptions = {
 			seconds: timeout,
-			serviceUUIDs: [],
+			serviceUUIDs: [this.target_service_UUID],
 			onDiscovered: handleDiscovery
 		};
 
@@ -218,11 +218,17 @@ export default class ConnectionDelegate {
 	async setInputDeviceData(inputDevicesData: any): Promise<void> {
 		this.device_data.inputdevices = inputDevicesData;
 		await this.writeDeviceData();
+
+		// reload
+		await this.getInitialValue();
 	}
 
 	async setOutputDeviceData(outputDeviceData: any): Promise<void> {
 		this.device_data.outputdevices = outputDeviceData;
 		await this.writeDeviceData();
+
+		// reload
+		await this.getInitialValue();
 	}
 
 	async writeDeviceData(): Promise<void> {

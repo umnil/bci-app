@@ -3,6 +3,21 @@
 
 $orange: #EE9054;
 
+// iOS colors
+
+// Light
+$systemBlueLight: #007AFF;
+$systemGray: #8e8e93;
+$systemGray2: #aeaeb2;
+$systemGray3: #c7c7cc;
+$systemGray4: #d1d1d6;
+
+// Dark
+
+// Background
+$backgroundLight: #f2f1f5;
+$backgroundDark: #222222;
+
 ActionBar {
         background-color: #002c15;
         color: #ffffff;
@@ -29,7 +44,25 @@ ActionBar {
 	padding-left: 40px;
 }
 
+Page {
+	background-color: $backgroundLight;
+}
+
 .ns-dark Page {
-	background-color: #222222;
+	background-color: $backgroundDark;
 	font-color: white;
+}
+
+
+Button {
+	color: $systemBlueLight;
+	font-size: 18pt;
+}
+
+.list-label {
+	text-transform: uppercase;
+	letter-spacing: 0.001em;
+	color: $systemGray;
+	font-size: 12pt;
+	padding: 50px 0px 10px 0px;
 }

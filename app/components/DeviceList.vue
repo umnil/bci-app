@@ -2,7 +2,7 @@
 	<Page @loaded="loadDevices">
 		<ActionBar :title="title" />
 		<StackLayout>
-			<ListView ref="deviceList" for="device in devices" height="100%">
+			<ListView ref="deviceList" for="device in devices" height="100%" v-show="!busy">
 				<v-template>
 					<StackLayout orientation="horizontal" width="100%">
 						<Label :class="selectionclass(device.device_name)" :text="selection_marker" />
@@ -11,12 +11,15 @@
 					</StackLayout>
 				</v-template>
 			</ListView>
+			<Label horizontalAlignment="center" text="Please wait..." />
+			<ActivityIndicator :busy="busy"></ActivityIndicator>
 		</StackLayout>
 	</Page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator';
+import Dialogs from 'tns-core-modules/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
 import DeviceSettings from './DeviceSettings';
 
@@ -27,6 +30,7 @@ export default class DeviceList extends Vue {
 	private listSet: string = "";  // Input or Output
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate = this.bus.cd;
+	private busy: boolean = false;
 	selection_marker: string = String.fromCharCode(0xf00c);
 	settings_symbol: string = String.fromCharCode(0xf013);
 	selected_device_setting: string = "";
@@ -61,11 +65,15 @@ export default class DeviceList extends Vue {
 	}
 
 	setDevice(): void {
+		this.busy = true;
 		let deviceData: any = {
 			'selected_device': this.selected_device,
 			'devices': this.devices
 		}
-		this.cd[`set${this.listSet}DeviceData`](deviceData);
+		this.cd[`set${this.listSet}DeviceData`](deviceData).then(
+			()=>{this.busy = false;},
+			(err)=>{this.busy = false;Dialogs.alert("Failed");}
+		);
 	}
 
 	// Computed Properties
