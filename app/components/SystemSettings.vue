@@ -2,14 +2,14 @@
 	<Page>
 		<ActionBar id="SystemSettingsAction" title="System Settings" />
 		<StackLayout>
-			<ListView for="setting in settings" v-show="!busy">
-				<v-template>
-					<GridLayout class="settingItem" rows="auto" columns="*,*,*" width="100%">
-						<Label col="0" colSpan="1" :text="setting.name" />
-						<component col="1" colSpan="2" :is="settingComponent(setting)" horizontalAlignment="right" /> 
-					</GridLayout>
-				</v-template>
-			</ListView>
+			<StackLayout v-show="!busy">
+				<Label class="list-label" text="System Commands" />
+				<ListView for="setting in settings">
+					<v-template>
+						<component :is="settingComponent(setting)" horizontalAlignment="left" />
+					</v-template>
+				</ListView>
+			</StackLayout>
 			<Label text="Please Wait..." v-show="busy" horizontalAlignment="center"/>
 			<ActivityIndicator :busy="busy"></ActivityIndicator>
 		</StackLayout>
@@ -104,6 +104,10 @@ export default class SystemSettings extends Vue {
 .settingItem {
 	margin: 10px 10px 10px 10px;
 	padding: 0px 30px;
+}
+
+Label, Button {
+	margin: 0px 30px;
 }
 
 </style>
