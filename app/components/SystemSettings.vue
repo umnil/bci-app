@@ -1,6 +1,8 @@
 <template>
 	<Page>
-		<ActionBar id="SystemSettingsAction" title="System Settings" />
+		<ActionBar id="SystemSettingsAction" title="System Settings">
+			<StatusIndicator />
+		</ActionBar>
 		<StackLayout>
 			<StackLayout v-show="!busy">
 				<Label class="list-label" text="System Commands" />
