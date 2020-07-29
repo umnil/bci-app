@@ -143,7 +143,7 @@ export default class ConnectionDelegate {
 		// Now check that we succesfully connected
 		if(!this.isConnected) return false;
 
-		appSettings.setString("UUID", peripheral['UUID']);
+		appSettings.setString("peripheral", JSON.stringify(peripheral));
 
 		// Now check for appropriate services
 		let services: any[] = this.selectedPeripheral.services;

@@ -54,15 +54,13 @@ export default class App extends Vue {
 		if(this.initialized) return;
 
 		await this.cd.init();
-		let UUID: string = appSettings.getString("UUID", "");
-		if( UUID == "" ) return;
+		let potentialDevice: string = appSettings.getString("peripheral", "");
+		if( potentialDevice == "" ) return;
+		let peripheral: any = JSON.parse(potentialDevice);
 
 		if(this.cd.connectionStatus == "Connected") return;
 
 		await this.cd.scan(1);
-		let peripheral: any = {
-			'UUID': UUID
-		}
 		await this.cd.connect(peripheral);
 		this.initialized = true;
 	}
