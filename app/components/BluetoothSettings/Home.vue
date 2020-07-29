@@ -13,8 +13,8 @@
 		<StackLayout class="action-panel" horizontalAlignment="center">
 			<Button @tap="pair" text="Pair Devices" />
 			<Button @tap="disconnect" text="Disconnect" />
-			<StackLayout v-if="cd.isConnected">
-				<Button @tap="reconnect" text="Reconnect" />
+			<StackLayout v-show="hasSavedDevice">
+				<Button @tap="reconnect" :text="reconnectText" />
 			</StackLayout>
 			<Button @tap="log" text="Log" />
 		</StackLayout>
@@ -23,6 +23,7 @@
 </template>
 
 <script lang="ts">
+import * as appSettings from 'tns-core-modules/application-settings';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import BluetoothLog from './Log';
 import ConnectionDelegate from '../../utils/ConnectionDelegate';
@@ -34,12 +35,11 @@ export default class BluetoothSettings extends Vue {
 	// Members
 	private nav: any = (this as any).$navigateTo;
 	private bus: any = (this as any).$bus;
-	cd: ConnectionDelegate;
+	private cd: ConnectionDelegate = this.bus.cd;
 
 	// Methods
 	constructor() {
 		super();
-		this.cd = this.bus.cd;
 	}
 
 	pair(): void {
@@ -51,7 +51,9 @@ export default class BluetoothSettings extends Vue {
 	}
 
 	async reconnect(): Promise<void> {
-		let selectedPeripheral = this.cd.selectedPeripheral;
+		let selectedPeripheral = this.cd.status == "Connected" ?
+			this.cd.selectedPeripheral :
+			this.savedDevice;
 		await this.disconnect();
 		this.cd.connect(selectedPeripheral);
 	}
@@ -79,6 +81,30 @@ export default class BluetoothSettings extends Vue {
 	
 	get status(): string {
 		return this.cd.status;
+	}
+
+	get savedDevice(): any {
+		let potential: string = appSettings.getString("peripheral", "");
+		if(potential == "") return;
+		return JSON.parse(potential);
+	}
+
+	get savedDeviceName(): string {
+		return this.savedDevice['name'];
+	}
+
+	get hasSavedDevice(): boolean {
+		return this.savedDevice != null;
+	}
+
+	get recentDeviceName(): string {
+		return this.cd.status == 'Connected' ? 
+			this.cd.selectedPeripheral.name :
+			this.savedDevice['name'];
+	}
+
+	get reconnectText(): string {
+		return `Reconnect to ${this.recentDeviceName}`;
 	}
 }
 </script>
