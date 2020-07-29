@@ -5,7 +5,7 @@
 			<Label :text="menuText" class="fa menu-icon" @tap="toggleDrawer" />
 		</ActionItem>
 		<Label text="ecoglink BMI" />
-		<SystemStatus />
+		<StatusIndicator name="main" />
 	</ActionBar>
 		<RadSideDrawer class="ns-dark" ref="drawer" drawerLocation="Left" :gesturesEnabled="gesturesEnabled">
 			<StackLayout ~drawerContent class="ns-dark">
@@ -25,7 +25,8 @@ import * as dialogs from 'tns-core-modules/ui/dialogs';
 import Drawer from './Drawer.vue';
 import Home from './Home.vue';
 import * as appSettings from 'tns-core-modules/application-settings';
-import ConnectionDelegate from "../utils/ConnectionDelegate"
+import ConnectionDelegate from "../utils/ConnectionDelegate";
+import { BLEStatusChecker } from "../utils/BLEStatusChecker";
 
 @Component
 export default class App extends Vue {
@@ -33,6 +34,7 @@ export default class App extends Vue {
 	// Members
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate = new ConnectionDelegate();
+	private sc: BLEStatusChecker = new BLEStatusChecker(this.cd);
 	private initialized: boolean = false;
 	drawerIsOpen: boolean = false;
 	gesturesEnabled: boolean = false;
@@ -43,6 +45,7 @@ export default class App extends Vue {
 		super();
 		this.bus.App = this;
 		this.bus.cd = this.cd;
+		this.bus.sc = this.sc;
 	}
 	
 	// Methods
