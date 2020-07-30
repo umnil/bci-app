@@ -1,11 +1,13 @@
 {
   "name": "bmi-mobile",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Mobile phone application interface for ecoglink BMI",
   "author": "Kevin Davis <kevin.davis@med.miami.edu>",
   "license": "MIT",
   "nativescript": {
     "id": "edu.miami.prasad.bmimobile",
+    "version": "0.1.0",
+    "versionNumber": "0",
     "templateVersion": "v2",
     "tns-android": {
       "version": "6.5.0"
@@ -18,6 +20,7 @@
     "msgpack": "^1.0.3",
     "nativescript": "^6.7.8",
     "nativescript-bluetooth": "^3.0.0-beta.10",
+    "nativescript-dev-version": "^0.2.0",
     "nativescript-fontawesome": "^1.0.0",
     "nativescript-insomnia": "^1.2.3",
     "nativescript-ui-sidedrawer": "^8.0.1",

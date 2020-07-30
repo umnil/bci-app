@@ -147,6 +147,7 @@ export default class DeviceSettings extends Vue {
 
 	stopCalibrating(): void {
 		this.settingComponents['calibrating'] = false;
+		this.settingComponents['assessingAccuracy'] = false;
 		this.saveSettings();
 	}
 
