@@ -13,7 +13,7 @@
 		<StackLayout class="action-panel" horizontalAlignment="center">
 			<Button @tap="pair" text="Pair Devices" />
 			<Button @tap="disconnect" text="Disconnect" />
-			<StackLayout v-show="hasSavedDevice">
+			<StackLayout v-if="hasSavedDevice">
 				<Button @tap="reconnect" :text="reconnectText" />
 			</StackLayout>
 			<Button @tap="log" text="Log" />
