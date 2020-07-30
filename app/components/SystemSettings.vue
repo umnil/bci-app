@@ -6,11 +6,15 @@
 		<StackLayout>
 			<StackLayout v-show="!busy">
 				<Label class="list-label" text="System Commands" />
-				<ListView for="setting in settings">
-					<v-template>
-						<component :is="settingComponent(setting)" horizontalAlignment="left" />
-					</v-template>
-				</ListView>
+				<StackLayout class="setting-list">
+					<Button class="setting-item-last" id="ReloadDevices" text="Reload Devices" horizontalAlignment="left" @tap="reloadDevices"/>
+				</StackLayout>
+				<Label class="list-label" text="System Settings" />
+				<GridLayout class="setting-list" rows="44" columns="*,20,20">
+					<Label row="0" col="0" class="setting-item-last" id="reconnectAttempts" text="Reconnect Attempts" horizontalAlignment="left" @tap="editReconnectionAttemps" />
+					<label row="0" col="1" v-model="reconnectAttempts" />
+					<Label row="0" col="2" class="fa chevron" :text="String.fromCharCode(0xf054)" />
+				</GridLayout>
 			</StackLayout>
 			<Label text="Please Wait..." v-show="busy" horizontalAlignment="center"/>
 			<ActivityIndicator :busy="busy"></ActivityIndicator>
@@ -19,8 +23,10 @@
 </template>
 
 <script lang="ts">
+import * as appSettings from 'tns-core-modules/application-settings';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
+import ItemSelector from './Editors/ItemSelector';
 
 @Component
 export default class SystemSettings extends Vue {
@@ -29,39 +35,15 @@ export default class SystemSettings extends Vue {
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate = this.bus.cd;
 	private busy: boolean = false;
-
-	settings = [
-		{
-			name: "ReloadDevices",
-			displayName: "Reload Devices",
-			type: "Button",
-			method: this.reloadDevices.bind(this)
-		}
-	];
-
-	elemActionMap = {
-		"Button": "tap"
-	};
-
-	elemMethodMap = {
-		"Button": "buttonPush($event)"
-	};
+	private reconnectAttempts: number = appSettings.getNumber("reconnectAttempts", 5);
+	private reconnectOptions: number[] = Array(11).fill(0).map((e, i)=>i);
 
 	// Methods
-
 	constructor() {
 		super();
-		this.bus.DeviceSettings = this;
 	}
 
 	log: (message: any) => void = console.log.bind(console, "SystemSettings: ");
-
-	getSettingByName(settingName: string): any {
-		let potential_setting: any[] = this.settings.filter(e => e.name == settingName);
-		if(potential_setting.length < 1) return null;
-
-		return potential_setting[0];
-	}
 
 	async reloadDevices(): Promise<void> {
 		this.log("Reload Devices");
@@ -70,42 +52,50 @@ export default class SystemSettings extends Vue {
 		this.busy = false;
 	}
 
-	actionValue(setting): string {
-		let action: string = this.elemActionMap[setting.type];
-		let method: string = this.elemMethodMap[setting.type];
-		return `@${action}=${method}`;
-	}
+	editReconnectionAttemps(): void {
+		this.bus.ItemSelector = {
+			'title': 'Reconnect Attempts',
+			'list': this.reconnectOptions,
+			'value': this.reconnectAttempts,
+			'callback': (value) => {
+				appSettings.setNumber("reconnectAttempts", value);
+				this.reconnectAttempts = value;
+			}
+		};
 
-	buttonPush(args): void {
-		let input: any = args.object;
-		let settingName: string = input.id;
-		let settingType: string = this.getSettingByName(settingName).type;
-		let setting: any = this.getSettingByName(settingName);
-		setting.method();
+		(this as any).$navigateTo(ItemSelector);
 	}
 
 	// Computed Properties
-	get settingComponent(): any {
-		return (setting) => {
-			let component = {
-				template: `<${setting.type} id="${setting.name}" col="1" colSpan="2" text="${setting.displayName}" ${this.actionValue(setting)} />`,
-				data: () => ({
-					buttonPush: this.buttonPush.bind(this)
-				})
-			};
-			this.log(`Template: ${component.template}`);
-			return component;
-		};
-	}
 }
 </script>
 
 <style lang="scss">
 @import "../app";
 
-.settingItem {
-	margin: 10px 10px 10px 10px;
-	padding: 0px 30px;
+.setting-list {
+	background: white;
+	border-width: 1px;
+	border-style: solid;
+	border-color: $systemGray4;
+
+}
+
+.setting-list > * {
+	width: 100%;
+	text-align: left;
+	padding: 22px 0px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: $systemGray4;
+}
+
+.setting-item-last {
+	border: none;
+}
+
+.chevron {
+	color: $systemGray;
 }
 
 Label, Button {
