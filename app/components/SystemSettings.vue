@@ -60,6 +60,7 @@ export default class SystemSettings extends Vue {
 			'callback': (value) => {
 				appSettings.setNumber("reconnectAttempts", value);
 				this.reconnectAttempts = value;
+				this.cd.reconnectAttempts = value;
 			}
 		};
 
