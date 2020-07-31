@@ -1,6 +1,8 @@
 <template>
 	<Page>
-		<ActionBar title="Bluetooth Log"></ActionBar>
+		<ActionBar title="Bluetooth Log">
+			<StatusIndicator name="BLE" />
+		</ActionBar>
 		<StackLayout>
 			<TextView editable="false" v-model="$data.cd.textlog" />
 		</StackLayout>

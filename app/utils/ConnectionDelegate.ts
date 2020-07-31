@@ -19,6 +19,8 @@ export default class ConnectionDelegate {
 	private isConnected: boolean = false
 	private _isEcoglinkAvailable: boolean = false;
 	private isNotifying: boolean = false;
+	private connectingTimeout: number = 10;
+	private intentionalDisconnect: boolean = false;
 
 	// collections
 	scannedPeripherals: any[] = [];
@@ -36,6 +38,10 @@ export default class ConnectionDelegate {
 	sys_ctrl_char_UUID: string = "2389DB49-5CA4-443F-8EC8-55DB9AC79143";
 
 	calibration_callback: (any)=>void;
+
+	// Settings
+	reconnectAttempts: number = appSettings.getNumber("reconnectAttempts", 5);
+	private _ra: number = this.reconnectAttempts;
 	
 	// Methods
 
@@ -121,6 +127,9 @@ export default class ConnectionDelegate {
 			this.log('Disconnected');
 			this.isConnected = false;
 			this.done_connecting = true;
+			if(!this.intentionalDisconnect) {
+				this.reconnect();
+			}
 		};
 
 		let connectData = {
@@ -130,20 +139,29 @@ export default class ConnectionDelegate {
 		};
 
 		this.log(`Connecting...`);
-		await this.bluetooth.connect(connectData).then(()=>{
+		this.bluetooth.connect(connectData).then(()=>{
 			this.log(`Connecting: Success!`);
 		}, (err)=>{
 			this.log(`Error connecting! ${err}`);
 		});
 
+		const startTimer: number = Date.now();
 		while (!this.done_connecting) {
+			let curTimer: number = Date.now();
+			let dt: number = curTimer - startTimer;
+			let isTimedout: boolean = dt >= this.connectingTimeout*1000;
+			if(isTimedout) {
+				this.log("Connection timeout...");
+				await this.disconnect();
+				return false;
+			}
 			await new Promise<void>(resolve => setTimeout(resolve, 10))
 		}
 
 		// Now check that we succesfully connected
 		if(!this.isConnected) return false;
 
-		appSettings.setString("UUID", peripheral['UUID']);
+		appSettings.setString("peripheral", JSON.stringify(peripheral));
 
 		// Now check for appropriate services
 		let services: any[] = this.selectedPeripheral.services;
@@ -167,6 +185,7 @@ export default class ConnectionDelegate {
 			UUID: this.selectedPeripheral['UUID']
 		};
 
+		this.intentionalDisconnect = true;
 		let disconnect: Promise<boolean> = new Promise<boolean>((resolve) => {
 			this.bluetooth.disconnect(connectionOptions).then(()=>{
 				this.selectedPeripheral = {};
@@ -174,6 +193,7 @@ export default class ConnectionDelegate {
 				this.isConnecting = false;
 				this.isNotifying = false;
 				this.isEcoglinkAvailable = false;
+				this.intentionalDisconnect = false;
 				resolve(true);
 			}, (err)=>{
 				this.selectedPeripheral = {};
@@ -181,12 +201,30 @@ export default class ConnectionDelegate {
 				this.isConnecting = false;
 				this.isNotifying = false;
 				this.isEcoglinkAvailable = false;
+				this.intentionalDisconnect = false;
 				resolve(true);
 				resolve(false);
 			});
 		});
 
 		return await disconnect;
+	}
+
+	async reconnect(): Promise<void> {
+		if(this._ra <= 0) return;
+		this.log(`Attempting to reconnect (${this._ra})`);
+		let lastPeripheralJSON: string = appSettings.getString("peripheral", "");
+		if(lastPeripheralJSON != "") {
+			let peripheral: any = JSON.parse(lastPeripheralJSON);
+			let result: boolean = await this.connect(peripheral);
+			if(result == true) {
+				this._ra = this.reconnectAttempts;
+			}
+			else {
+				this._ra--;
+				return this.reconnect();
+			}
+		}
 	}
 
 	private getInitialValue(): void {
