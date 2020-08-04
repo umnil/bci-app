@@ -59,10 +59,45 @@ Button {
 	font-size: 18pt;
 }
 
-.list-label {
+.setting-list-label {
 	text-transform: uppercase;
 	letter-spacing: 0.001em;
 	color: $systemGray;
 	font-size: 12pt;
 	padding: 50px 0px 10px 0px;
+}
+
+
+.setting-list {
+	background: white;
+	border-width: 1px;
+	border-style: solid;
+	border-color: $systemGray4;
+}
+
+.setting-list > * {
+	text-align: left;
+	padding: 0px 0px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: $systemGray4;
+}
+
+.setting-item-last {
+	border: none;
+}
+
+.chevron {
+	color: $systemGray;
+	padding: 0px;
+}
+
+.setting-item-label {
+	margin: 0px 0px 0px 30px;
+	padding: 0px;
+}
+
+.setting-item-value {
+	margin: 0px;
+	padding: 0px;
 }

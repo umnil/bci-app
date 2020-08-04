@@ -4,6 +4,14 @@
 			<ActionItem @tap="saveSettings" ios.position="right" android.position="popup">Save</ActionItem>
 		</ActionBar>
 		<StackLayout>
+			<Label class="setting-list-label" text="Device Settings" />
+			<StackLayout class="setting-list">
+				<component :is="allSettingComponents" />
+				<!--<DeviceSettingItem :setting="device_settings[0]"/>-->
+				<!--<Label col="0" :id="setting.name" :text="setting.display_name" />-->
+				<!--<Label col="1" v-model="setting.value" />-->
+				<!--<Label col="2" class="fa" :text="String.fromCharCode(0xf054)" />-->
+			</StackLayout>
 			<ListView ref="settingList" height="100%" for="setting in device_settings">
 				<v-template>
 					<GridLayout class="setting" rows="auto" columns="*, *, *" width="100%">
@@ -168,6 +176,23 @@ export default class DeviceSettings extends Vue {
 			this.settingComponents[setting.name] = setting.value;
 			return component;
 		};
+	}
+
+	get allSettingComponents(): any {
+		let components = {
+			template: `<DeviceSettingItem :setting="setting" />`,
+			data: () => ({
+				setting: this.device_settings[0]
+			})
+		};
+		return components;
+	}
+
+	get settingComponentTemplate(): string {
+		// return settings.map((e) => {
+		// 	return "<DeviceSettingItem setting"
+		// }).join("\n");
+		return "";
 	}
 	
 	get selected_device(): string {
