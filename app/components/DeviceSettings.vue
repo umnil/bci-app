@@ -5,21 +5,7 @@
 		</ActionBar>
 		<StackLayout>
 			<Label class="setting-list-label" text="Device Settings" />
-			<StackLayout class="setting-list">
-				<component :is="allSettingComponents" />
-				<!--<DeviceSettingItem :setting="device_settings[0]"/>-->
-				<!--<Label col="0" :id="setting.name" :text="setting.display_name" />-->
-				<!--<Label col="1" v-model="setting.value" />-->
-				<!--<Label col="2" class="fa" :text="String.fromCharCode(0xf054)" />-->
-			</StackLayout>
-			<ListView ref="settingList" height="100%" for="setting in device_settings">
-				<v-template>
-					<GridLayout class="setting" rows="auto" columns="*, *, *" width="100%">
-						<Label col="0" colSpan="1" class="setting-text" :text="setting.display_name" />
-						<component col="1" colSpan="2" :is="settingComponent(setting)" />
-					</GridLayout>
-				</v-template>
-			</ListView>
+			<component :is="allSettingComponents" />
 		</StackLayout>
 	</Page>
 </template>
@@ -38,110 +24,27 @@ export default class DeviceSettings extends Vue {
 	// Members & Attributes
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate = this.bus.cd;
-	settings: any[] = [];
-	settingComponents: {} = {};
+	settings: any[] = this.device_settings;
 
 	// Methods
 	constructor() {
 		super();
 		this.bus.DeviceSettings = this;
+		this.settings = this.device_settings;
 	}
 
-	onChange(args): void {
-		let valueMap: object = {
-			TextField: "text",
-			Slider: "value"
-		};
-		let input: any = args.object;
-		let settingName: string = input.id;
-		let settingType: string = this.getSettingByName(settingName).type;
-		let value: any = input[valueMap[settingType]];
-		this.settingComponents[settingName] = value;
-	}
-
-	switchValue(args): void {
-		let input: any = args.object;
-		let settingName: string = input.id;
-		let settingType: string = this.getSettingByName(settingName).type;
-		this.settingComponents[settingName] = !this.settingComponents[settingName];
-		if(this.settingComponents[settingName] == true) {
-			if(
-				settingName == 'calibrating' ||
-				settingName == 'assessingAccuracy'
-			) this.startCalibration();
-		}
-	}
-
-	setting2attrs(setting: any): string {
-		let reservedValues: string[] = [
-			'type',
-			'name',
-			'display_name',
-			'value'
-		];
-		return Object.keys(setting)
-			.filter(e => !reservedValues.includes(e))
-			.map(e => `${e}="${setting[e]}"`).join(' ');
-	}
-
-	actionValue(setting: any): string {
-		let actionMap: any = {
-			Button: "tap",
-			TextField: "returnPress",
-			Slider: "valueChange"
-		};
-
-		let processMap: any = {
-			Button: "switchValue($event)",
-			TextField: "onChange($event)",
-			Slider: "onChange($event)"
-		}
-
-		let action: string = actionMap[setting.type];
-		let process: string = processMap[setting.type];
-		let result: string = `@${action}="${process}"`;
-		return result;
-	}
-
-	reactiveValue(setting: any): string {
-		let includedTypes: any[] = [
-			"TextField",
-			"Slider"
-		];
-
-		if(includedTypes.indexOf(setting.type) != -1) return 'v-model="value"';
-
-		return "";
-	}
-
-	getSettingByName(settingName: string): any {
-		let device_settings: any[] = this.device_settings;
-		let potential_setting: any[] = device_settings.filter(e => e.name == settingName);
-		if(potential_setting.length < 1) return null;
-
-		return potential_setting[0];
-	}
+	log: (message: any)=> void = console.log.bind(console.log, "DeviceSettings: ");
 
 	setSettingValue(settingName: string, value: any): void {
-		let settingIndex: number = this.settings.reduce((r, c, i) => r = c.name == settingName ? i : -1, -1);
-		console.log(`Setting ${settingName}, index ${settingIndex} to ${value}`);
-		let curSettings: any = JSON.parse(JSON.stringify(this.settings))
-		curSettings[settingIndex]['value'] = value;
-
-		let iodevice: string = this.bus.settings_io;
-		let deviceIndex: number = this.io_device_array.reduce((r, c, i) => {r = c.device_name == this.selected_device ? i : r;return r;}, -1);
-		let inputSettings: any = null; // JSON.parse(JSON.stringify(this.cd.device_settings[iodevice]));
-		inputSettings['devices'][deviceIndex]['device_settings'] = curSettings;
+		let potential_setting: any[] = this.settings.filter(e=>e.name==settingName);
+		if(potential_setting.length < 1) {
+			this.log(`Failed to get setting name for "${settingName}"`);
+		}
+		let setting: any = potential_setting[0];
+		setting.value = value;
 	}
 
 	saveSettings(): void {
-		let curSettings: any = JSON.parse(JSON.stringify(this.settings));
-		curSettings.map(setting => {
-			setting.value = this.settingComponents[setting.name];
-			return setting;
-		});
-		console.log(curSettings);
-		this.settings = curSettings;
 		this.device_settings = this.settings;
 	}
 
@@ -154,47 +57,24 @@ export default class DeviceSettings extends Vue {
 	}
 
 	stopCalibrating(): void {
-		this.settingComponents['calibrating'] = false;
-		this.settingComponents['assessingAccuracy'] = false;
+		this.setSettingValue('calibrating', false);
+		this.setSettingValue('assessingAccuracy', false);
 		this.saveSettings();
 	}
 
 	// Computeds
-	get settingComponent(): any {
-		return (setting) => {
-			console.log(JSON.stringify(setting));
-			let template: string = `<${setting.type} id="${setting.name}" class="setting-input" col="1" colSpan="2" ${this.setting2attrs(setting)} ${this.actionValue(setting)} ${this.reactiveValue(setting)} />`;
-			console.log(template);
-			let component = {
-				template: template,
-				data: () => ({
-					value: setting.value,
-					onChange: this.onChange.bind(this),
-					switchValue: this.switchValue.bind(this)
-				}),
-			};
-			this.settingComponents[setting.name] = setting.value;
-			return component;
-		};
-	}
-
 	get allSettingComponents(): any {
+		let n_settings: number = this.device_settings.length;
+		let template: string = this.device_settings.map((e,i)=>`<DeviceSetting${e.type} :setting="setting[${i}]" />`).join("");
 		let components = {
-			template: `<DeviceSettingItem :setting="setting" />`,
+			template: `<StackLayout class="setting-list">${template}</StackLayout>`,
 			data: () => ({
-				setting: this.device_settings[0]
+				setting: this.device_settings
 			})
 		};
 		return components;
 	}
 
-	get settingComponentTemplate(): string {
-		// return settings.map((e) => {
-		// 	return "<DeviceSettingItem setting"
-		// }).join("\n");
-		return "";
-	}
-	
 	get selected_device(): string {
 		return this.bus.settings_selected_device;
 	}
