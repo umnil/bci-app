@@ -2,7 +2,7 @@
 	<GridLayout :rows="nRows" columns="*, auto">
 		<Label row="0" col="0" class="setting-item-label" :text="setting.display_name" @tap="toggle" />
 		<Label row="0" col="1" :text="setting.value" @tap="toggle" />
-		<Slider v-if="show" row="1" col="0" colSpan="2" v-model="setting.value" :minValue="setting.minValue" :maxValue="setting.maxValue" />
+		<Slider width="80%" v-if="show" row="1" col="0" colSpan="2" v-model="setting.value" :minValue="setting.minValue" :maxValue="setting.maxValue" />
 	</GridLayout>
 </template>
 
@@ -42,11 +42,4 @@ export default class DeviceSettingSlider extends Vue {
 <style lang="scss">
 @import "../../app.scss";
 
-Slider {
-	margin: 0px 30px;
-}
-
-GridLayout {
-	hight: 44px;
-}
 </style>
