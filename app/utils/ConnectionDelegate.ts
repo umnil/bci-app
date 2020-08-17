@@ -227,14 +227,14 @@ export default class ConnectionDelegate {
 		}
 	}
 
-	private getInitialValue(): void {
-		this.log("Getting Initial Value!");
-		this.bluetooth.streamRead(this.deviceSettingRequestOptions).then(
+	async readDeviceSettings(): Promise<void> {
+		this.log("Reading Device Settings");
+		return this.bluetooth.streamRead(this.deviceSettingRequestOptions).then(
 			(result: ReadResult) => {
 				this.updateDeviceSettings(result);
 			},
 			(err) => {
-				this.log(`Failed to get initial avlue | ${err}`);
+				this.log(`Failed to read device settings| ${err}`);
 			}
 		);
 	}
@@ -258,7 +258,7 @@ export default class ConnectionDelegate {
 		await this.writeDeviceData();
 
 		// reload
-		await this.getInitialValue();
+		await this.readDeviceSettings();
 	}
 
 	async setOutputDeviceData(outputDeviceData: any): Promise<void> {
@@ -266,7 +266,7 @@ export default class ConnectionDelegate {
 		await this.writeDeviceData();
 
 		// reload
-		await this.getInitialValue();
+		await this.readDeviceSettings();
 	}
 
 	async writeDeviceData(): Promise<void> {
@@ -282,7 +282,7 @@ export default class ConnectionDelegate {
 			()=>this.log("writeSysCtrl: Success"),
 			(err)=>this.log(`writeSysCtrl: Error | ${err}`)
 		);
-		this.getInitialValue();
+		this.readDeviceSettings();
 	}
 
 	async calibrationSubscribe(cb: (any)=>void): Promise<void> {
@@ -397,7 +397,7 @@ export default class ConnectionDelegate {
 		notifyOptions['onNotify'] = this.handleNotifyUpdate.bind(this);
 
 		if(this.isEcoglinkAvailable) {
-			this.getInitialValue();
+			this.readDeviceSettings();
 			this.bluetooth.startNotifying(notifyOptions)
 				.then(() => {
 					this.isNotifying = true;
