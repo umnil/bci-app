@@ -1,5 +1,5 @@
 <template>
-	<Page>
+	<Page @navigatingFrom="refreshSettings">
 		<ActionBar id="test" :title="selected_device">
 			<ActionItem @tap="saveSettings" ios.position="right" android.position="popup">Save</ActionItem>
 		</ActionBar>
@@ -16,6 +16,7 @@ import { Switch } from 'tns-core-modules/ui/Switch';
 import { Page } from 'tns-core-modules/ui/Page';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
+import DeviceList from './DeviceList';
 import Calibrate from './Calibrate';
 
 @Component
@@ -24,8 +25,9 @@ export default class DeviceSettings extends Vue {
 	// Members & Attributes
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate = this.bus.cd;
+	private deviceList: DeviceList = this.bus.deviceList;
 	settings: any[] = this.device_settings;
-	flags: object = {
+	flags: any = {
 		'changed': false
 	};
 
@@ -37,6 +39,12 @@ export default class DeviceSettings extends Vue {
 	}
 
 	log: (message: any)=> void = console.log.bind(console.log, "DeviceSettings: ");
+
+	refreshSettings(): void {
+		if(this.flags.changed) {
+			this.deviceList.refreshSettings();
+		}
+	}
 
 	setSettingValue(settingName: string, value: any): void {
 		let potential_setting: any[] = this.settings.filter(e=>e.name==settingName);
@@ -89,7 +97,6 @@ export default class DeviceSettings extends Vue {
 		if(cur_device.hasOwnProperty('device_settings')) {
 			device_settings = cur_device['device_settings'];
 		}
-		this.settings = device_settings;
 		return device_settings;
 	}
 
@@ -144,10 +151,6 @@ export default class DeviceSettings extends Vue {
 	}
 
 	// Watches
-	@Watch("flags.changed")
-	settingsChange(): void {
-		this.cd.log("WOWW");
-	}
 
 	// Properties
 }
