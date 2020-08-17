@@ -25,6 +25,9 @@ export default class DeviceSettings extends Vue {
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate = this.bus.cd;
 	settings: any[] = this.device_settings;
+	flags: object = {
+		'changed': false
+	};
 
 	// Methods
 	constructor() {
@@ -65,11 +68,12 @@ export default class DeviceSettings extends Vue {
 	// Computeds
 	get allSettingComponents(): any {
 		let n_settings: number = this.device_settings.length;
-		let template: string = this.device_settings.map((e,i)=>`<DeviceSetting${e.type} :setting="setting[${i}]" />`).join("");
+		let template: string = this.device_settings.map((e,i)=>`<DeviceSetting${e.type} :setting="setting[${i}]" :flags="flags" />`).join("");
 		let components = {
 			template: `<StackLayout class="setting-list">${template}</StackLayout>`,
 			data: () => ({
-				setting: this.device_settings
+				setting: this.settings,
+				flags: this.flags
 			})
 		};
 		return components;
@@ -140,6 +144,10 @@ export default class DeviceSettings extends Vue {
 	}
 
 	// Watches
+	@Watch("flags.changed")
+	settingsChange(): void {
+		this.cd.log("WOWW");
+	}
 
 	// Properties
 }
