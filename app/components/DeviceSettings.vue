@@ -1,11 +1,23 @@
 <template>
-	<Page>
-		<ActionBar id="test" :title="selected_device">
-			<ActionItem @tap="saveSettings" ios.position="right" android.position="popup">Save</ActionItem>
-		</ActionBar>
+	<Page @navigatingFrom="refreshSettings">
+		<ActionBar id="test" :title="selected_device" />
 		<StackLayout>
-			<Label class="setting-list-label" text="Device Settings" />
-			<component :is="allSettingComponents" />
+			<StackLayout v-show="!busy">
+				<Label class="setting-list-label" text="Save setting changes" />
+				<GridLayout v-show="flags.changed" class="setting-list" rows="44" columns="*">
+					<Button col="0" class="setting-item-label" text="Save Settings" @tap="saveSettings" />
+				</GridLayout>
+				<GridLayout v-show="!flags.changed" class="setting-list" rows="44" columns="*">
+					<Label col="0" class="setting-item-label disabled" text="Save Settings" />
+				</GridLayout>
+	
+				<Label class="setting-list-label" text="Device Settings" />
+				<component :is="allSettingComponents" />
+			</StackLayout>
+			<StackLayout v-show="busy">
+				<Label horizontalAlignment="center" text="Please wait..." />
+				<ActivityIndicator :busy="busy"></ActivityIndicator>
+			</StackLayout>
 		</StackLayout>
 	</Page>
 </template>
@@ -15,7 +27,9 @@ import { EventData } from 'tns-core-modules/data/observable';
 import { Switch } from 'tns-core-modules/ui/Switch';
 import { Page } from 'tns-core-modules/ui/Page';
 import { Vue, Component, Watch } from 'vue-property-decorator';
+import Dialogs from 'tns-core-modules/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
+import DeviceList from './DeviceList';
 import Calibrate from './Calibrate';
 
 @Component
@@ -24,7 +38,12 @@ export default class DeviceSettings extends Vue {
 	// Members & Attributes
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate = this.bus.cd;
+	private deviceList: DeviceList = this.bus.deviceList;
+	private busy: boolean = false;
 	settings: any[] = this.device_settings;
+	flags: any = {
+		'changed': false
+	};
 
 	// Methods
 	constructor() {
@@ -34,6 +53,12 @@ export default class DeviceSettings extends Vue {
 	}
 
 	log: (message: any)=> void = console.log.bind(console.log, "DeviceSettings: ");
+
+	refreshSettings(): void {
+		if(this.flags.changed) {
+			this.deviceList.refreshSettings();
+		}
+	}
 
 	setSettingValue(settingName: string, value: any): void {
 		let potential_setting: any[] = this.settings.filter(e=>e.name==settingName);
@@ -65,11 +90,12 @@ export default class DeviceSettings extends Vue {
 	// Computeds
 	get allSettingComponents(): any {
 		let n_settings: number = this.device_settings.length;
-		let template: string = this.device_settings.map((e,i)=>`<DeviceSetting${e.type} :setting="setting[${i}]" />`).join("");
+		let template: string = this.device_settings.map((e,i)=>`<DeviceSetting${e.type} :setting="setting[${i}]" :flags="flags" />`).join("");
 		let components = {
 			template: `<StackLayout class="setting-list">${template}</StackLayout>`,
 			data: () => ({
-				setting: this.device_settings
+				setting: this.settings,
+				flags: this.flags
 			})
 		};
 		return components;
@@ -85,11 +111,11 @@ export default class DeviceSettings extends Vue {
 		if(cur_device.hasOwnProperty('device_settings')) {
 			device_settings = cur_device['device_settings'];
 		}
-		this.settings = device_settings;
 		return device_settings;
 	}
 
 	set device_settings(new_device_settings: any[]) {
+		this.busy = true;
 		let cur_device: any = this.selected_device_data;
 		cur_device['device_settings'] = new_device_settings;
 		console.log(`New Device Settings: ${JSON.stringify(cur_device)}`);
@@ -136,7 +162,10 @@ export default class DeviceSettings extends Vue {
 		let func_name: string = `set${capitalize(_io)}DeviceData`;
 		console.log(`function: ${func_name}`);
 		console.log(`f: ${this.cd[func_name]}`);
-		(this.cd[func_name])(device_data);
+		(this.cd[func_name])(device_data).then(
+			()=>{this.busy=false;this.flags.changed=false;},
+			(err)=>{this.busy=false;Dialogs.alert("Failed to save settings");}
+		);
 	}
 
 	// Watches
