@@ -229,12 +229,15 @@ export default class ConnectionDelegate {
 
 	async readDeviceSettings(): Promise<void> {
 		this.log("Reading Device Settings");
+		this.bluetooth.dataUtil.log = this.log;
 		return this.bluetooth.streamRead(this.deviceSettingRequestOptions).then(
 			(result: ReadResult) => {
 				this.updateDeviceSettings(result);
+				this.bluetooth.dataUtil.log = this.bluetooth.dataUtil.defaultLog;
 			},
 			(err) => {
-				this.log(`Failed to read device settings| ${err}`);
+				this.log(`Failed to read device settings | ${err}`);
+				this.bluetooth.dataUtil.log = this.bluetooth.dataUtil.defaultLog;
 			}
 		);
 	}

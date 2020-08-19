@@ -3,6 +3,9 @@ import { ReadRequest, WriteRequest } from './RequestQueue';
 
 export default class DataUtil {
 
+	defaultLog: (message: string)=>void = console.log.bind(console);
+	log: (message: string)=>void = defaultLog;
+
 	value2hex(value: any): string {
 		let jsonString: string = JSON.stringify(value);
 		return this.str2hex(jsonString);
@@ -51,8 +54,8 @@ export default class DataUtil {
 		curDataView.forEach((e, i) => {dataView[dataPointer+i] = e;});
 		(request as any).pointer += data.byteLength;
 
-		console.log(`New Data obtained: ${String.fromCharCode.apply(null, new Uint8Array(data))}`);
-		console.log(`Current Data: ${String.fromCharCode.apply(null, new Uint8Array(request.result))}`);
+		this.log(`New Data obtained: ${String.fromCharCode.apply(null, new Uint8Array(data))}`);
+		this.log(`Current Data: ${String.fromCharCode.apply(null, new Uint8Array(request.result))}`);
 	}
 
 }

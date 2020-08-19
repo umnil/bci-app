@@ -15,7 +15,7 @@ export interface Transmission {
 
 export class BLEStream extends Bluetooth {
 
-	private dataUtil: DataUtil = new DataUtil();
+	dataUtil: DataUtil = new DataUtil();
 	private requestQueue: RequestQueue = new RequestQueue();
 	private chunkSize: number;
 
