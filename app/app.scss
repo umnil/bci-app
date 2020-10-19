@@ -59,6 +59,11 @@ Button {
 	font-size: 18pt;
 }
 
+.disabled {
+	color: $systemGray;
+	font-size: 18pt;
+}
+
 .setting-list-label {
 	text-transform: uppercase;
 	letter-spacing: 0.001em;

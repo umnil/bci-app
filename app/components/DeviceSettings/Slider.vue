@@ -14,6 +14,7 @@ export default class DeviceSettingSlider extends Vue {
 
 	// Properties
 	@Prop() setting: any;
+	@Prop() flags: any;
 
 	// Members
 	show: boolean = false;
@@ -36,6 +37,13 @@ export default class DeviceSettingSlider extends Vue {
 		}
 		return Array(n_rows).fill(0).map(e=>`${row_height}`).join();
 	}
+
+	// Watch
+	@Watch("setting.value")
+	valueChange(): void {
+		this.flags.changed = true;
+	}
+
 }
 </script>
 

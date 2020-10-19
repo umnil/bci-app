@@ -39,6 +39,7 @@ export default class DeviceList extends Vue {
 	// Methods
 	constructor() {
 		super();
+		this.bus.deviceList = this;
 	}
 
 	toSettings(device: any): void {
@@ -73,6 +74,14 @@ export default class DeviceList extends Vue {
 		this.cd[`set${this.listSet}DeviceData`](deviceData).then(
 			()=>{this.busy = false;},
 			(err)=>{this.busy = false;Dialogs.alert("Failed");}
+		);
+	}
+
+	refreshSettings(): void {
+		this.busy = true;
+		this.cd.readDeviceSettings().then(
+			()=>{this.busy = false;},
+			(err)=>{this.bus = false;Dialogs.alert("Failed to refresh settings");}
 		);
 	}
 
