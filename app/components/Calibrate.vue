@@ -45,6 +45,7 @@ export default class Calibrate extends Vue {
 			return;
 		}
 
+		this.log(`CALIBRATE END TIME: ${new Date().toJSON()}`);
 		this.instruction = new_value;
 	}
 }
