@@ -1,7 +1,7 @@
-import * as appSettings from 'tns-core-modules/application-settings';
-import * as dialogs from 'tns-core-modules/ui/dialogs';
+import * as appSettings from '@nativescript/core/application-settings';
+import * as dialogs from '@nativescript/core/ui/dialogs';
 import { BLEStream } from './blestream/BLEStream';
-import { ReadResult } from 'nativescript-bluetooth';
+import { ReadResult } from '@nativescript-community/ble';
 import DataUtil from './blestream/DataUtil';
 
 export default class ConnectionDelegate {

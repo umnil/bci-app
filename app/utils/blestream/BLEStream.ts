@@ -6,7 +6,7 @@ import {
 	ReadOptions,
 	WriteOptions,
 	ReadResult,
-} from 'nativescript-bluetooth';
+} from '@nativescript-community/ble';
 
 export interface Transmission {
 	msg: string;

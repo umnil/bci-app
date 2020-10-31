@@ -17,9 +17,9 @@
 </template>
 
 <script lang="ts">
-import { EventData } from "tns-core-modules/data/observable";
-import { Frame } from "tns-core-modules/ui/frame";
-import { Page } from "tns-core-modules/ui/page";
+import { EventData } from "@nativescript/core/data/observable";
+import { Frame } from "@nativescript/core/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
 import { Vue, Component, Watch} from 'vue-property-decorator';
 import ConnectionDelegate from '../../utils/ConnectionDelegate';
 import BTHome from './Home.vue';
