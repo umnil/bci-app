@@ -91,9 +91,9 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss" scoped>
-@import '../app';    
+	@import '../app';
 
-.menu-icon {
-	font-size: 28px;
-}
+	.menu-icon {
+		font-size: 28px;
+	}
 </style>

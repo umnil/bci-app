@@ -2,10 +2,10 @@ import { NativeScriptConfig } from '@nativescript/core'
 
 export default {
   id: 'edu.miami.prasad.bmimobile',
-  appResourcesPath: 'app/App_Resources',
+  appResourcesPath: 'App_Resources',
   android: {
     v8Flags: '--expose_gc',
     markingMode: 'none',
   },
-  appPath: 'app',
+  appPath: 'src',
 } as NativeScriptConfig
