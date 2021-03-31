@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator';
-import Dialogs from 'tns-core-modules/ui/dialogs';
+import Dialogs from '@nativescript/core/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
 import DeviceSettings from './DeviceSettings';
 

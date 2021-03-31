@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import * as appSettings from 'tns-core-modules/application-settings';
+import * as appSettings from '@nativescript/core/application-settings';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
 import ItemSelector from './Editors/ItemSelector';

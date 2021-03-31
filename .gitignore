@@ -13,3 +13,4 @@ report.*.json
 
 # Backups
 .update_backup/
+.migration*
