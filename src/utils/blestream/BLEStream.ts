@@ -69,6 +69,7 @@ export class BLEStream extends Bluetooth {
 		// We're finished with this request, pop it off the stack
 		this.requestQueue.popReadQueue;
 		return {
+			peripheralUUID: readRequest.peripheralUUID,
 			serviceUUID: readRequest.serviceUUID,
 			characteristicUUID: readRequest.characteristicUUID,
 			value: readRequest.result
