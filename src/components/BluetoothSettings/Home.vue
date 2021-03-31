@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import * as appSettings from 'tns-core-modules/application-settings';
+import * as appSettings from '@nativescript/core/application-settings';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import BluetoothLog from './Log';
 import ConnectionDelegate from '../../utils/ConnectionDelegate';

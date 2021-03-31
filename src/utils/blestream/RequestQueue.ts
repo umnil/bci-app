@@ -1,4 +1,4 @@
-import { ReadOptions, WriteOptions } from 'nativescript-bluetooth';
+import { ReadOptions, WriteOptions } from '@nativescript-community/ble';
 
 export interface ReadRequest extends ReadOptions {
 	id: string;

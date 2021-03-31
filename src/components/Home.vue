@@ -67,24 +67,24 @@ export default class Home extends Vue {
 </script>
 
 <style lang="scss" scoped>
-@import "../app";
+	@import "../app";
 
-Label {
-	font-size: 28px;
-}
-
-.device-label {
-	border-bottom: 5px solid black;
-	margin: 20% 0px 0px 0px;
-	text-align:center;
-}
-
-.device-name {
-	background-color: $orange;
-	border-color: $orange;
-	border-radius: 20px;
-	margin: 0px 20px;
-	padding: 10px 0px;
-}
+	Label {
+		font-size: 28px;
+	}
+	
+	.device-label {
+		border-bottom: 5px solid black;
+		margin: 20% 0px 0px 0px;
+		text-align:center;
+	}
+	
+	.device-name {
+		background-color: $orange;
+		border-color: $orange;
+		border-radius: 20px;
+		margin: 0px 20px;
+		padding: 10px 0px;
+	}
 
 </style>

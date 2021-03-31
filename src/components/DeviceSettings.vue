@@ -23,11 +23,11 @@
 </template>
 
 <script lang="ts">
-import { EventData } from 'tns-core-modules/data/observable';
-import { Switch } from 'tns-core-modules/ui/Switch';
-import { Page } from 'tns-core-modules/ui/Page';
+import { EventData } from '@nativescript/core/data/observable';
+import { Switch } from '@nativescript/core/ui/Switch';
+import { Page } from '@nativescript/core/ui/Page';
 import { Vue, Component, Watch } from 'vue-property-decorator';
-import Dialogs from 'tns-core-modules/ui/dialogs';
+import Dialogs from '@nativescript/core/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
 import DeviceList from './DeviceList';
 import Calibrate from './Calibrate';

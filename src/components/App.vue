@@ -20,11 +20,11 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import { EventData  } from 'tns-core-modules/data/observable';
-import * as dialogs from 'tns-core-modules/ui/dialogs';
+import { EventData  } from '@nativescript/core/data/observable';
+import * as dialogs from '@nativescript/core/ui/dialogs';
 import Drawer from './Drawer.vue';
 import Home from './Home.vue';
-import * as appSettings from 'tns-core-modules/application-settings';
+import * as appSettings from '@nativescript/core/application-settings';
 import ConnectionDelegate from "../utils/ConnectionDelegate";
 import { BLEStatusChecker } from "../utils/BLEStatusChecker";
 
@@ -91,9 +91,9 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss" scoped>
-@import '../app';    
+	@import '../app';
 
-.menu-icon {
-	font-size: 28px;
-}
+	.menu-icon {
+		font-size: 28px;
+	}
 </style>
