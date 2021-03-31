@@ -1,6 +1,6 @@
 {
   "name": "bmi-mobile",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "Mobile phone application interface for ecoglink BMI",
   "author": "Kevin Davis <kevin.davis@med.miami.edu>",
   "license": "MIT",
