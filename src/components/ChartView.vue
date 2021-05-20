@@ -1,12 +1,16 @@
 <template>
 	<Page>
 		<ActionBar "Chart View" />
-		<RadCartesianChart allowAnimations="false">
-			<LineSeries v-tkCartesianSeries :items="data" categoryProperty="X" valueProperty="Y"></LineSeries>
-			<LinearAxis v-tkCartesianVerticalAxis horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
-			<LinearAxis v-tkCartesianHorizontalAxis allowPan="true" allowZoom="true"></LinearAxis>
-		</RadCartesianChart>
-		<Button text="HI" />
+		<StackLayout>
+			<Button text="start" @tap="start()"/>
+			<Button text="stop" @tap="stop()"/>
+			<RadCartesianChart allowAnimations="false" height=500>
+				<LineSeries v-tkCartesianSeries :items="data" categoryProperty="X" valueProperty="Y"></LineSeries>
+				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
+				<LinearAxis v-tkCartesianHorizontalAxis ref="XAxis" maximum=10 allowPan="true" allowZoom="true"></LinearAxis>
+			</RadCartesianChart>
+			<Button text="trigger" @tap="trigger()"/>
+		</StackLayout>
 	</Page>
 </template>
 
@@ -14,19 +18,35 @@
 import * as dialogs from '@nativescript/core/ui/dialogs';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import { LinearAxis, ChartAxisHorizontalLocation, ChartAxisVerticalLocation, LogarithmicAxis } from 'nativescript-ui-chart';
+import { ObservableArray } from "@nativescript/core/data/observable-array";
+
+enum Acceleration {
+	Decelerating = -1,
+	Constant = 0,
+	Accelerating = 1
+}
 
 @Component
 export default class ChartView extends Vue {
-	cur_x: number = 2;
-	data: any[] = [];
+	time_scale: number = 1;  // Seconds
+	cur_time: number = 0;
+	cur_velocity: number = 0;
+	data: ObservableArray<any> = new ObservableArray([]);
+	private timer: ReturnType<typeof setTimeout>;
+	private acceleration_state: Acceleration = Acceleration.Constant;
+	private refresh_rate: number = 10;  // 2 Hz
+	private acceleration_scale: number = 5 / this.refresh_rate;
+	private acceleration_cache: Acceleration = Acceleration.Decelerating;
+
+	x_window_size: number = 20;
 
 	constructor() {
 		super();
-		let x: number[] = this.range(0, 5, 0.5);
-		let y: number[] = x; // .map(i => Math.pow(i, 2));
-		this.data.push({X:0, Y:0});
-		this.data.push({X:1, Y:1});
-		// this.start();
+		let x: number[] = this.range(-1, 0, 0.05);
+		let y: number[] = x;
+		x.forEach((e,i) => {
+			this.data.push({X:e, Y:0});
+		});
 	}
 
 	range(start, end, step=1): number[] {
@@ -36,18 +56,54 @@ export default class ChartView extends Vue {
 	}
 
 	start() {
-		setTimeout(()=>{
-			this.addPoint();
+		let time_i: Date = new Date();
+		let wait_time: number = 1000 / this.refresh_rate;
+		this.timer = setTimeout(()=>{
+			this.addPoint(time_i);
 			this.start();
-		}, 500);
+		}, wait_time);
 	}
 
-	addPoint(): void {
-		let x: number = this.cur_x++;
+	stop() {
+		clearTimeout(this.timer);
+	}
+
+	addPoint(time_i: Date): void {
+		const time_f: Date = new Date();
+		const delta_time: number = time_f.valueOf() - time_i.valueOf();
+		const acceleration: number = this.acceleration_scale * this.acceleration_state;
+
+		this.cur_velocity += acceleration;
+		const x: number = this.cur_time += (delta_time * this.time_scale/1000);
+		const y: number = this.cur_velocity;
 		this.data.push({
 			X: x,
-			Y: x
-		})
+			Y: y
+		});
+		this.XAxis.minimum = (x - (this.x_window_size / 2)) > 0 ? (x - this.x_window_size / 2) : 0;
+		this.XAxis.maximum = (x + this.x_window_size / 2) > this.x_window_size ? (x + this.x_window_size / 2) : this.x_window_size;
+	}
+
+	trigger(): void {
+		if (this.acceleration_state != Acceleration.Constant) {
+			this.acceleration_cache = this.acceleration_state;
+			this.acceleration_state = Acceleration.Constant;
+		}
+		else {
+			this.acceleration_state = -1 * this.acceleration_cache;
+		}
+	}
+
+	removePoint(): void {
+		this.data.pop()
+	}
+	
+	get XAxis(): LinearAxis {
+		return (this.$refs.XAxis as any).nativeView;
+	}
+
+	get YAxis(): LinearAxis {
+		return (this.$refs.YAxis as any).nativeView;
 	}
 }
 
