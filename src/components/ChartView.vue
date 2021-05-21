@@ -2,16 +2,15 @@
 	<Page>
 		<ActionBar "Chart View" />
 		<GridLayout columns="*, *, *, *, *, *", rows="auto, *, auto">
-			<Button text="play" @tap="start()" row="0" col="0" colSpan="2" />
-			<Button text="pause" @tap="stop()" row="0" col="2" colSpan="2" />
-			<Button text="settings" row="0" col="4" colSpan="2" />
+			<Button :text="toggle_icon" class="fa icon-row" @tap="toggle()" row="0" col="0" colSpan="3" />
+			<Button :text="settings_icon" class="fa icon-row" row="0" col="4" colSpan="3" />
 			<RadCartesianChart allowAnimations="false" height=500 row="1" col="0" colSpan="6">
 				<LineSeries v-tkCartesianSeries :items="data" categoryProperty="X" valueProperty="Y"></LineSeries>
 				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
 				<LinearAxis v-tkCartesianHorizontalAxis ref="XAxis" maximum=10 allowPan="true" allowZoom="true"></LinearAxis>
 			</RadCartesianChart>
 			<Button text="trigger" @tap="trigger()" row="2" col="0" colSpan="3" />
-			<Button text="reset" @tap="reset()" row="2" col="3" colSpan="3" />
+			<Button :text="reset_icon" class="fa icon-row" @tap="reset()" row="2" col="3" colSpan="3" />
 		</GridLayout>
 	</Page>
 </template>
@@ -30,10 +29,16 @@ enum Acceleration {
 
 @Component
 export default class ChartView extends Vue {
+
+	private play_icon: string = String.fromCharCode(0xf04b);
+	private pause_icon: string = String.fromCharCode(0xf04c);
+	private settings_icon: string = String.fromCharCode(0xf013);
+	private reset_icon: string = String.fromCharCode(0xf01e);
 	time_scale: number = 1;  // Seconds
 	cur_time: number = 0;
 	cur_velocity: number = 0;
 	data: ObservableArray<any> = new ObservableArray([]);
+	running: boolean = false;
 	private timer: ReturnType<typeof setTimeout>;
 	private acceleration_state: Acceleration = Acceleration.Constant;
 	private refresh_rate: number = 10;  // 2 Hz
@@ -66,6 +71,7 @@ export default class ChartView extends Vue {
 	}
 
 	start() {
+		this.running = true;
 		let time_i: Date = new Date();
 		let wait_time: number = 1000 / this.refresh_rate;
 		this.timer = setTimeout(()=>{
@@ -75,7 +81,12 @@ export default class ChartView extends Vue {
 	}
 
 	stop() {
+		this.running = false;
 		clearTimeout(this.timer);
+	}
+
+	toggle(): void {
+		this.running ? this.stop() : this.start();
 	}
 
 	addPoint(time_i: Date): void {
@@ -129,9 +140,19 @@ export default class ChartView extends Vue {
 	get YAxis(): LinearAxis {
 		return (this.$refs.YAxis as any).nativeView;
 	}
+
+	get toggle_icon(): string {
+		return this.running ? this.pause_icon : this.play_icon;
+	}
 }
 
 </script>
 
 <style lang="scss" scoped>
+@import "../app.scss";
+.icon-row {
+	font-size: 28pt;
+	padding: 10px 0px;
+	color: $orange;
+}
 </style>
