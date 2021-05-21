@@ -1,16 +1,16 @@
 <template>
 	<Page>
 		<ActionBar "Chart View" />
-		<StackLayout>
-			<Button text="start" @tap="start()"/>
-			<Button text="stop" @tap="stop()"/>
-			<RadCartesianChart allowAnimations="false" height=500>
+		<GridLayout columns="*, *, *, *, *, *", rows="auto, auto *, auto">
+			<Button text="start" @tap="start()" row="0" col="0" colSpan="6" />
+			<Button text="stop" @tap="stop()" row="1" col="0" colSpan="6" />
+			<RadCartesianChart allowAnimations="false" height=500 row="2" col="0" colSpan="6">
 				<LineSeries v-tkCartesianSeries :items="data" categoryProperty="X" valueProperty="Y"></LineSeries>
 				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
 				<LinearAxis v-tkCartesianHorizontalAxis ref="XAxis" maximum=10 allowPan="true" allowZoom="true"></LinearAxis>
 			</RadCartesianChart>
-			<Button text="trigger" @tap="trigger()"/>
-		</StackLayout>
+			<Button text="trigger" @tap="trigger()" row="3" col="0" colSpan="6" />
+		</GridLayout>
 	</Page>
 </template>
 
