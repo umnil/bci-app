@@ -10,7 +10,8 @@
 				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
 				<LinearAxis v-tkCartesianHorizontalAxis ref="XAxis" maximum=10 allowPan="true" allowZoom="true"></LinearAxis>
 			</RadCartesianChart>
-			<Button text="trigger" @tap="trigger()" row="2" col="0" colSpan="6" />
+			<Button text="trigger" @tap="trigger()" row="2" col="0" colSpan="3" />
+			<Button text="reset" @tap="reset()" row="2" col="3" colSpan="3" />
 		</GridLayout>
 	</Page>
 </template>
@@ -56,6 +57,14 @@ export default class ChartView extends Vue {
 		return Array(n).fill(start).map((e,i) => e+i*step);
 	}
 
+	reset(): void {
+		this.stop();
+		this.data = new ObservableArray([]);
+		this.cur_time = 0;
+		this.cur_velocity = 0;
+		this.centerAxisView();
+	}
+
 	start() {
 		let time_i: Date = new Date();
 		let wait_time: number = 1000 / this.refresh_rate;
@@ -81,8 +90,7 @@ export default class ChartView extends Vue {
 			X: x,
 			Y: y
 		});
-		this.XAxis.minimum = (x - (this.x_window_size / 2)) > 0 ? (x - this.x_window_size / 2) : 0;
-		this.XAxis.maximum = (x + this.x_window_size / 2) > this.x_window_size ? (x + this.x_window_size / 2) : this.x_window_size;
+		this.centerAxisView();
 	}
 
 	trigger(): void {
@@ -95,10 +103,25 @@ export default class ChartView extends Vue {
 		}
 	}
 
-	removePoint(): void {
-		this.data.pop()
+	/**
+	 * Center the end point to a fraction of the window view
+	 *
+	 * @param	number	percent		100% will place the cursor at the far right
+	 * @returns void
+	 */
+	centerAxisView(percent: number = 0.5): void {
+		const x: number = this.cur_time;
+		const displacement_minimum: number = this.x_window_size * percent;
+		const displacement_maximum: number = this.x_window_size * (1 - percent);
+		const minimum: number = x - displacement_minimum;
+		const maximum: number = x + displacement_maximum;
+
+		// Ternary conditions are to ensure that we keep the initial window stable until
+		// the line reaches `percent` of the window size
+		this.XAxis.minimum = minimum > 0 ? minimum : 0;
+		this.XAxis.maximum = maximum > this.x_window_size ? maximum : this.x_window_size;
 	}
-	
+
 	get XAxis(): LinearAxis {
 		return (this.$refs.XAxis as any).nativeView;
 	}
