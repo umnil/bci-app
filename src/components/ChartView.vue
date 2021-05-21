@@ -35,16 +35,19 @@ export default class ChartView extends Vue {
 	private pause_icon: string = String.fromCharCode(0xf04c);
 	private settings_icon: string = String.fromCharCode(0xf013);
 	private reset_icon: string = String.fromCharCode(0xf01e);
-	time_scale: number = 1;  // Seconds
-	cur_time: number = 0;
-	cur_velocity: number = 0;
-	data: ObservableArray<any> = new ObservableArray([]);
-	running: boolean = false;
+
+	private time_scale: number = 1;  // Seconds
+	private cur_time: number = 0;
+	private cur_velocity: number = 0;
+	private refresh_rate: number = 10;  // Hz
 	private timer: ReturnType<typeof setTimeout>;
+	private running: boolean = false;
+
 	private acceleration_state: Acceleration = Acceleration.Constant;
-	private refresh_rate: number = 10;  // 2 Hz
-	private acceleration_scale: number = 5 / this.refresh_rate;
+	acceleration_scale: number = 1;
 	private acceleration_cache: Acceleration = Acceleration.Decelerating;
+
+	private data: ObservableArray<any> = new ObservableArray([]);
 
 	x_window_size: number = 20;
 
@@ -93,13 +96,15 @@ export default class ChartView extends Vue {
 	}
 
 	addPoint(time_i: Date): void {
-		// Time and acceleration calcuations
+		// Time, acceleration, and dV calcuations
 		const time_f: Date = new Date();
-		const delta_time: number = time_f.valueOf() - time_i.valueOf();
+		const delta_time: number = time_f.valueOf() - time_i.valueOf();  // in milliseconds
+		const delta_time_scaled: number = delta_time * this.time_scale / 1000;  // Convert to time scale
 		const acceleration: number = this.acceleration_scale * this.acceleration_state;
+		const delta_velocity: number = acceleration * delta_time_scaled;
 
 		// Update our velocity
-		this.cur_velocity += acceleration;
+		this.cur_velocity += delta_velocity;
 		if (this.cur_velocity < 0) {
 			this.cur_velocity = 0;
 			this.trigger();
@@ -150,7 +155,12 @@ export default class ChartView extends Vue {
 	}
 
 	toSettings(): void {
-		this.$navigateTo(ChartViewSettings);
+		let nav_properties = {
+			props: {
+				chartview: this
+			}
+		};
+		this.$navigateTo(ChartViewSettings, nav_properties);
 	}
 
 	get XAxis(): LinearAxis {
