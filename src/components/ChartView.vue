@@ -6,7 +6,7 @@
 			<Button :text="settings_icon" class="fa icon-row" row="0" col="4" colSpan="3" />
 			<RadCartesianChart allowAnimations="false" height=500 row="1" col="0" colSpan="6">
 				<LineSeries v-tkCartesianSeries :items="data" categoryProperty="X" valueProperty="Y"></LineSeries>
-				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
+				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" minimum=-4 maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
 				<LinearAxis v-tkCartesianHorizontalAxis ref="XAxis" maximum=10 allowPan="true" allowZoom="true"></LinearAxis>
 			</RadCartesianChart>
 			<Button text="trigger" @tap="trigger()" row="2" col="0" colSpan="3" />
@@ -67,6 +67,8 @@ export default class ChartView extends Vue {
 		this.data = new ObservableArray([]);
 		this.cur_time = 0;
 		this.cur_velocity = 0;
+		this.acceleration_state = Acceleration.Constant;
+		this.acceleration_cache = Acceleration.Decelerating;
 		this.centerAxisView();
 	}
 
