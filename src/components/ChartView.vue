@@ -92,17 +92,30 @@ export default class ChartView extends Vue {
 	}
 
 	addPoint(time_i: Date): void {
+		// Time and acceleration calcuations
 		const time_f: Date = new Date();
 		const delta_time: number = time_f.valueOf() - time_i.valueOf();
 		const acceleration: number = this.acceleration_scale * this.acceleration_state;
 
+		// Update our velocity
 		this.cur_velocity += acceleration;
+		if (this.cur_velocity < 0) {
+			this.cur_velocity = 0;
+			this.trigger();
+		}
+		this.cur_velocity = this.cur_velocity > 0 ? this.cur_velocity : 0;
+
+		// Convert this to X, Y
 		const x: number = this.cur_time += (delta_time * this.time_scale/1000);
 		const y: number = this.cur_velocity;
+		
+		// Add the point
 		this.data.push({
 			X: x,
 			Y: y
 		});
+
+		// Update the view
 		this.centerAxisView();
 	}
 
