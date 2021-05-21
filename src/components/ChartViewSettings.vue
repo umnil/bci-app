@@ -1,7 +1,7 @@
 <template>
 	<Page>
 		<ActionBar title="Chart View Settings" />
-		<GridLayout rows="auto, auto, auto, auto, auto, auto" columns="auto, *">
+		<GridLayout rows="auto, auto, auto, auto, auto, auto, auto, auto" columns="auto, *">
 			<Label text="Acceleration" row="0" col="0" />
 			<Label :text="acceleration" class="value" row="0" col="1" />
 			<Slider v-model="acceleration" minValue="1" maxValue="10" row="1" col="0" colSpan="2"></Slider>
@@ -13,6 +13,10 @@
 			<Label text="Point Position" row="4" col="0" />
 			<Label :text="window_percent" class="value" row="4" col="1" />
 			<Slider v-model="window_percent" minValue="10" maxValue="90" row="5" col="0" colSpan="2"></Slider>
+
+			<Label text="Refresh Rate" row="6" col="0" />
+			<Label :text="refresh_rate_text" class="value" row="6" col="1" />
+			<Slider v-model="refresh_rate" minValue="1" maxValue="100" row="7" col="0" colSpan="2"></Slider>
 		</GridLayout>
 	</Page>
 </template>
@@ -50,6 +54,19 @@ export default class ChartViewSettings extends Vue {
 	set window_percent(x: number) {
 		x = Math.round(x) / 100;
 		this.chartview.window_percent = x;
+	}
+
+	get refresh_rate(): number {
+		return this.chartview.refresh_rate;
+	}
+
+	set refresh_rate(x: number) {
+		x = Math.round(x);
+		this.chartview.refresh_rate = x;
+	}
+
+	get refresh_rate_text(): string {
+		return `${this.refresh_rate} Hz`;
 	}
 }
 </script>

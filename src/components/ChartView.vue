@@ -39,12 +39,12 @@ export default class ChartView extends Vue {
 	private time_scale: number = 1;  // Seconds
 	private cur_time: number = 0;
 	private cur_velocity: number = 0;
-	private refresh_rate: number = 10;  // Hz
 	private timer: ReturnType<typeof setTimeout>;
 	private running: boolean = false;
+	refresh_rate: number = 10;  // Hz
 
-	private acceleration_state: Acceleration = Acceleration.Constant;
 	acceleration_scale: number = 1;
+	private acceleration_state: Acceleration = Acceleration.Constant;
 	private acceleration_cache: Acceleration = Acceleration.Decelerating;
 
 	private data: ObservableArray<any> = new ObservableArray([]);
