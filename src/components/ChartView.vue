@@ -3,7 +3,7 @@
 		<ActionBar "Chart View" />
 		<GridLayout columns="*, *, *, *, *, *", rows="auto, *, auto">
 			<Button :text="toggle_icon" class="fa icon-row" @tap="toggle()" row="0" col="0" colSpan="3" />
-			<Button :text="settings_icon" class="fa icon-row" row="0" col="4" colSpan="3" />
+			<Button :text="settings_icon" class="fa icon-row" @tap="toSettings()" row="0" col="4" colSpan="3" />
 			<RadCartesianChart allowAnimations="false" height=500 row="1" col="0" colSpan="6">
 				<LineSeries v-tkCartesianSeries :items="data" categoryProperty="X" valueProperty="Y"></LineSeries>
 				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" minimum=-4 maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
@@ -20,6 +20,7 @@ import * as dialogs from '@nativescript/core/ui/dialogs';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import { LinearAxis, ChartAxisHorizontalLocation, ChartAxisVerticalLocation, LogarithmicAxis } from 'nativescript-ui-chart';
 import { ObservableArray } from "@nativescript/core/data/observable-array";
+import ChartViewSettings from './ChartViewSettings.vue';
 
 enum Acceleration {
 	Decelerating = -1,
@@ -146,6 +147,10 @@ export default class ChartView extends Vue {
 		// the line reaches `percent` of the window size
 		this.XAxis.minimum = minimum > 0 ? minimum : 0;
 		this.XAxis.maximum = maximum > this.x_window_size ? maximum : this.x_window_size;
+	}
+
+	toSettings(): void {
+		this.$navigateTo(ChartViewSettings);
 	}
 
 	get XAxis(): LinearAxis {
