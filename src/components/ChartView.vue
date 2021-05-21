@@ -50,6 +50,7 @@ export default class ChartView extends Vue {
 	private data: ObservableArray<any> = new ObservableArray([]);
 
 	x_window_size: number = 20;
+	window_percent: number = 0.5;
 
 	constructor() {
 		super();
@@ -141,7 +142,8 @@ export default class ChartView extends Vue {
 	 * @param	number	percent		100% will place the cursor at the far right
 	 * @returns void
 	 */
-	centerAxisView(percent: number = 0.5): void {
+	centerAxisView(): void {
+		const percent: number = this.window_percent;
 		const x: number = this.cur_time;
 		const displacement_minimum: number = this.x_window_size * percent;
 		const displacement_maximum: number = this.x_window_size * (1 - percent);
