@@ -1,10 +1,10 @@
 <template>
-	<Page>
+	<Page @loaded="loaded">
 		<ActionBar "Chart View" />
 		<GridLayout columns="*, *, *, *, *, *", rows="auto, *, auto">
 			<Button :text="toggle_icon" class="fa icon-row" @tap="toggle()" row="0" col="0" colSpan="3" />
 			<Button :text="settings_icon" class="fa icon-row" @tap="toSettings()" row="0" col="4" colSpan="3" />
-			<RadCartesianChart allowAnimations="false" height=500 row="1" col="0" colSpan="6">
+			<RadCartesianChart ref="chart" allowAnimations="false" height=500 row="1" col="0" colSpan="6">
 				<LineSeries v-tkCartesianSeries :items="data" categoryProperty="X" valueProperty="Y"></LineSeries>
 				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" minimum=-4 maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
 				<LinearAxis v-tkCartesianHorizontalAxis ref="XAxis" maximum=10 allowPan="true" allowZoom="true"></LinearAxis>
@@ -18,7 +18,7 @@
 <script lang="ts">
 import * as dialogs from '@nativescript/core/ui/dialogs';
 import { Vue, Component, Watch } from 'vue-property-decorator';
-import { LinearAxis, ChartAxisHorizontalLocation, ChartAxisVerticalLocation, LogarithmicAxis } from 'nativescript-ui-chart';
+import { LinearAxis, ChartAxisHorizontalLocation, ChartAxisVerticalLocation, LogarithmicAxis, RadCartesianChart, LineSeries} from 'nativescript-ui-chart';
 import { ObservableArray } from "@nativescript/core/data/observable-array";
 import ChartViewSettings from './ChartViewSettings.vue';
 
@@ -48,6 +48,11 @@ export default class ChartView extends Vue {
 	private acceleration_cache: Acceleration = Acceleration.Decelerating;
 
 	private data: ObservableArray<any> = new ObservableArray([]);
+	private vline: LineSeries = new LineSeries();
+	private vline_data: ObservableArray<any> = new ObservableArray([
+		{X: 60, Y: -50},
+		{X: 60, Y: 100}
+	]);
 
 	x_window_size: number = 20;
 	window_percent: number = 0.5;
@@ -59,6 +64,13 @@ export default class ChartView extends Vue {
 		x.forEach((e,i) => {
 			this.data.push({X:e, Y:0});
 		});
+	}
+
+	loaded() {
+		this.vline.items = this.vline_data;
+		this.vline.categoryProperty = "X";
+		this.vline.valueProperty = "Y";
+		this.chart.series.push(this.vline);
 	}
 
 	range(start, end, step=1): number[] {
@@ -163,6 +175,10 @@ export default class ChartView extends Vue {
 			}
 		};
 		this.$navigateTo(ChartViewSettings, nav_properties);
+	}
+
+	get chart(): RadCartesianChart {
+		return (this.$refs.chart as any).nativeView;
 	}
 
 	get XAxis(): LinearAxis {
