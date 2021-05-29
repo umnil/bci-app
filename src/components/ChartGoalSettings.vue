@@ -13,9 +13,13 @@
 			</GridLayout>
 
 			<Label class="lineName" text="Horizontal Goal 1" />
-			<GridLayout class="linePropSection" columns="*, *" rows="auto,auto">
+			<GridLayout class="linePropSection" columns="*, *" rows="auto,auto,auto">
 				<Label class="lineProp" text="Visibility" row="0" col="0" />
 				<Switch class="lineProp" v-model="showGoalH1" row="0" col="1" />
+
+				<Label class="lineProp" text="Value" row="1" col="0" />
+				<Label class="lineProp" :text="curGoalH1value" row="1" col="1" horizontalAlignment="right" />
+				<Slider class="lineProp" v-model="GoalH1value" minValue="5" :maxValue="vMax" row="3" col="0" cospan="2" />
 			</GridLayout>
 		</StackLayout>
 	</Page>
@@ -30,6 +34,7 @@ export default class ChartGoalSettings extends Vue {
 
 	private vMax: number = 60;
 	private curGoalV1value: number = this.GoalV1value;
+	private curGoalH1value: number = this.GoalH1value;
 
 	@Prop () chartView: ChartView;
 
@@ -57,6 +62,16 @@ export default class ChartGoalSettings extends Vue {
 
 	set showGoalH1(visibility: boolean) {
 		this.chartView.toggleLine("GoalH1", visibility);
+	}
+
+	get GoalH1value(): number {
+		return this.chartView.getLineValue("GoalH1");
+	}
+
+	set GoalH1value(value: number) {
+		value = Math.round(value);
+		this.curGoalH1value = value;
+		this.chartView.setLineValue("GoalH1", value, true);
 	}
 }
 </script>
