@@ -24,10 +24,18 @@ import ChartView from './ChartView.vue';
 @Component
 export default class ChartGoalSettings extends Vue {
 
-	private showGoalV1: boolean = true;
 	private showGoalH1: boolean = true;
 
 	@Prop () chartView: ChartView;
+
+	get showGoalV1(): boolean {
+		return this.chartView.isLineVisible("GoalV1");
+	}
+
+	set showGoalV1(visibility: boolean) {
+		console.log(`Setting visibility: ${visibility}`);
+		this.chartView.toggleLine("GoalV1", visibility);
+	}
 }
 </script>
 

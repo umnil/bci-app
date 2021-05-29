@@ -69,8 +69,8 @@ export default class ChartView extends Vue {
 	loaded() {
 		if (this._loaded) return;
 
-		this.chart.series.push(this.GoalV1);
-		this.GoalV1.setProperty("visibility", "collapse");
+		this.toggleLine("GoalV1", true);
+		this._loaded = true;
 	}
 
 	range(start, end, step=1): number[] {
@@ -204,7 +204,9 @@ export default class ChartView extends Vue {
 	 * @returns	boolean
 	 */
 	isLineVisible(lineName: string): boolean {
+		console.log(this.chart.series.length);
 		return this.chart.series.reduce( (visibility, series, idx) => {
+			console.log(`isLineVisible | idx: ${idx} | id: ${series.id}`);
 			if (series.id == lineName) {
 				visibility = true;
 			}
@@ -264,14 +266,6 @@ export default class ChartView extends Vue {
 
 	get toggle_icon(): string {
 		return this.running ? this.pause_icon : this.play_icon;
-	}
-
-	get goalV1visibility(): boolean {
-		return this.isLineVisible("GoalV1");
-	}
-
-	set goalV1visibility(visibility: boolean) {
-		this.toggleLine("GoalV1", visibility);
 	}
 }
 
