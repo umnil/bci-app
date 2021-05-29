@@ -48,10 +48,12 @@ export default class ChartView extends Vue {
 	private acceleration_cache: Acceleration = Acceleration.Decelerating;
 
 	private data: ObservableArray<any> = new ObservableArray([]);
-	private vline: LineSeries = new LineSeries();
-	private vline_data: ObservableArray<any> = new ObservableArray([
-		{X: 60, Y: -50},
-		{X: 60, Y: 100}
+
+	// Goal Lines
+	private GoalV1: LineSeries = new LineSeries();
+	private GoalV1_data: ObservableArray<any> = new ObservableArray([
+		{X: 25, Y: -50},
+		{X: 25, Y: 100}
 	]);
 
 	x_window_size: number = 20;
@@ -67,10 +69,10 @@ export default class ChartView extends Vue {
 	}
 
 	loaded() {
-		this.vline.items = this.vline_data;
-		this.vline.categoryProperty = "X";
-		this.vline.valueProperty = "Y";
-		this.chart.series.push(this.vline);
+		this.GoalV1.items = this.GoalV1_data;
+		this.GoalV1.categoryProperty = "X";
+		this.GoalV1.valueProperty = "Y";
+		this.chart.series.push(this.GoalV1);
 	}
 
 	range(start, end, step=1): number[] {
@@ -166,6 +168,32 @@ export default class ChartView extends Vue {
 		// the line reaches `percent` of the window size
 		this.XAxis.minimum = minimum > 0 ? minimum : 0;
 		this.XAxis.maximum = maximum > this.x_window_size ? maximum : this.x_window_size;
+	}
+
+	/**
+	 * Setup a straight line
+	 * 
+	 * @param	boolean	horizontal	whether the line is horiztonal or vertical
+	 * @param	number	value		the point on the x (for horizontal lines) or y (for vertical lines) axis
+	 */
+	createLine(horizontal: boolean, value: number): void {
+		let line: LineSeries = new LineSeries();
+		let kAxisName: string = horizontal ? "Y" : "X";
+		let vAxisName: string = horizontal ? "X" : "Y";
+		let lower: any = {};
+		let higher: any = {};
+		lower[kAxisName] = value;
+		lower[vAxisName] = -1000;
+		higher[kAxisName] = value;
+		higher[vAxisName] = 1000;
+		let data: ObservableArray<any> = new ObservableArray([
+			lower,
+			higher
+		]);
+		line.items = data;
+		line.categoryProperty = "X";
+		line.valueProperty = "Y";
+		this.chart.series.push(line);
 	}
 
 	toSettings(): void {

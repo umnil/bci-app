@@ -74,7 +74,12 @@ export default class ChartViewSettings extends Vue {
 	}
 
 	goals() {
-		this.$navigateTo(ChartGoalSettings);
+		let nav_properties = {
+			props: {
+				chartView: this.chartview
+			}
+		};
+		this.$navigateTo(ChartGoalSettings, nav_properties);
 	}
 }
 </script>
