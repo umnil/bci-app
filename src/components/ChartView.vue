@@ -49,15 +49,13 @@ export default class ChartView extends Vue {
 
 	private data: ObservableArray<any> = new ObservableArray([]);
 
-	// Goal Lines
-	private GoalV1: LineSeries = new LineSeries();
-	private GoalV1_data: ObservableArray<any> = new ObservableArray([
-		{X: 25, Y: -50},
-		{X: 25, Y: 100}
-	]);
-
 	x_window_size: number = 20;
 	window_percent: number = 0.5;
+	private _loaded: boolean = false;
+
+	// Goal Lines
+	private GoalV1: LineSeries = this.createLine("GoalV1", false, 8);
+
 
 	constructor() {
 		super();
@@ -69,10 +67,10 @@ export default class ChartView extends Vue {
 	}
 
 	loaded() {
-		this.GoalV1.items = this.GoalV1_data;
-		this.GoalV1.categoryProperty = "X";
-		this.GoalV1.valueProperty = "Y";
+		if (this._loaded) return;
+
 		this.chart.series.push(this.GoalV1);
+		this.GoalV1.setProperty("visibility", "collapse");
 	}
 
 	range(start, end, step=1): number[] {
@@ -173,10 +171,12 @@ export default class ChartView extends Vue {
 	/**
 	 * Setup a straight line
 	 * 
+	 * @param	string	name		the ID of the line
 	 * @param	boolean	horizontal	whether the line is horiztonal or vertical
 	 * @param	number	value		the point on the x (for horizontal lines) or y (for vertical lines) axis
+	 * @return	LineSeries
 	 */
-	createLine(horizontal: boolean, value: number): void {
+	createLine(name: string, horizontal: boolean, value: number): LineSeries {
 		let line: LineSeries = new LineSeries();
 		let kAxisName: string = horizontal ? "Y" : "X";
 		let vAxisName: string = horizontal ? "X" : "Y";
@@ -193,7 +193,52 @@ export default class ChartView extends Vue {
 		line.items = data;
 		line.categoryProperty = "X";
 		line.valueProperty = "Y";
-		this.chart.series.push(line);
+		line.id = name;
+		return line;
+	}
+
+	/**
+	 * Determine whether the line is in the char series
+	 *
+	 * @param	string	lineNmae
+	 * @returns	boolean
+	 */
+	isLineVisible(lineName: string): boolean {
+		return this.chart.series.reduce( (visibility, series, idx) => {
+			if (series.id == lineName) {
+				visibility = true;
+			}
+			return visibility;
+		}, false );
+	}
+
+	/**
+	 * Toggle visibility for one of the goal lines
+	 *
+	 * @param	string	lineName
+	 * @param	boolean	show
+	 */
+	toggleLine(lineName: string, show: boolean = null): void {
+		if (show == null) {
+			// Show will be determined by the opposite of the current value
+			show = !this.isLineVisible(lineName);
+		}
+		
+		if (show) {
+			if (this.isLineVisible(lineName))
+				return;
+			this.chart.series.push(this[lineName]);
+		}
+		else {
+			if (!this.isLineVisible(lineName))
+				return;
+			const seriesIndex: number = this.chart.series.reduce( (result, series, idx) => {
+				if (series.id == lineName)
+					result = idx;
+				return result;
+			}, -1 );
+			this.chart.series.splice(seriesIndex, 1);
+		}
 	}
 
 	toSettings(): void {
@@ -220,6 +265,14 @@ export default class ChartView extends Vue {
 	get toggle_icon(): string {
 		return this.running ? this.pause_icon : this.play_icon;
 	}
+
+	get goalV1visibility(): boolean {
+		return this.isLineVisible("GoalV1");
+	}
+
+	set goalV1visibility(visibility: boolean) {
+		this.toggleLine("GoalV1", visibility);
+	}
 }
 
 </script>
@@ -230,5 +283,8 @@ export default class ChartView extends Vue {
 	font-size: 28pt;
 	padding: 10px 0px;
 	color: $orange;
+}
+.hidden {
+	display: none;
 }
 </style>
