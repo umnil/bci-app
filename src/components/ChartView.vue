@@ -5,7 +5,7 @@
 			<Button :text="toggle_icon" class="fa icon-row" @tap="toggle()" row="0" col="0" colSpan="3" />
 			<Button :text="settings_icon" class="fa icon-row" @tap="toSettings()" row="0" col="4" colSpan="3" />
 			<RadCartesianChart ref="chart" allowAnimations="false" height=500 row="1" col="0" colSpan="6">
-				<LineSeries v-tkCartesianSeries :items="data" categoryProperty="X" valueProperty="Y"></LineSeries>
+				<LineSeries v-tkCartesianSeries :items="data" categoryProperty="X" valueProperty="Y" strokeColor="MediumSeaGreen" strokeWidth=3></LineSeries>
 				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" minimum=-4 maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
 				<LinearAxis v-tkCartesianHorizontalAxis ref="XAxis" maximum=10 allowPan="true" allowZoom="true"></LinearAxis>
 			</RadCartesianChart>
@@ -55,6 +55,7 @@ export default class ChartView extends Vue {
 
 	// Goal Lines
 	private GoalV1: LineSeries = this.createLine("GoalV1", false, 8);
+	private GoalH1: LineSeries = this.createLine("GoalH1", true, 40);
 
 
 	constructor() {
@@ -68,8 +69,8 @@ export default class ChartView extends Vue {
 
 	loaded() {
 		if (this._loaded) return;
-
 		this.toggleLine("GoalV1", true);
+		this.toggleLine("GoalH1", true);
 		this._loaded = true;
 	}
 
@@ -205,6 +206,7 @@ export default class ChartView extends Vue {
 		line.categoryProperty = "X";
 		line.valueProperty = "Y";
 		line.id = name;
+		line.strokeWidth = 200;
 		return line;
 	}
 
@@ -350,5 +352,8 @@ export default class ChartView extends Vue {
 }
 .hidden {
 	display: none;
+}
+.mainLine {
+	stroke-width: 10;
 }
 </style>
