@@ -1,27 +1,39 @@
 <template>
 	<Page>
 		<ActionBar title="Chart Goals" />
-		<StackLayout class="body">
-			<Label text="Vertical Goal 1" class="lineName"/>
-			<GridLayout class="linePropSection" columns="*,*" rows="auto,auto,auto">
-				<Label class="lineProp" text="Visibility" row="0" col="0"/>
-				<Switch class="lineProp" v-model="showGoalV1" row="0" col="1" />
+		<ScrollView orientation="vertical">
+			<StackLayout class="body">
+				<Label text="Vertical Goal 1" class="lineName"/>
+				<GridLayout class="linePropSection" columns="*,*" rows="auto,auto,auto">
+					<Label class="lineProp" text="Visibility" row="0" col="0"/>
+					<Switch class="lineProp" v-model="showGoalV1" row="0" col="1" />
 
-				<Label class="lineProp" text="Value" row="1" col="0" />
-				<Label class="lineProp" :text="curGoalV1value" row="1" col="1" horizontalAlignment="right"/>
-				<Slider class="lineProp" v-model="GoalV1value" minValue="5" :maxValue="vMax" row="3" col="0" colSpan="2" />
-			</GridLayout>
+					<Label class="lineProp" text="Value" row="1" col="0" />
+					<Label class="lineProp" :text="curGoalV1value" row="1" col="1" horizontalAlignment="right"/>
+					<Slider class="lineProp" v-model="GoalV1value" minValue="5" :maxValue="vMax" row="3" col="0" colSpan="2" />
+				</GridLayout>
 
-			<Label class="lineName" text="Horizontal Goal 1" />
-			<GridLayout class="linePropSection" columns="*, *" rows="auto,auto,auto">
-				<Label class="lineProp" text="Visibility" row="0" col="0" />
-				<Switch class="lineProp" v-model="showGoalH1" row="0" col="1" />
+				<Label class="lineName" text="Horizontal Goal 1" />
+				<GridLayout class="linePropSection" columns="*, *" rows="auto,auto,auto">
+					<Label class="lineProp" text="Visibility" row="0" col="0" />
+					<Switch class="lineProp" v-model="showGoalH1" row="0" col="1" />
 
-				<Label class="lineProp" text="Value" row="1" col="0" />
-				<Label class="lineProp" :text="curGoalH1value" row="1" col="1" horizontalAlignment="right" />
-				<Slider class="lineProp" v-model="GoalH1value" minValue="5" :maxValue="vMax" row="3" col="0" cospan="2" />
-			</GridLayout>
-		</StackLayout>
+					<Label class="lineProp" text="Value" row="1" col="0" />
+					<Label class="lineProp" :text="curGoalH1value" row="1" col="1" horizontalAlignment="right" />
+					<Slider class="lineProp" v-model="GoalH1value" minValue="5" :maxValue="vMax" row="3" col="0" cospan="2" />
+				</GridLayout>
+
+				<Label class="lineName" text="Vertical Goal 2" />
+				<GridLayout class="linePropSection" columns="*, *" rows="auto,auto,auto">
+					<Label class="lineProp" text="Visibility" row="0" col="0" />
+					<Switch class="lineProp" v-model="showGoalV2" row="0" col="1" />
+
+					<Label class="lineProp" text="Value" row="1" col="0" />
+					<Label class="lineProp" :text="curGoalV2value" row="1" col="1" horizontalAlignment="right" />
+					<Slider class="lineProp" v-model="GoalV2value" minValue="5" :maxValue="vMax" row="3" col="0" cospan="2" />
+				</GridLayout>
+			</StackLayout>
+		</ScrollView>
 	</Page>
 </template>
 
@@ -35,6 +47,7 @@ export default class ChartGoalSettings extends Vue {
 	private vMax: number = 60;
 	private curGoalV1value: number = this.GoalV1value;
 	private curGoalH1value: number = this.GoalH1value;
+	private curGoalV2value: number = this.GoalV2value;
 
 	@Prop () chartView: ChartView;
 
@@ -72,6 +85,24 @@ export default class ChartGoalSettings extends Vue {
 		value = Math.round(value);
 		this.curGoalH1value = value;
 		this.chartView.setLineValue("GoalH1", value, true);
+	}
+
+	get showGoalV2(): boolean {
+		return this.chartView.isLineVisible("GoalV2");
+	}
+
+	set showGoalV2(visibility: boolean) {
+		this.chartView.toggleLine("GoalV2", visibility);
+	}
+
+	get GoalV2value(): number {
+		return this.chartView.getLineValue("GoalV2");
+	}
+
+	set GoalV2value(value: number) {
+		value = Math.round(value);
+		this.curGoalV2value = value;
+		this.chartView.setLineValue("GoalV2", value, false);
 	}
 }
 </script>
