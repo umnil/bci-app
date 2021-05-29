@@ -232,7 +232,7 @@ export default class ChartView extends Vue {
 	 */
 	isLineHorizontal(lineName: string): boolean {
 		const seriesIndex: number = this.getLineIndex(lineName);
-		const series: LineSeries = this.chart.series.getItem(seriesIndex);
+		const series: LineSeries = seriesIndex == -1 ? this[lineName] : this.chart.series.getItem(seriesIndex);
 		const data: ObservableArray<any> = series.items;
 		const lower: any = data.getItem(0);
 		const upper: any = data.getItem(1);
@@ -292,7 +292,8 @@ export default class ChartView extends Vue {
 	setLineValue(lineName: string, value: number, horizontal: boolean = null) {
 		const seriesIndex: number = this.getLineIndex(lineName);
 		const _horizontal: boolean = horizontal == null ? this.isLineHorizontal(lineName) : horizontal;
-		this.chart.series.getItem(seriesIndex).items = this.createLineData(_horizontal, value);
+		const series: LineSeries = seriesIndex == -1 ? this[lineName] : this.chart.series.getItem(seriesIndex);
+		series.items = this.createLineData(_horizontal, value);
 	}
 
 	/**
@@ -307,7 +308,7 @@ export default class ChartView extends Vue {
 		console.log(`getLineValue | seriesIndex = ${seriesIndex}`);
 		const horizontal: boolean = this.isLineHorizontal(lineName);
 		console.log(`getLineValue | horizontal = ${horizontal}`);
-		const series: LineSeries = this.chart.series.getItem(seriesIndex);
+		const series: LineSeries = seriesIndex == -1 ? this[lineName] : this.chart.series.getItem(seriesIndex);
 		console.log(`getLineValue | series = ${series}`);
 		const data: ObservableArray<any> = series.items;
 		const kAxis: string = horizontal ? "Y" : "X";
