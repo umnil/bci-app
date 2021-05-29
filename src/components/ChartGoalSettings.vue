@@ -30,7 +30,6 @@ export default class ChartGoalSettings extends Vue {
 
 	private vMax: number = 60;
 	private curGoalV1value: number = this.GoalV1value;
-	private showGoalH1: boolean = true;
 
 	@Prop () chartView: ChartView;
 
@@ -50,6 +49,14 @@ export default class ChartGoalSettings extends Vue {
 		value = Math.round(value);
 		this.curGoalV1value = value;
 		this.chartView.setLineValue("GoalV1", value, false);
+	}
+
+	get showGoalH1(): boolean {
+		return this.chartView.isLineVisible("GoalH1");
+	}
+
+	set showGoalH1(visibility: boolean) {
+		this.chartView.toggleLine("GoalH1", visibility);
 	}
 }
 </script>
