@@ -1,17 +1,21 @@
 <template>
 	<Page>
 		<ActionBar title="Chart Goals" />
-		<StackLayout>
-			<Label text="Vertical Goal 1" />
-			<GridLayout columns="*,*" rows="auto,auto">
-				<Label text="Visibility" row="0" col="0"/>
-				<Switch v-model="showGoalV1" row="0" col="1" />
+		<StackLayout class="body">
+			<Label text="Vertical Goal 1" class="lineName"/>
+			<GridLayout class="linePropSection" columns="*,*" rows="auto,auto,auto">
+				<Label class="lineProp" text="Visibility" row="0" col="0"/>
+				<Switch class="lineProp" v-model="showGoalV1" row="0" col="1" />
+
+				<Label class="lineProp" text="Value" row="1" col="0" />
+				<Label class="lineProp" :text="curGoalV1value" row="1" col="1" horizontalAlignment="right"/>
+				<Slider class="lineProp" v-model="GoalV1value" minValue="5" :maxValue="vMax" row="3" col="0" colSpan="2" />
 			</GridLayout>
 
-			<Label text="Horizontal Goal 1" />
-			<GridLayout columns="*, *" rows="auto,auto">
-				<Label text="Visibility" row="0" col="0" />
-				<Switch v-model="showGoalH1" row="0" col="1" />
+			<Label class="lineName" text="Horizontal Goal 1" />
+			<GridLayout class="linePropSection" columns="*, *" rows="auto,auto">
+				<Label class="lineProp" text="Visibility" row="0" col="0" />
+				<Switch class="lineProp" v-model="showGoalH1" row="0" col="1" />
 			</GridLayout>
 		</StackLayout>
 	</Page>
@@ -24,6 +28,8 @@ import ChartView from './ChartView.vue';
 @Component
 export default class ChartGoalSettings extends Vue {
 
+	private vMax: number = 60;
+	private curGoalV1value: number = this.GoalV1value;
 	private showGoalH1: boolean = true;
 
 	@Prop () chartView: ChartView;
@@ -33,11 +39,45 @@ export default class ChartGoalSettings extends Vue {
 	}
 
 	set showGoalV1(visibility: boolean) {
-		console.log(`Setting visibility: ${visibility}`);
 		this.chartView.toggleLine("GoalV1", visibility);
+	}
+
+	get GoalV1value(): number {
+		return this.chartView.getLineValue("GoalV1");
+	}
+
+	set GoalV1value(value: number) {
+		value = Math.round(value);
+		this.curGoalV1value = value;
+		this.chartView.setLineValue("GoalV1", value, false);
 	}
 }
 </script>
 
 <style lang="scss" scoped>
+
+Slider {
+	margin: 0px 80px;
+}
+
+.body {
+	background: #CCCCCC;
+}
+
+.lineName {
+	font-size: 12pt;
+	margin: 80px 10px 10px;
+}
+
+.linePropSection {
+	background: #FFFFFF;
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+	margin: 10px 10px;
+}
+
+.lineProp {
+	font-size: 24pt;
+	margin: 25px 80px;
+}
 </style>

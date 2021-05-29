@@ -169,15 +169,13 @@ export default class ChartView extends Vue {
 	}
 
 	/**
-	 * Setup a straight line
-	 * 
-	 * @param	string	name		the ID of the line
-	 * @param	boolean	horizontal	whether the line is horiztonal or vertical
-	 * @param	number	value		the point on the x (for horizontal lines) or y (for vertical lines) axis
-	 * @return	LineSeries
+	 * Create line data set
+	 *
+	 * @param	boolean	horizontal	whether the line is horizontal
+	 * @param	number	value		the point along the constant axis
+	 * @returns	ObservableArray
 	 */
-	createLine(name: string, horizontal: boolean, value: number): LineSeries {
-		let line: LineSeries = new LineSeries();
+	createLineData(horizontal: boolean, value: number): ObservableArray<any> {
 		let kAxisName: string = horizontal ? "Y" : "X";
 		let vAxisName: string = horizontal ? "X" : "Y";
 		let lower: any = {};
@@ -190,11 +188,53 @@ export default class ChartView extends Vue {
 			lower,
 			higher
 		]);
-		line.items = data;
+		return data;
+	}
+
+	/**
+	 * Setup a straight line
+	 * 
+	 * @param	string	name		the ID of the line
+	 * @param	boolean	horizontal	whether the line is horiztonal or vertical
+	 * @param	number	value		the point on the x (for horizontal lines) or y (for vertical lines) axis
+	 * @return	LineSeries
+	 */
+	createLine(name: string, horizontal: boolean, value: number): LineSeries {
+		let line: LineSeries = new LineSeries();
+		line.items = this.createLineData(horizontal, value);
 		line.categoryProperty = "X";
 		line.valueProperty = "Y";
 		line.id = name;
 		return line;
+	}
+
+	/**
+	 * Get Line index
+	 *
+	 * @param	string	lineName	retrieve the line by id
+	 * @returns	number
+	 */
+	getLineIndex(lineName: string): number {
+		return this.chart.series.reduce( (result, series, idx) => {
+			if (series.id == lineName)
+				result = idx;
+			return result;
+		}, -1 );
+	}
+
+	/**
+	 * Determine whether the line is horizontal or vertical
+	 *
+	 * @param	string	lineName
+	 * @returns	boolean
+	 */
+	isLineHorizontal(lineName: string): boolean {
+		const seriesIndex: number = this.getLineIndex(lineName);
+		const series: LineSeries = this.chart.series.getItem(seriesIndex);
+		const data: ObservableArray<any> = series.items;
+		const lower: any = data.getItem(0);
+		const upper: any = data.getItem(1);
+		return lower["Y"] == upper["Y"];
 	}
 
 	/**
@@ -234,13 +274,43 @@ export default class ChartView extends Vue {
 		else {
 			if (!this.isLineVisible(lineName))
 				return;
-			const seriesIndex: number = this.chart.series.reduce( (result, series, idx) => {
-				if (series.id == lineName)
-					result = idx;
-				return result;
-			}, -1 );
+			const seriesIndex: number = this.getLineIndex(lineName);
 			this.chart.series.splice(seriesIndex, 1);
 		}
+	}
+
+	/**
+	 * Set A lines value
+	 *
+	 * NOTE: the line must already have been created
+	 *
+	 * @param	string	lineName	the name of the line
+	 * @param	number	value		the value along the constant axis the line sits
+	 */
+	setLineValue(lineName: string, value: number, horizontal: boolean = null) {
+		const seriesIndex: number = this.getLineIndex(lineName);
+		const _horizontal: boolean = horizontal == null ? this.isLineHorizontal(lineName) : horizontal;
+		this.chart.series.getItem(seriesIndex).items = this.createLineData(_horizontal, value);
+	}
+
+	/**
+	 * Get line value
+	 *
+	 * @param	string	lineNmae
+	 * @returns	number
+	 */
+	getLineValue(lineName: string): number {
+		console.log(`getLineValue | Getting line value for line ${lineName}`);
+		const seriesIndex: number = this.getLineIndex(lineName);
+		console.log(`getLineValue | seriesIndex = ${seriesIndex}`);
+		const horizontal: boolean = this.isLineHorizontal(lineName);
+		console.log(`getLineValue | horizontal = ${horizontal}`);
+		const series: LineSeries = this.chart.series.getItem(seriesIndex);
+		console.log(`getLineValue | series = ${series}`);
+		const data: ObservableArray<any> = series.items;
+		const kAxis: string = horizontal ? "Y" : "X";
+		const firstPoint: any = data.getItem(0);
+		return firstPoint[kAxis];
 	}
 
 	toSettings(): void {
