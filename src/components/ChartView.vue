@@ -43,7 +43,7 @@ export default class ChartView extends Vue {
 	private running: boolean = false;
 	refresh_rate: number = 10;  // Hz
 
-	acceleration_scale: number = 1;
+	acceleration_scale: number = 4;
 	private acceleration_state: Acceleration = Acceleration.Constant;
 	private acceleration_cache: Acceleration = Acceleration.Decelerating;
 
@@ -56,6 +56,7 @@ export default class ChartView extends Vue {
 	// Goal Lines
 	private GoalV1: LineSeries = this.createLine("GoalV1", false, 8);
 	private GoalH1: LineSeries = this.createLine("GoalH1", true, 40);
+	private GoalV2: LineSeries = this.createLine("GoalV2", false, 25);
 
 
 	constructor() {
@@ -71,6 +72,7 @@ export default class ChartView extends Vue {
 		if (this._loaded) return;
 		this.toggleLine("GoalV1", true);
 		this.toggleLine("GoalH1", true);
+		this.toggleLine("GoalV2", true);
 		this._loaded = true;
 	}
 
