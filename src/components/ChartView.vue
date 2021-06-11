@@ -158,6 +158,21 @@ export default class ChartView extends Vue {
 	}
 
 	/**
+	 * Saves the current data by packaging the relevant information into an
+	 * object and sending it over bluetooth for saving
+	 */
+	save(): void {
+		const target_names: string[] = ["GoalV1", "GoalH1", "GoalV2"];
+		const target_data: any[] = target_names.map((target_name) => {
+			return {
+				name: target_name,
+				visible: this.isLineVisible(target_name),
+				value: this.getLineValue(target_name)
+			};
+		});
+	}
+
+	/**
 	 * Center the end point to a fraction of the window view
 	 *
 	 * @param	number	percent		100% will place the cursor at the far right
