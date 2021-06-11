@@ -9,8 +9,9 @@
 				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" minimum=-4 maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
 				<LinearAxis v-tkCartesianHorizontalAxis ref="XAxis" maximum=10 allowPan="true" allowZoom="true"></LinearAxis>
 			</RadCartesianChart>
-			<Button text="trigger" @tap="trigger()" row="2" col="0" colSpan="3" />
-			<Button :text="reset_icon" class="fa icon-row" @tap="reset()" row="2" col="3" colSpan="3" />
+			<Button text="trigger" @tap="trigger()" row="2" col="0" colSpan="2" />
+			<Button class="fa icon-row" :text="String.fromCharCode(0xf0c7)" @tap="save" row="2" col="2" colSpan="2" />
+			<Button class="fa icon-row" :text="reset_icon" @tap="reset()" row="2" col="4" colSpan="2" />
 		</GridLayout>
 	</Page>
 </template>
