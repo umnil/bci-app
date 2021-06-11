@@ -9,8 +9,9 @@
 				<LinearAxis v-tkCartesianVerticalAxis ref="YAxis" minimum=-4 maximum=60 horizontalLocation="Left" allowPan="true" allowZoom="true"></LinearAxis>
 				<LinearAxis v-tkCartesianHorizontalAxis ref="XAxis" maximum=10 allowPan="true" allowZoom="true"></LinearAxis>
 			</RadCartesianChart>
-			<Button text="trigger" @tap="trigger()" row="2" col="0" colSpan="3" />
-			<Button :text="reset_icon" class="fa icon-row" @tap="reset()" row="2" col="3" colSpan="3" />
+			<Button text="trigger" @tap="trigger()" row="2" col="0" colSpan="2" />
+			<Button class="fa icon-row" :text="String.fromCharCode(0xf0c7)" @tap="save" row="2" col="2" colSpan="2" />
+			<Button class="fa icon-row" :text="reset_icon" @tap="reset()" row="2" col="4" colSpan="2" />
 		</GridLayout>
 	</Page>
 </template>
@@ -20,6 +21,7 @@ import * as dialogs from '@nativescript/core/ui/dialogs';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import { LinearAxis, ChartAxisHorizontalLocation, ChartAxisVerticalLocation, LogarithmicAxis, RadCartesianChart, LineSeries} from 'nativescript-ui-chart';
 import { ObservableArray } from "@nativescript/core/data/observable-array";
+import ConnectionDelegate from '../utils/ConnectionDelegate';
 import ChartViewSettings from './ChartViewSettings.vue';
 
 enum Acceleration {
@@ -30,6 +32,9 @@ enum Acceleration {
 
 @Component
 export default class ChartView extends Vue {
+
+	private bus: any = (this as any).$bus;
+	private cd: ConnectionDelegate;
 
 	private play_icon: string = String.fromCharCode(0xf04b);
 	private pause_icon: string = String.fromCharCode(0xf04c);
@@ -58,9 +63,10 @@ export default class ChartView extends Vue {
 	private GoalH1: LineSeries = this.createLine("GoalH1", true, 40);
 	private GoalV2: LineSeries = this.createLine("GoalV2", false, 25);
 
-
 	constructor() {
 		super();
+		this.cd = this.bus.cd;
+
 		let x: number[] = this.range(-1, 0, 0.05);
 		let y: number[] = x;
 		x.forEach((e,i) => {
@@ -149,6 +155,32 @@ export default class ChartView extends Vue {
 		else {
 			this.acceleration_state = -1 * this.acceleration_cache;
 		}
+	}
+
+	/**
+	 * Saves the current data by packaging the relevant information into an
+	 * object and sending it over bluetooth for saving
+	 */
+	async save(): Promise<void> {
+		const data: any[] = this.data.map((point)=>[point["X"], point["Y"]]);
+		const target_names: string[] = ["GoalV1", "GoalH1", "GoalV2"];
+		const target_data: any[] = target_names.map((target_name) => {
+			return {
+				name: target_name,
+				visible: this.isLineVisible(target_name),
+				value: this.getLineValue(target_name)
+			};
+		});
+		const metadata: any = {
+			acceleration: this.acceleration_scale,
+			sampling_rate: this.refresh_rate,
+			target_data: target_data
+		};
+		const save_data: any = {
+			data: data,
+			metadata: metadata
+		};
+		await this.cd.writeNascarData(save_data);
 	}
 
 	/**

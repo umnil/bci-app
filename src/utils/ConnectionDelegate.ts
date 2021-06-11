@@ -36,6 +36,7 @@ export default class ConnectionDelegate {
 	notify_char_UUID: string = "E62A479C-5184-4AEE-B2D8-C4ADCED4E0F3";
 	calibration_char_UUID: string = "E58AC8E3-615A-45C4-A96B-590F64D3492A";
 	sys_ctrl_char_UUID: string = "2389DB49-5CA4-443F-8EC8-55DB9AC79143";
+	nascar_data_char_UUID: string = "426C55A0-C06A-44C5-BFE6-23275A982549";
 
 	calibration_callback: (any)=>void;
 
@@ -285,6 +286,16 @@ export default class ConnectionDelegate {
 		this.readDeviceSettings();
 	}
 
+	async writeNascarData(data: any): Promise<void> {
+		let writeObj: any = this.nascarDataRequestOptions;
+		writeObj['value'] = this.dataUtility.value2hex(data);
+		await this.bluetooth.streamWrite(writeObj);
+		//await this.bluetooth.write(writeObj).then(
+			//()=>this.log("NASCAR DATA WRITE: Success"),
+			//(err)=>this.log(`NASCAR DATA WRITE: Error | ${err}`)
+		//);
+	}
+
 	async calibrationSubscribe(cb: (any)=>void): Promise<void> {
 		this.calibration_callback = cb;
 		let requestOptions: any = this.standardRequestOptions;
@@ -337,6 +348,12 @@ export default class ConnectionDelegate {
 	get sysCtrlRequestOptions(): any {
 		let options: any = this.standardRequestOptions;
 		options['characteristicUUID'] = this.sys_ctrl_char_UUID;
+		return options;
+	}
+
+	get nascarDataRequestOptions(): any {
+		let options: any = this.standardRequestOptions;
+		options['characteristicUUID'] = this.nascar_data_char_UUID;
 		return options;
 	}
 
