@@ -3,35 +3,53 @@
 		<ActionBar title="Chart Goals" />
 		<ScrollView orientation="vertical">
 			<StackLayout class="body">
-				<Label text="Vertical Goal 1" class="lineName"/>
-				<GridLayout class="linePropSection" columns="*,*" rows="auto,auto,auto">
-					<Label class="lineProp" text="Visibility" row="0" col="0"/>
-					<Switch class="lineProp" v-model="showGoalV1" row="0" col="1" />
+				<Label class="setting-list-label" text="Vertical Goal 1" />
+				<StackLayout class="setting-list">
+					<GridLayout rows="44" columns="*,20,40">
+						<Label class="setting-item-label" text="Visibility" row="0" col="0"/>
+						<Switch class="setting-item-value" v-model="showGoalV1" row="0" col="1" />
+					</GridLayout>
+					<GridLayout rows="44" columns="*,40,60">
+						<Label class="setting-item-label setting-item-last" text="Value" row="1" col="0" @tap="showV1Slider" />
+						<Label class="setting-item-value" :text="curGoalV1value" row="1" col="1" />
+						<Label class="fa chevron" row="1" col="2" :text="v1Chevron" />
+					</GridLayout>
+					<StackLayout v-show="v1ValueShow">
+						<Slider class="lineProp" v-model="GoalV1value" minValue="5" :maxValue="vMax" />
+					</StackLayout>
+				</StackLayout>
 
-					<Label class="lineProp" text="Value" row="1" col="0" />
-					<Label class="lineProp" :text="curGoalV1value" row="1" col="1" horizontalAlignment="right"/>
-					<Slider class="lineProp" v-model="GoalV1value" minValue="5" :maxValue="vMax" row="3" col="0" colSpan="2" />
-				</GridLayout>
+				<Label class="setting-list-label" text="Horizontal Goal 1" />
+				<StackLayout class="setting-list">
+					<GridLayout rows="44" columns="*,20,40">
+						<Label class="setting-item-label" text="Visibility" row="0" col="0" />
+						<Switch class="setting-item-value" v-model="showGoalH1" row="0" col="1" />
+					</GridLayout>
+					<GridLayout rows="44" columns="*,40,60">
+						<Label class="setting-item-label setting-item-last" text="Value" row="1" col="0" @tap="showH1Slider" />
+						<Label class="setting-item-value" :text="curGoalH1value" row="1" col="1" />
+						<Label class="fa chevron" row="1" col="2" :text="h1Chevron" />
+					</GridLayout>
+					<StackLayout v-show="h1ValueShow">
+						<Slider class="lineProp" v-model="GoalH1value" minValue="5" :maxValue="vMax" />
+					</StackLayout>
+				</StackLayout>
 
-				<Label class="lineName" text="Horizontal Goal 1" />
-				<GridLayout class="linePropSection" columns="*, *" rows="auto,auto,auto">
-					<Label class="lineProp" text="Visibility" row="0" col="0" />
-					<Switch class="lineProp" v-model="showGoalH1" row="0" col="1" />
-
-					<Label class="lineProp" text="Value" row="1" col="0" />
-					<Label class="lineProp" :text="curGoalH1value" row="1" col="1" horizontalAlignment="right" />
-					<Slider class="lineProp" v-model="GoalH1value" minValue="5" :maxValue="vMax" row="3" col="0" cospan="2" />
-				</GridLayout>
-
-				<Label class="lineName" text="Vertical Goal 2" />
-				<GridLayout class="linePropSection" columns="*, *" rows="auto,auto,auto">
-					<Label class="lineProp" text="Visibility" row="0" col="0" />
-					<Switch class="lineProp" v-model="showGoalV2" row="0" col="1" />
-
-					<Label class="lineProp" text="Value" row="1" col="0" />
-					<Label class="lineProp" :text="curGoalV2value" row="1" col="1" horizontalAlignment="right" />
-					<Slider class="lineProp" v-model="GoalV2value" minValue="5" :maxValue="vMax" row="3" col="0" cospan="2" />
-				</GridLayout>
+				<Label class="setting-list-label" text="Vertical Goal 2" />
+				<StackLayout class="setting-list">
+					<GridLayout rows="44" columns="*,20,40">
+						<Label class="setting-item-label" text="Visibility" row="0" col="0" />
+						<Switch class="setting-item-value" v-model="showGoalV2" row="0" col="1" />
+					</GridLayout>
+					<GridLayout rows="44" columns="*,40,60">
+						<Label class="setting-item-label setting-item-last" text="Value" row="1" col="0" @tap="showV2Slider" />
+						<Label class="setting-item-value" :text="curGoalV2value" row="1" col="1" />
+						<Label class="fa chevron" row="1" col="2" :text="v2Chevron" />
+					</GridLayout>
+					<StackLayout v-show="v2ValueShow">
+						<Slider class="lineProp" v-model="GoalV2value" minValue="5" :maxValue="vMax" />
+					</StackLayout>
+				</StackLayout>
 			</StackLayout>
 		</ScrollView>
 	</Page>
@@ -41,16 +59,25 @@
 import { Vue, Component, Watch, Prop } from 'vue-property-decorator';
 import ChartView from './ChartView.vue';
 
+const up_code: number = 0xf077;
+const down_code: number = 0xf078;
+
 @Component
 export default class ChartGoalSettings extends Vue {
+
 
 	private vMax: number = 60;
 	private curGoalV1value: number = this.GoalV1value;
 	private curGoalH1value: number = this.GoalH1value;
 	private curGoalV2value: number = this.GoalV2value;
 
+	private v1ValueShow: boolean = false;
+	private h1ValueShow: boolean = false;
+	private v2ValueShow: boolean = false;
+
 	@Prop () chartView: ChartView;
 
+	// Vertical Goal #1
 	get showGoalV1(): boolean {
 		return this.chartView.isLineVisible("GoalV1");
 	}
@@ -69,6 +96,17 @@ export default class ChartGoalSettings extends Vue {
 		this.chartView.setLineValue("GoalV1", value, false);
 	}
 
+	get v1Chevron(): string {
+		const selected_code: number = this.v1ValueShow ? up_code : down_code;
+		const character: string = String.fromCharCode(selected_code)
+		return character
+	}
+
+	showV1Slider() {
+		this.v1ValueShow = !this.v1ValueShow;
+	}
+
+	// Horizontal Goal #1
 	get showGoalH1(): boolean {
 		return this.chartView.isLineVisible("GoalH1");
 	}
@@ -87,6 +125,17 @@ export default class ChartGoalSettings extends Vue {
 		this.chartView.setLineValue("GoalH1", value, true);
 	}
 
+	get h1Chevron(): string {
+		const selected_code: number = this.h1ValueShow ? up_code : down_code;
+		const character: string = String.fromCharCode(selected_code)
+		return character
+	}
+
+	showH1Slider() {
+		this.h1ValueShow = !this.h1ValueShow;
+	}
+
+	// Vertical Goal #2
 	get showGoalV2(): boolean {
 		return this.chartView.isLineVisible("GoalV2");
 	}
@@ -104,10 +153,21 @@ export default class ChartGoalSettings extends Vue {
 		this.curGoalV2value = value;
 		this.chartView.setLineValue("GoalV2", value, false);
 	}
+
+	get v2Chevron(): string {
+		const selected_code: number = this.v2ValueShow ? up_code : down_code;
+		const character: string = String.fromCharCode(selected_code)
+		return character
+	}
+
+	showV2Slider() {
+		this.v2ValueShow = !this.v2ValueShow;
+	}
 }
 </script>
 
 <style lang="scss" scoped>
+@import "../app.scss";
 
 Slider {
 	margin: 0px 80px;
