@@ -288,11 +288,12 @@ export default class ConnectionDelegate {
 
 	async writeNascarData(data: any): Promise<void> {
 		let writeObj: any = this.nascarDataRequestOptions;
-		writeObj['value'] = JSON.stringify(data);
-		await this.bluetooth.write(writeObj).then(
-			()=>this.log("NASCAR DATA WRITE: Success"),
-			(err)=>this.log(`NASCAR DATA WRITE: Error | ${err}`)
-		);
+		writeObj['value'] = this.dataUtility.value2hex(data);
+		await this.bluetooth.streamWrite(writeObj);
+		//await this.bluetooth.write(writeObj).then(
+			//()=>this.log("NASCAR DATA WRITE: Success"),
+			//(err)=>this.log(`NASCAR DATA WRITE: Error | ${err}`)
+		//);
 	}
 
 	async calibrationSubscribe(cb: (any)=>void): Promise<void> {

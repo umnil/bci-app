@@ -161,7 +161,7 @@ export default class ChartView extends Vue {
 	 * Saves the current data by packaging the relevant information into an
 	 * object and sending it over bluetooth for saving
 	 */
-	save(): void {
+	async save(): Promise<void> {
 		const data: any[] = this.data.map((point)=>[point["X"], point["Y"]]);
 		const target_names: string[] = ["GoalV1", "GoalH1", "GoalV2"];
 		const target_data: any[] = target_names.map((target_name) => {
@@ -180,7 +180,7 @@ export default class ChartView extends Vue {
 			data: data,
 			metadata: metadata
 		};
-		console.log(save_data);
+		await this.cd.writeNascarData(save_data);
 	}
 
 	/**
