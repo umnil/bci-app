@@ -170,6 +170,11 @@ export default class ChartView extends Vue {
 				value: this.getLineValue(target_name)
 			};
 		});
+		const metadata: any = {
+			acceleration: this.acceleration_scale,
+			sampling_rate: this.refresh_rate,
+			target_data: target_data
+		};
 	}
 
 	/**
