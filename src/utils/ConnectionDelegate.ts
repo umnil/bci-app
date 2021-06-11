@@ -341,6 +341,12 @@ export default class ConnectionDelegate {
 		return options;
 	}
 
+	get nascarDataRequestOptions(): any {
+		let options: any = this.standardRequestOptions;
+		options['characteristicUUID'] = this.nascar_data_char_UUID;
+		return options;
+	}
+
 	get scanningStatus(): string {
 		return this.isScanning ? "Scanning" : "Not Scanning";
 	}
