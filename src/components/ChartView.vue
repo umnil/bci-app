@@ -21,6 +21,7 @@ import * as dialogs from '@nativescript/core/ui/dialogs';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import { LinearAxis, ChartAxisHorizontalLocation, ChartAxisVerticalLocation, LogarithmicAxis, RadCartesianChart, LineSeries} from 'nativescript-ui-chart';
 import { ObservableArray } from "@nativescript/core/data/observable-array";
+import ConnectionDelegate from '../utils/ConnectionDelegate';
 import ChartViewSettings from './ChartViewSettings.vue';
 
 enum Acceleration {
@@ -31,6 +32,9 @@ enum Acceleration {
 
 @Component
 export default class ChartView extends Vue {
+
+	private bus: any = (this as any).$bus;
+	private cd: ConnectionDelegate;
 
 	private play_icon: string = String.fromCharCode(0xf04b);
 	private pause_icon: string = String.fromCharCode(0xf04c);
@@ -59,9 +63,10 @@ export default class ChartView extends Vue {
 	private GoalH1: LineSeries = this.createLine("GoalH1", true, 40);
 	private GoalV2: LineSeries = this.createLine("GoalV2", false, 25);
 
-
 	constructor() {
 		super();
+		this.cd = this.bus.cd;
+
 		let x: number[] = this.range(-1, 0, 0.05);
 		let y: number[] = x;
 		x.forEach((e,i) => {
