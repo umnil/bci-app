@@ -162,6 +162,7 @@ export default class ChartView extends Vue {
 	 * object and sending it over bluetooth for saving
 	 */
 	save(): void {
+		const data: any[] = this.data.map((point)=>[point["X"], point["Y"]]);
 		const target_names: string[] = ["GoalV1", "GoalH1", "GoalV2"];
 		const target_data: any[] = target_names.map((target_name) => {
 			return {
@@ -175,6 +176,11 @@ export default class ChartView extends Vue {
 			sampling_rate: this.refresh_rate,
 			target_data: target_data
 		};
+		const save_data: any = {
+			data: data,
+			metadata: metadata
+		};
+		console.log(save_data);
 	}
 
 	/**
