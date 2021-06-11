@@ -286,6 +286,15 @@ export default class ConnectionDelegate {
 		this.readDeviceSettings();
 	}
 
+	async writeNascarData(data: any): Promise<void> {
+		let writeObj: any = this.nascarDataRequestOptions;
+		writeObj['value'] = JSON.stringify(data);
+		await this.bluetooth.write(writeObj).then(
+			()=>this.log("NASCAR DATA WRITE: Success"),
+			(err)=>this.log(`NASCAR DATA WRITE: Error | ${err}`)
+		);
+	}
+
 	async calibrationSubscribe(cb: (any)=>void): Promise<void> {
 		this.calibration_callback = cb;
 		let requestOptions: any = this.standardRequestOptions;
