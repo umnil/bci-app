@@ -27,7 +27,7 @@ export default class DeviceSettingButton extends Vue {
 
 	@Watch("setting.value")
 	valueWatch(): void {
-		if(["calibrating", "assessingAccuracy"].indexOf(this.setting.name) != -1) {
+		if(["calibrating", "assessing_accuracy"].indexOf(this.setting.name) != -1) {
 			if(this.setting.value) {
 				this.bus.DeviceSettings.startCalibration();
 			}
