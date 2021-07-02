@@ -1,6 +1,7 @@
-# BMI Mobile
+# BCI App
 
-Mobile phone application interface for ecoglink BMI
+Mobile phone application interface for the python BCI at University of Miami
+Neural Interfaces Laboratory
 
 ## Gettings started
 
