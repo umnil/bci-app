@@ -234,7 +234,7 @@ export default class ConnectionDelegate {
 				this.updateDeviceSettings(result);
 			},
 			(err) => {
-				this.log(`Failed to read device settings| ${err}`);
+				this.log(`Failed to read device settings | ${err}`);
 			}
 		);
 	}

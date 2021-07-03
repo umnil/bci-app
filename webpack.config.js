@@ -180,7 +180,7 @@ module.exports = (env) => {
 							keep_infinity: true, // for V8
 							reduce_funcs: false, // for V8
 							// custom
-							drop_console: production,
+							// drop_console: production,
 							drop_debugger: true,
 							global_defs: {
 								__UGLIFIED__: true,
