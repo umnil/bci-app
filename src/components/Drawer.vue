@@ -13,7 +13,6 @@ import App from './App';
 import Home from './Home';
 import BluetoothSettings from './BluetoothSettings/Home';
 import DeviceList from './DeviceList';
-import ChartView from './ChartView';
 import SystemSettings from './SystemSettings';
 import ConnectionDelegate from "../utils/ConnectionDelegate";
 
@@ -41,12 +40,6 @@ export default class Drawer extends Vue {
 			icon: String.fromCharCode(0xf0ad),
 			component: DeviceList,
 			show: false
-		},
-		{
-			name: 'Chart View',
-			icon: String.fromCharCode(0xf1fe),
-			component: ChartView,
-			show: true
 		},
 		{
 			name: 'System Settings',
