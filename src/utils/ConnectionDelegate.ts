@@ -256,6 +256,11 @@ export default class ConnectionDelegate {
 		this.calibration_callback(data);
 	}
 
+	handleChartTrigger(result: ReadResult): void {
+		let data: any = this.dataUtility.arraybuffer2obj(result.value);
+		this.chart_trigger_callback(data);
+	}
+
 	async setInputDeviceData(inputDevicesData: any): Promise<void> {
 		this.device_data.inputdevices = inputDevicesData;
 		await this.writeDeviceData();
@@ -307,6 +312,18 @@ export default class ConnectionDelegate {
 			this.log("Calibration Subscribed!");
 		}, (err)=>{
 			this.log(`Calibration Subscription error: ${err}`);
+		});
+	}
+
+	async chartTriggerSubscribe(cb: (any)=>void): Promise<void> {
+		this.chart_trigger_callback = cb;
+		let requestOptions: any = this.standardRequestOptions;
+		requestOptions['characteristicUUID'] = this.chart_trigger_UUID;
+		requestOptions['onNotify'] = this.handleChartTrigger.bind(this);
+		await this.bluetooth.startNotifying(requestOptions).then(()=>{
+			this.log("Chart Trigger Subscribed!");
+		}, (err) => {
+			this.log(`Chat trigger subscription error: ${err}`);
 		});
 	}
 
