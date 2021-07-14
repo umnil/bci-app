@@ -80,6 +80,12 @@ export default class ChartView extends Vue {
 		this.toggleLine("GoalH1", true);
 		this.toggleLine("GoalV2", true);
 		this._loaded = true;
+
+		this.cd.chartTriggerSubscribe((value)=>{
+			if (value == 1) {
+				this.trigger();
+			}
+		});
 	}
 
 	range(start, end, step=1): number[] {
