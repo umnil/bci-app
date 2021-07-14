@@ -37,8 +37,10 @@ export default class ConnectionDelegate {
 	calibration_char_UUID: string = "E58AC8E3-615A-45C4-A96B-590F64D3492A";
 	sys_ctrl_char_UUID: string = "2389DB49-5CA4-443F-8EC8-55DB9AC79143";
 	nascar_data_char_UUID: string = "426C55A0-C06A-44C5-BFE6-23275A982549";
+	chart_trigger_UUID: string = "74CC8BE0-570F-446E-83B6-D7E6B5A8732E";
 
 	calibration_callback: (any)=>void;
+	chart_trigger_callback: (any)=>void;
 
 	// Settings
 	reconnectAttempts: number = appSettings.getNumber("reconnectAttempts", 5);
@@ -254,6 +256,11 @@ export default class ConnectionDelegate {
 		this.calibration_callback(data);
 	}
 
+	handleChartTrigger(result: ReadResult): void {
+		let data: any = this.dataUtility.arraybuffer2obj(result.value);
+		this.chart_trigger_callback(data);
+	}
+
 	async setInputDeviceData(inputDevicesData: any): Promise<void> {
 		this.device_data.inputdevices = inputDevicesData;
 		await this.writeDeviceData();
@@ -305,6 +312,18 @@ export default class ConnectionDelegate {
 			this.log("Calibration Subscribed!");
 		}, (err)=>{
 			this.log(`Calibration Subscription error: ${err}`);
+		});
+	}
+
+	async chartTriggerSubscribe(cb: (any)=>void): Promise<void> {
+		this.chart_trigger_callback = cb;
+		let requestOptions: any = this.standardRequestOptions;
+		requestOptions['characteristicUUID'] = this.chart_trigger_UUID;
+		requestOptions['onNotify'] = this.handleChartTrigger.bind(this);
+		await this.bluetooth.startNotifying(requestOptions).then(()=>{
+			this.log("Chart Trigger Subscribed!");
+		}, (err) => {
+			this.log(`Chat trigger subscription error: ${err}`);
 		});
 	}
 
