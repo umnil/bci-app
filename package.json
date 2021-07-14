@@ -1,12 +1,12 @@
 {
-  "name": "bmi-mobile",
+  "name": "bci-app",
   "version": "0.1.4",
-  "description": "Mobile phone application interface for ecoglink BMI",
+  "description": "Mobile phone application interface python UMNIL BCI",
   "author": "Kevin Davis <kevin.davis@med.miami.edu>",
   "license": "MIT",
   "dependencies": {
     "@nativescript-community/ble": "^3.0.4",
-    "@nativescript/core": "8.0.1",
+    "@nativescript/core": "8.0.8",
     "@nativescript/theme": "^3.0.0",
     "msgpack": "^1.0.3",
     "nativescript": "^8.0.1",

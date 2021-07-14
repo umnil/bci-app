@@ -4,7 +4,7 @@
 		<ActionItem>
 			<Label :text="menuText" class="fa menu-icon" @tap="toggleDrawer" />
 		</ActionItem>
-		<Label text="ecoglink BMI" />
+		<Label text="BCI Interface" />
 		<StatusIndicator name="main" />
 	</ActionBar>
 		<RadSideDrawer class="ns-dark" ref="drawer" drawerLocation="Left" :gesturesEnabled="gesturesEnabled">
