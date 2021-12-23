@@ -6,7 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "@nativescript-community/ble": "^3.0.4",
-    "@nativescript/core": "8.0.8",
+    "@nativescript/core": "~8.1.5",
     "@nativescript/theme": "^3.0.0",
     "msgpack": "^1.0.3",
     "nativescript": "^7.2.1",
@@ -20,9 +20,9 @@
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
-    "@nativescript/ios": "8.0.0",
-    "@nativescript/types": "7.0.0",
-    "@nativescript/webpack": "4.1.0",
+    "@nativescript/ios": "~8.1.0",
+    "@nativescript/types": "~8.1.1",
+    "@nativescript/webpack": "~5.0.3",
     "@types/node": "^12.12.42",
     "babel-loader": "^8.1.0",
     "nativescript-vue-template-compiler": "^2.6.0",
