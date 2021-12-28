@@ -24,13 +24,13 @@
 
 <script lang="ts">
 import { EventData } from '@nativescript/core/data/observable';
-import { Switch } from '@nativescript/core/ui/Switch';
-import { Page } from '@nativescript/core/ui/Page';
+import { Switch } from '@nativescript/core/ui/switch';
+import { Page } from '@nativescript/core/ui/page';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import Dialogs from '@nativescript/core/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
-import DeviceList from './DeviceList';
-import Calibrate from './Calibrate';
+import DeviceList from './DeviceList.vue';
+import Calibrate from './Calibrate.vue';
 
 @Component
 export default class DeviceSettings extends Vue {

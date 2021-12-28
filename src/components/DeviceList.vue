@@ -21,7 +21,7 @@
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import Dialogs from '@nativescript/core/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
-import DeviceSettings from './DeviceSettings';
+import DeviceSettings from './DeviceSettings.vue';
 
 @Component
 export default class DeviceList extends Vue {

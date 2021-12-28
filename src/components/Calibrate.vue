@@ -10,7 +10,7 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import { keepAwake, allowSleepAgain } from 'nativescript-insomnia';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
-import DeviceSettings from './DeviceSettings';
+import DeviceSettings from './DeviceSettings.vue';
 
 @Component
 export default class Calibrate extends Vue {
