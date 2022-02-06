@@ -76,7 +76,7 @@ export default class BluetoothSettings extends Vue {
 	}
 
 	get getPeripheralLinkState(): string {
-		return `Interface Status: ${this.cd.ecoglinkAvailableStatus}`;
+		return `Interface Status: ${this.cd.primaryServiceAvailableStatus}`;
 	}
 	
 	get status(): string {
