@@ -1,6 +1,6 @@
 {
   "name": "bci-app",
-  "version": "0.1.4",
+  "version": "0.1.5-rc1",
   "description": "Mobile phone application interface python UMNIL BCI",
   "author": "Kevin Davis <kevin.davis@med.miami.edu>",
   "license": "MIT",
