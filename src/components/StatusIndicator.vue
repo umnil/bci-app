@@ -62,7 +62,7 @@ export default class StatusIndicator extends Vue {
 	}
 
 	@Watch("cd.status")
-	@Watch("cd.ecoglinkAvailableStatus")
+	@Watch("cd.isPrimaryServiceAvailable")
 	@Watch("cd.notifyingStatus")
 	updateFromCDStatus(): void {
 		this.sc.checkCDStatus();
@@ -78,6 +78,7 @@ export default class StatusIndicator extends Vue {
 	height: 50px;
 	color: white;
 	border-width: 2px;
+	border-height: 2px;
 	border-color: #808080;
 	border-style: solid;
 	border-radius: 25px;

@@ -4,9 +4,12 @@
   "description": "Mobile phone application interface python UMNIL BCI",
   "author": "Kevin Davis <kevin.davis@med.miami.edu>",
   "license": "MIT",
+  "scripts": {
+    "start": "ns run ios --device=$IOSID"
+  },
   "dependencies": {
     "@nativescript-community/ble": "^3.0.4",
-    "@nativescript/core": "8.0.8",
+    "@nativescript/core": "^8.0.8",
     "@nativescript/theme": "^3.0.0",
     "msgpack": "^1.0.3",
     "nativescript": "^7.2.1",
@@ -15,6 +18,7 @@
     "nativescript-insomnia": "^1.2.3",
     "nativescript-ui-sidedrawer": "^9.0.3",
     "nativescript-vue": "^2.8.1",
+    "nsblestream": "^0.0.2",
     "uuid-random": "^1.3.0"
   },
   "devDependencies": {

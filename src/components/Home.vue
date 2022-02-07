@@ -10,6 +10,7 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
+import { DeviceDataController } from '../controllers/DeviceDataController';
 
 @Component
 export default class Home extends Vue {
@@ -17,6 +18,7 @@ export default class Home extends Vue {
 	// Data
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate;
+	private ddc: DeviceDataController;
 	private inputDeviceName: string = "None";
 	private outputDeviceName: string = "None";
 
@@ -24,14 +26,15 @@ export default class Home extends Vue {
 	constructor() {
 		super();
 		this.cd = this.bus.cd;
+		this.ddc = this.bus.controllers.deviceDataController;
 	}
 
 	getInputDeviceName(): string {
-		return this.cd.inputDevices.selected_device || "None";
+		return this.ddc.deviceData.inputdevices.selected_device || "None";
 	}
 
 	getOutputDeviceName(): string {
-		return this.cd.outputDevices.selected_device || "None";
+		return this.ddc.deviceData.outputdevices.selected_device || "None";
 	}
 
 	// Computed
@@ -54,12 +57,12 @@ export default class Home extends Vue {
 		this.updateNames();
 	}
 
-	@Watch("cd.inputDevices.selected_device")
+	@Watch("ddc.deviceData.inputdevices.selected_device")
 	updateByInputDevice(): void {
 		this.updateNames();
 	}
 
-	@Watch("cd.outputDevices.selected_device")
+	@Watch("ddc.deviceData.outputdevices.selected_device")
 	updateByOutputDevice(): void {
 		this.updateNames();
 	}

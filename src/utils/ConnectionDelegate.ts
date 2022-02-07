@@ -1,32 +1,33 @@
 import * as appSettings from '@nativescript/core/application-settings';
 import * as dialogs from '@nativescript/core/ui/dialogs';
-import { BLEStream } from './blestream/BLEStream';
+//import { BLEStream } from './blestream/BLEStream';
+import { Bluetooth, Peripheral, Service } from 'nsblestream';
 import { ReadResult } from '@nativescript-community/ble';
 import DataUtil from './blestream/DataUtil';
+import * as utils from './data';
+import { ConnectionState } from '../enums/ConnectionState';
 
 export default class ConnectionDelegate {
 
 	// Class Properties
 	private dataUtility: DataUtil = new DataUtil();
-	private bluetooth: BLEStream = new BLEStream();
+	private bluetooth: Bluetooth = new Bluetooth();
 	textlog: string = "";
 
 	// Connection States
 	private initialized: boolean = false;
 	private isScanning: boolean = false;
-	private done_connecting: boolean = false;
-	private isConnecting: boolean = false;
-	private isConnected: boolean = false
-	private _isEcoglinkAvailable: boolean = false;
+	private connectionState: ConnectionState = ConnectionState.disconnected;
+	private _isPrimaryServiceAvailable: boolean = false;
 	private isNotifying: boolean = false;
 	private connectingTimeout: number = 10;
 	private intentionalDisconnect: boolean = false;
 
 	// collections
-	scannedPeripherals: any[] = [];
+	scannedPeripherals: Peripheral[] = [];
 
 	// Values
-	selectedPeripheral: any = {};
+	selectedPeripheral: Peripheral = null;
 	peripheralUUID: string = '';
 	device_data: any = {};
 
@@ -40,8 +41,8 @@ export default class ConnectionDelegate {
 	calibration_callback: (any)=>void;
 
 	// Settings
-	reconnectAttempts: number = appSettings.getNumber("reconnectAttempts", 5);
-	private _ra: number = this.reconnectAttempts;
+	maxReconnectAttempts: number = appSettings.getNumber("maxReconnectAttempts", 5);
+	private reconnectAttempts: number = this.maxReconnectAttempts;
 	
 	// Methods
 
@@ -107,46 +108,35 @@ export default class ConnectionDelegate {
 		return result;
 	}
 
-	async connect(peripheral: any): Promise<boolean> {
-		if(this.isConnecting) return;
-				
-		this.isConnecting = true;
-		this.done_connecting = false;
+	/**
+	 * connect
+	 * The connection work flow when connecting to a peripheral
+	 * @param {Peripheral} peripheral - the device to connect to
+	 * @returns {boolean} - true if connection was successful
+	 */
+	async connect(peripheral: Peripheral): Promise<boolean> {
+		if(this.connectionState == ConnectionState.connecting) return;
 
-		let handleConnection = (peripheral) => {
-			this.log(peripheral);
-			this.log('Connected');
+		this.connectionState = ConnectionState.connecting;
 
-			this.selectedPeripheral = peripheral;
-			this.isConnected = true;
-			this.done_connecting = true;
-		};
-
-		let handleDisconnection = () => {
-			this.selectedPeripheral = {};
-			this.log('Disconnected');
-			this.isConnected = false;
-			this.done_connecting = true;
-			if(!this.intentionalDisconnect) {
-				this.reconnect();
-			}
-		};
-
-		let connectData = {
+		let connectOptions = {
 			UUID: peripheral['UUID'],
-			onConnected: handleConnection,
-			onDisconnected: handleDisconnection
+			autoDiscoverAll: true,
+			onConnected: this.onConnect.bind(this),
+			onDisconnected: this.onDisconnect.bind(this)
 		};
 
 		this.log(`Connecting...`);
-		this.bluetooth.connect(connectData).then(()=>{
+		this.bluetooth.connect(connectOptions).then(()=>{
 			this.log(`Connecting: Success!`);
 		}, (err)=>{
 			this.log(`Error connecting! ${err}`);
 		});
 
+		// Here we monitor whether the connection was successful by
+		// implementing a timeout mechanism
 		const startTimer: number = Date.now();
-		while (!this.done_connecting) {
+		while (!this.isConnected) {
 			let curTimer: number = Date.now();
 			let dt: number = curTimer - startTimer;
 			let isTimedout: boolean = dt >= this.connectingTimeout*1000;
@@ -159,28 +149,63 @@ export default class ConnectionDelegate {
 		}
 
 		// Now check that we succesfully connected
-		if(!this.isConnected) return false;
+		if(!this.isConnected) {
+			this.connectionState = ConnectionState.disconnected;
+			console.error("Something when wrong with establishing a for sure connection");
+			return false;
+		}
 
+		// Save the ID of the device we connected to for auto connection next
+		// time
 		appSettings.setString("peripheral", JSON.stringify(peripheral));
 
 		// Now check for appropriate services
-		let services: any[] = this.selectedPeripheral.services;
-		let ecoglinkService: any[] = services.filter(s => {
+		let services: Service[] = this.selectedPeripheral.services;
+		let potentialService: Service[] = services.filter(s => {
 			this.log(`Service: ${s.UUID}`);
 			return s.UUID == this.target_service_UUID
 		});
 
-		if(ecoglinkService.length > 0) {
-			this.isEcoglinkAvailable = true;
+		if(potentialService.length > 0) {
+			this.isPrimaryServiceAvailable = true;
 		}
-		
-		this.isConnecting = false;
+
 		return true;
 	}
 
+	/**
+	 * onConnect
+	 * Process for handing information after a successful connection
+	 * @param {Peripheral} peripheral - the peripheral device that was connected to
+	 */
+	onConnect(peripheral: Peripheral) {
+		this.log(`Connected to peripheral: ${peripheral}`);
+		this.selectedPeripheral = peripheral;
+		this.connectionState = ConnectionState.connected;
+	}
+
+	/**
+	 * onDisconnected
+	 * Handling disconnection if connect fails
+	 */
+	onDisconnect() {
+		this.log('Disconnected');
+		this.selectedPeripheral = null;
+		this.connectionState = ConnectionState.disconnected;
+		if(!this.intentionalDisconnect) {
+			// If the user did not explicitly attempt to disconnect, then try
+			// to immediately reconnect
+			this.reconnect();
+		}
+	}
+
+	/**
+	 * disconnect
+	 * Called when the user explicitly wants to disconnect
+	 * @returns {boolean} - true if disconnect is successful
+	 */
 	async disconnect(): Promise<boolean> {
-		this.done_connecting = false;
-		this.log(this.selectedPeripheral);
+		this.log(`Disconnecting from ${this.selectedPeripheral}`);
 		let connectionOptions = {
 			UUID: this.selectedPeripheral['UUID']
 		};
@@ -188,19 +213,17 @@ export default class ConnectionDelegate {
 		this.intentionalDisconnect = true;
 		let disconnect: Promise<boolean> = new Promise<boolean>((resolve) => {
 			this.bluetooth.disconnect(connectionOptions).then(()=>{
-				this.selectedPeripheral = {};
-				this.isConnected = false;
-				this.isConnecting = false;
+				this.selectedPeripheral = null;
+				this.connectionState = ConnectionState.disconnected;
 				this.isNotifying = false;
-				this.isEcoglinkAvailable = false;
+				this.isPrimaryServiceAvailable = false;
 				this.intentionalDisconnect = false;
 				resolve(true);
 			}, (err)=>{
-				this.selectedPeripheral = {};
-				this.isConnected = false;
-				this.isConnecting = false;
+				this.selectedPeripheral = null;
+				this.connectionState = ConnectionState.disconnected;
 				this.isNotifying = false;
-				this.isEcoglinkAvailable = false;
+				this.isPrimaryServiceAvailable = false;
 				this.intentionalDisconnect = false;
 				resolve(true);
 				resolve(false);
@@ -210,27 +233,156 @@ export default class ConnectionDelegate {
 		return await disconnect;
 	}
 
+	/**
+	 * reconnect
+	 * Attempt to reconnect. This is called during unintential disconnects
+	 */
 	async reconnect(): Promise<void> {
-		if(this._ra <= 0) return;
-		this.log(`Attempting to reconnect (${this._ra})`);
+		if(this.reconnectAttempts <= 0) return;
+		this.log(`Attempting to reconnect (${this.reconnectAttempts})`);
 		let lastPeripheralJSON: string = appSettings.getString("peripheral", "");
 		if(lastPeripheralJSON != "") {
 			let peripheral: any = JSON.parse(lastPeripheralJSON);
 			let result: boolean = await this.connect(peripheral);
 			if(result == true) {
-				this._ra = this.reconnectAttempts;
+				this.reconnectAttempts = this.maxReconnectAttempts;
 			}
 			else {
-				this._ra--;
+				this.reconnectAttempts--;
 				return this.reconnect();
 			}
 		}
 	}
 
+	/**
+	 * read
+	 * convenience function for reading standard characteristics
+	 * @param {string} uuid - the UUID of the characteristic
+	 * @returns {T} - GenericType
+	 */
+	async read<T>(uuid: string): Promise<T> {
+		let readOptions: any = this.standardRequestOptions;
+		readOptions['characteristicUUID'] = uuid;
+		return this.bluetooth.read(readOptions).then(
+			(result: ReadResult) => utils.ab2T<T>(result.value),
+			(err) => {
+				this.log(`Failed to read: ${err}`);
+				return ({} as T);
+			}
+		);
+	}
+
+	/**
+	 * write
+	 * convenience function for writing data to the peripheral
+	 * @param {string} uuid - the UUID of the characteristic
+	 * @param {T} value - the data to write
+	 */
+	async write<T>(uuid: string, value: T): Promise<void> {
+		let writeOptions: any = this.standardRequestOptions;
+		writeOptions['characteristicUUID'] = uuid;
+		writeOptions['value'] = utils.T2ab(value);
+		return this.bluetooth.write(writeOptions).then(
+			() => {},
+			(err) => this.log(`Failed to write: ${err}`)
+		);
+	}
+
+	/**
+	 * subscribe
+	 * convenience function for subscribing to notifications
+	 * @param {string} uuid - the UUID of the characteristic
+	 * @param {(T)=>void} onNotify - the callback function to handle notifications
+	 */
+	async subscribe<T>(uuid: string, onNotify: (arg0: T)=>void): Promise<void> {
+		let notifyOptions: any = this.standardRequestOptions;
+		notifyOptions['characteristicUUID'] = uuid;
+		notifyOptions['onNotify'] = (result: ReadResult) => onNotify(utils.ab2T<T>(result.value));
+		return this.bluetooth.startNotifying(notifyOptions).then(
+			()=>this.log(`Subscribed to ${uuid}`),
+			(err)=>this.log(`Failed to subscribe: ${err}`)
+		);
+	}
+
+	/**
+	 * unsubscribe
+	 * convenience function for unsubscribing to notifications
+	 * @param {string} uuid - the UUID of the characteristic to unsubscribe from
+	 */
+	async unsubscribe(uuid: string): Promise<void> {
+		let notifyingOptions: any = this.standardRequestOptions;
+		notifyingOptions['characteristicUUID'] = uuid;
+		return this.bluetooth.stopNotifying(notifyingOptions).then(
+			()=>this.log(`Unsubscribed from ${uuid}`),
+			(err)=>this.log(`ERROR: Failed to subscribe: ${err}`)
+		);
+	}
+
+	/**
+	 * streamRead
+	 * convenience function for reading a stream service on the connected device
+	 * @param {string} UUID - the uuid of the service
+	 * @returns {T} - Generic type
+	 */
+	async streamRead<T>(uuid: string): Promise<T> {
+		this.log("Stream read");
+		let service: Service | null = this.selectedPeripheral.services.reduce((p: Service | null, c: Service)=>c.UUID.toLowerCase() == uuid.toLowerCase() ? c : p, null);
+		if (service == null) {
+			console.error("Failed to find service");
+			return;
+		}
+		return this.bluetooth.streamRead(this.selectedPeripheral, service).then(
+			(result: ArrayBuffer) => utils.ab2T<T>(result),
+			(err) => {
+				this.log(`Failed to stream read: ${err}`);
+				return ({} as T)
+			}
+		);
+	}
+
+	/**
+	 * streamWrite
+	 * convenience function for writing to a stremable service
+	 * @param {string} uuid - the service UUID
+	 * @param {T} data - a generice data type
+	 */
+	async streamWrite<T>(uuid: string, data: T) {
+		this.log("Stream write");
+		let service: Service | null = this.selectedPeripheral.services.reduce((p: Service | null, c: Service)=>c.UUID.toLowerCase() == uuid.toLowerCase() ? c : p, null);
+		if (service == null) {
+			console.error("Failed to find service");
+			return;
+		}
+
+		let value: ArrayBuffer = utils.T2ab(data);
+		return this.bluetooth.streamWrite(this.selectedPeripheral, service, value).then(
+			()=>this.log(`stream wrote data`),
+			(err)=>this.log(`Failed to stream write: ${err}`)
+		);
+	}
+
+	/**
+	 * watch
+	 * Add an event listener to a propert value
+	 */
+	watch(propertyName: string, handler: ()=>void) {
+		let truePropertyName: string = `_${propertyName}`;
+		if (!Object.keys(this).includes(truePropertyName)) {
+			console.log(Object.keys(this));
+			console.error(`Property '${propertyName}' does not exist. Cannot watch`)
+			return;
+		}
+
+		let watcherName: string = propertyName + "Watchers";
+		if (!Object.keys(this).includes(watcherName)) this[watcherName] = [];
+		this[watcherName].push(handler);
+	}
+
 	async readDeviceSettings(): Promise<void> {
 		this.log("Reading Device Settings");
-		return this.bluetooth.streamRead(this.deviceSettingRequestOptions).then(
-			(result: ReadResult) => {
+		let deviceSettingsService: Service = this.selectedPeripheral.services.filter((value: Service) => value.UUID == this.device_data_UUID)[0];
+		return this.bluetooth.streamRead(this.selectedPeripheral, deviceSettingsService).then(
+			(result: ArrayBuffer) => {
 				this.updateDeviceSettings(result);
 			},
 			(err) => {
@@ -239,13 +391,13 @@ export default class ConnectionDelegate {
 		);
 	}
 
-	private updateDeviceSettings(result: ReadResult): void {
-		this.device_data = this.dataUtility.arraybuffer2obj(result.value);
+	private updateDeviceSettings(result: ArrayBuffer): void {
+		this.device_data = this.dataUtility.arraybuffer2obj(result);
 	}
 
 	private handleNotifyUpdate(result: ReadResult): void {
 		this.log("NOTIFIED!");
-		this.updateDeviceSettings(result);
+		this.updateDeviceSettings(result.value);
 	}
 
 	handleCalibrationUpdate(result: ReadResult): void {
@@ -270,9 +422,10 @@ export default class ConnectionDelegate {
 	}
 
 	async writeDeviceData(): Promise<void> {
-		let writeObj: any = this.deviceSettingRequestOptions;
-		writeObj['value'] = this.dataUtility.value2hex(this.device_data);
-		await this.bluetooth.streamWrite(writeObj);
+		let device_data_str: string = JSON.stringify(this.device_data);
+		let data: ArrayBuffer = this.dataUtility.str2arraybuffer(device_data_str);
+		let deviceDataService: Service = this.selectedPeripheral.services.filter(v => v.UUID == this.device_data_UUID)[0];
+		await this.bluetooth.streamWrite(this.selectedPeripheral, deviceDataService, data);
 	}
 
 	async writeSysCtrl(cmd: string): Promise<void> {
@@ -307,7 +460,7 @@ export default class ConnectionDelegate {
 		},(err)=>{
 			result = false;
 			this.log(`ReadNotify ERR: ${err}`);
-			this.isEcoglinkAvailable = false;
+			this.isPrimaryServiceAvailable = false;
 		});
 		this.log(`Read Sys Ctrl: ${result}`);
 
@@ -315,6 +468,14 @@ export default class ConnectionDelegate {
 	}
 
 	// Computed Properties
+	get isConnecting(): boolean {
+		return this.connectionState == ConnectionState.connecting;
+	}
+
+	get isConnected(): boolean {
+		return this.connectionState == ConnectionState.connected;
+	}
+
 	get standardRequestOptions(): any {
 		return {
 			'peripheralUUID': this.selectedPeripheral['UUID'],
@@ -352,8 +513,8 @@ export default class ConnectionDelegate {
 		return this.isConnected ? "Connected" : "Disconnected";
 	}
 
-	get ecoglinkAvailableStatus(): string {
-		return this.isEcoglinkAvailable ? "Available" : "Unavailable";
+	get primaryServiceAvailableStatus(): string {
+		return this.isPrimaryServiceAvailable ? "Available" : "Unavailable";
 	}
 	
 	get notifyStatus(): string {
@@ -382,13 +543,22 @@ export default class ConnectionDelegate {
 		return result
 	}
 
-	private get isEcoglinkAvailable(): boolean {
-		return this._isEcoglinkAvailable;
+	private get isPrimaryServiceAvailable(): boolean {
+		return this._isPrimaryServiceAvailable;
 	}
 
-	private set isEcoglinkAvailable(value: boolean) {
-		this._isEcoglinkAvailable = value;
-		this.notify();
+	private set isPrimaryServiceAvailable(value: boolean) {
+		console.log("Setting isPrimaryServiceAvailable");
+		this._isPrimaryServiceAvailable = value;
+
+		// notify watchers
+		if (!Object.keys(this).includes("isPrimaryServiceAvailableWatchers")) {
+			console.log("No watchers");
+			return;
+		}
+		for (let watcher of this["isPrimaryServiceAvailableWatchers"]) {
+			watcher(value);
+		}
 	}
 
 	// Watch
@@ -396,7 +566,7 @@ export default class ConnectionDelegate {
 		let notifyOptions: any = this.notifyCharRequestOptions;
 		notifyOptions['onNotify'] = this.handleNotifyUpdate.bind(this);
 
-		if(this.isEcoglinkAvailable) {
+		if(this.isPrimaryServiceAvailable) {
 			this.readDeviceSettings();
 			this.bluetooth.startNotifying(notifyOptions)
 				.then(() => {
