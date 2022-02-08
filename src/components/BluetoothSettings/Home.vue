@@ -25,9 +25,9 @@
 <script lang="ts">
 import * as appSettings from '@nativescript/core/application-settings';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import BluetoothLog from './Log';
+import BluetoothLog from './Log.vue';
 import ConnectionDelegate from '../../utils/ConnectionDelegate';
-import Pairing from './Pairing';
+import Pairing from './Pairing.vue';
 
 @Component
 export default class BluetoothSettings extends Vue {

@@ -30,7 +30,7 @@
 import * as appSettings from '@nativescript/core/application-settings';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
-import ItemSelector from './Editors/ItemSelector';
+import ItemSelector from './Editors/ItemSelector.vue';
 
 @Component
 export default class SystemSettings extends Vue {

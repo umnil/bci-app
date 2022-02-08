@@ -1,5 +1,5 @@
 import Vue from 'nativescript-vue';
-import App from './components/App';
+import App from './components/App.vue';
 import RadSideDrawer from 'nativescript-ui-sidedrawer/vue';
 import StatusIndicator from './components/StatusIndicator';
 import DeviceSettingButton from './components/DeviceSettings/Button';
@@ -9,7 +9,6 @@ import ConnectionDelegate from "./utils/ConnectionDelegate";
 import { DeviceDataController } from './controllers/DeviceDataController';
 import { SystemStatusController } from './controllers/SystemStatusController';
 import { PromptController } from './controllers/PromptController';
-
 import { Fontawesome } from 'nativescript-fontawesome';
 Fontawesome.init();
 
@@ -23,7 +22,7 @@ Vue.component('DeviceSettingListPicker', DeviceSettingListPicker);
 
 
 // Prints Vue logs when --env.production is *NOT* set while building
-Vue.config.silent = (TNS_ENV === 'production')
+// Vue.config.silent = (TNS_ENV === 'production')
 
 // Create the bus
 Vue.prototype.$bus = new Vue();
