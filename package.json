@@ -11,12 +11,13 @@
     "@nativescript-community/ble": "^3.0.4",
     "@nativescript/core": "~8.1.5",
     "@nativescript/theme": "^3.0.0",
-    "@nativescript/webpack": "^5.0.4",
+    "buffer": "^6.0.3",
     "clean-webpack-plugin": "^4.0.0",
     "msgpack": "^1.0.3",
     "nativescript": "^7.2.1",
     "nativescript-dev-version": "^0.2.0",
     "nativescript-insomnia": "^1.2.3",
+    "nativescript-nodeify": "^0.8.0",
     "nativescript-ui-sidedrawer": "^9.0.3",
     "nativescript-vue": "^2.8.1",
     "nsblestream": "^0.1.0",
@@ -27,7 +28,8 @@
     "@babel/preset-env": "^7.0.0",
     "@nativescript/ios": "~8.1.0",
     "@nativescript/types": "~8.1.1",
-    "@types/node": "^12.12.42",
+    "@nativescript/webpack": "^5.0.4",
+    "@types/node": "^12.20.43",
     "babel-loader": "^8.1.0",
     "nativescript-vue-template-compiler": "^2.6.0",
     "sass": "^1.28.0",
@@ -35,7 +37,8 @@
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.2",
     "vue-loader": "^15.9.2",
-    "vue-property-decorator": "^8.4.2"
+    "vue-property-decorator": "^8.4.2",
+    "webpack-cli": "^4.9.2"
   },
   "main": "src/main.ts"
 }
