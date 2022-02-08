@@ -9,11 +9,11 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch, Mixins} from 'vue-property-decorator';
-import App from './App';
-import Home from './Home';
-import BluetoothSettings from './BluetoothSettings/Home';
-import DeviceList from './DeviceList';
-import SystemSettings from './SystemSettings';
+import App from './App.vue';
+import Home from './Home.vue';
+import BluetoothSettings from './BluetoothSettings/Home.vue';
+import DeviceList from './DeviceList.vue';
+import SystemSettings from './SystemSettings.vue';
 import ConnectionDelegate from "../utils/ConnectionDelegate";
 import { SystemStatusController } from '../controllers/SystemStatusController';
 

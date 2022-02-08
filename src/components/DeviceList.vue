@@ -21,9 +21,9 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import Dialogs from '@nativescript/core/ui/dialogs';
+import { Dialogs } from '@nativescript/core/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
-import { default as DeviceSettingsVue } from './DeviceSettings';
+import { default as DeviceSettingsVue } from './DeviceSettings.vue';
 import { DeviceDataController } from '../controllers/DeviceDataController';
 
 @Component
