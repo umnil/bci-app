@@ -1,6 +1,8 @@
 const webpack = require("@nativescript/webpack");
 
 module.exports = (env) => {
+	if (Object.keys(env).includes("hmr")) delete env.hmr;
+	console.log(`ENV: ${JSON.stringify(env)}`);
 	webpack.init(env);
 
 	// Learn how to customize:

@@ -11,23 +11,13 @@ import { SystemStatusController } from './controllers/SystemStatusController';
 import { PromptController } from './controllers/PromptController';
 
 require('nativescript-nodeify');
-//let Buffer = require('buffer');
-//console.log(k++++++++++++${Buffer}`)
 
-//import { Fontawesome } from 'nativescript-fontawesome';
-//Fontawesome.init();
-
-//Vue.registerElement('RadSideDrawer', () => require('nativescript-ui-sidedrawer').RadSideDrawer);
 Vue.use(RadSideDrawer);
 Vue.component('StatusIndicator', StatusIndicator);
 
 Vue.component('DeviceSettingButton', DeviceSettingButton);
 Vue.component('DeviceSettingSlider', DeviceSettingSlider);
 Vue.component('DeviceSettingListPicker', DeviceSettingListPicker);
-
-
-// Prints Vue logs when --env.production is *NOT* set while building
-// Vue.config.silent = (TNS_ENV === 'production')
 
 // Create the bus
 Vue.prototype.$bus = new Vue();

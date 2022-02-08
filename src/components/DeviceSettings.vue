@@ -27,7 +27,7 @@ import { EventData } from '@nativescript/core/data/observable';
 import Switch from '@nativescript/core/ui/Switch.vue';
 import Page from '@nativescript/core/ui/Page.vue';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import Dialogs from '@nativescript/core/ui/dialogs';
+import { Dialogs } from '@nativescript/core/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
 import DeviceList from './DeviceList.vue';
 import Calibrate from './Calibrate.vue';
