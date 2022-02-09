@@ -1,5 +1,5 @@
 <template>
-	<Page @navigatingFrom="refreshSettings">
+	<Page @navigatingFrom="checkRefreshSettings">
 		<ActionBar id="test" :title="selected_device" />
 		<StackLayout>
 			<StackLayout v-show="!busy">
@@ -24,23 +24,28 @@
 
 <script lang="ts">
 import { EventData } from '@nativescript/core/data/observable';
-import { Switch } from '@nativescript/core/ui/switch';
-import { Page } from '@nativescript/core/ui/page';
-import { Vue, Component, Watch } from 'vue-property-decorator';
-import Dialogs from '@nativescript/core/ui/dialogs';
+import Switch from '@nativescript/core/ui/Switch.vue';
+import Page from '@nativescript/core/ui/Page.vue';
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
+import { Dialogs } from '@nativescript/core/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
 import DeviceList from './DeviceList.vue';
 import Calibrate from './Calibrate.vue';
+import { DeviceDataController } from '../controllers/DeviceDataController';
 
 @Component
 export default class DeviceSettings extends Vue {
+
+	@Prop() collectionName: string;
+	@Prop() deviceName: string;
+	@Prop() deviceSettings: any;
+	@Prop() refreshSettings: ()=>void;
 	
 	// Members & Attributes
 	private bus: any = (this as any).$bus;
-	private cd: ConnectionDelegate = this.bus.cd;
-	private deviceList: DeviceList = this.bus.deviceList;
+	private cd: ConnectionDelegate;
+	private ddc: DeviceDataController;
 	private busy: boolean = false;
-	settings: any[] = this.device_settings;
 	flags: any = {
 		'changed': false
 	};
@@ -48,20 +53,26 @@ export default class DeviceSettings extends Vue {
 	// Methods
 	constructor() {
 		super();
+		this.cd = this.bus.cd;
+		this.ddc = this.bus.controllers.deviceDataController;
 		this.bus.DeviceSettings = this;
-		this.settings = this.device_settings;
 	}
 
 	log: (message: any)=> void = console.log.bind(console.log, "DeviceSettings: ");
 
-	refreshSettings(): void {
+	/**
+	 * checkRefreshSettings
+	 * When the page loads refresh the current device settings in case it's
+	 * recently changed.
+	 */
+	checkRefreshSettings(): void {
 		if(this.flags.changed) {
-			this.deviceList.refreshSettings();
+			this.refreshSettings();
 		}
 	}
 
 	setSettingValue(settingName: string, value: any): void {
-		let potential_setting: any[] = this.settings.filter(e=>e.name==settingName);
+		let potential_setting: any[] = this.deviceSettings.filter(e=>e.name==settingName);
 		if(potential_setting.length < 1) {
 			this.log(`Failed to get setting name for "${settingName}"`);
 		}
@@ -69,8 +80,21 @@ export default class DeviceSettings extends Vue {
 		setting.value = value;
 	}
 
+	/**
+	 * saveSettings
+	 * save the current settings information by sending it all to the server
+	 */
 	saveSettings(): void {
-		this.device_settings = this.settings;
+		console.log("Saving settings");
+		this.busy = true;
+		let deviceData: any = {
+			device_name: this.deviceName,
+			device_settings: this.deviceSettings
+		};
+		this.ddc.saveDeviceSettings(this.collectionName, this.deviceName, deviceData).then(
+			()=>{this.busy=false;this.flags.changed=false;},
+			(err)=>{this.busy=false;Dialogs.alert("Failed to save settings");}
+		);
 	}
 
 	startCalibration(): void {
@@ -89,12 +113,12 @@ export default class DeviceSettings extends Vue {
 
 	// Computeds
 	get allSettingComponents(): any {
-		let n_settings: number = this.device_settings.length;
-		let template: string = this.device_settings.map((e,i)=>`<DeviceSetting${e.type} :setting="setting[${i}]" :flags="flags" />`).join("");
+		let n_settings: number = this.deviceSettings.length;
+		let template: string = this.deviceSettings.map((e,i)=>`<DeviceSetting${e.type} :setting="setting[${i}]" :flags="flags" />`).join("");
 		let components = {
 			template: `<StackLayout class="setting-list">${template}</StackLayout>`,
 			data: () => ({
-				setting: this.settings,
+				setting: this.deviceSettings,
 				flags: this.flags
 			})
 		};

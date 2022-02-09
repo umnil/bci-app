@@ -39,7 +39,7 @@ export default class SystemSettings extends Vue {
 	private bus: any = (this as any).$bus;
 	private cd: ConnectionDelegate = this.bus.cd;
 	private busy: boolean = false;
-	private reconnectAttempts: number = appSettings.getNumber("reconnectAttempts", 5);
+	private maxReconnectAttempts: number = appSettings.getNumber("maxReconnectAttempts", 5);
 	private reconnectOptions: number[] = Array(11).fill(0).map((e, i)=>i);
 
 	// Methods
@@ -60,11 +60,11 @@ export default class SystemSettings extends Vue {
 		this.bus.ItemSelector = {
 			'title': 'Reconnect Attempts',
 			'list': this.reconnectOptions,
-			'value': this.reconnectAttempts,
+			'value': this.maxReconnectAttempts,
 			'callback': (value) => {
-				appSettings.setNumber("reconnectAttempts", value);
-				this.reconnectAttempts = value;
-				this.cd.reconnectAttempts = value;
+				appSettings.setNumber("maxReconnectAttempts", value);
+				this.maxReconnectAttempts = value;
+				this.cd.maxReconnectAttempts = value;
 			}
 		};
 

@@ -1,10 +1,10 @@
 <template>
 	<Page @loaded="init">
-	<ActionBar>
+	<ActionBar style="background-color: green;">
 		<ActionItem>
 			<Label :text="menuText" class="fa menu-icon" @tap="toggleDrawer" />
 		</ActionItem>
-		<Label text="BCI Interface" />
+		<Label text="BCI Interface" horizontalAlignment="center"/>
 		<StatusIndicator name="main" />
 	</ActionBar>
 		<RadSideDrawer class="ns-dark" ref="drawer" drawerLocation="Left" :gesturesEnabled="gesturesEnabled">
@@ -33,7 +33,7 @@ export default class App extends Vue {
 
 	// Members
 	private bus: any = (this as any).$bus;
-	private cd: ConnectionDelegate = new ConnectionDelegate();
+	private cd: ConnectionDelegate = this.bus.cd;
 	private sc: BLEStatusChecker = new BLEStatusChecker(this.cd);
 	private initialized: boolean = false;
 	drawerIsOpen: boolean = false;
@@ -44,7 +44,6 @@ export default class App extends Vue {
 	constructor() {
 		super();
 		this.bus.App = this;
-		this.bus.cd = this.cd;
 		this.bus.sc = this.sc;
 	}
 	

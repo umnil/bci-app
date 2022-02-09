@@ -1,0 +1,3 @@
+class SystemStatus {
+	value: String;
+}

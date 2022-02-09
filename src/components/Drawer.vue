@@ -15,13 +15,15 @@ import BluetoothSettings from './BluetoothSettings/Home.vue';
 import DeviceList from './DeviceList.vue';
 import SystemSettings from './SystemSettings.vue';
 import ConnectionDelegate from "../utils/ConnectionDelegate";
+import { SystemStatusController } from '../controllers/SystemStatusController';
 
 @Component
 export default class Drawer extends Vue {
 
 	// Data
 	private bus: any = (this as any).$bus;
-	private cd: ConnectionDelegate = this.bus.cd; 
+	private cd: ConnectionDelegate; 
+	private ssc: SystemStatusController;
 	pages: any[] = [
 		{
 			name: 'Bluetooth Settings',
@@ -54,12 +56,17 @@ export default class Drawer extends Vue {
 		super();
 		this.bus.Drawer = this;
 		this.cd = this.bus.cd;
+		this.ssc = this.bus.controllers.systemStatusController;
 	}
 
 	goTo(page: any) {
-		this.bus.listSet = page.name.split(' ')[0];
-		console.log((this as any).$bus.listSet);
-		(this as any).$navigateTo(page.component);
+		let isDevicePage: boolean = page.name.includes("Devices");
+		let properties = isDevicePage ? {
+			props: {
+				listSet: page.name.split(' ')[0]
+			}
+		} : {};
+		(this as any).$navigateTo(page.component, properties);
 		this.bus.App.toggleDrawer();
 	}
 
@@ -71,7 +78,8 @@ export default class Drawer extends Vue {
 	}
 
 	updatePages() {
-		if(this.cd.notifyStatus == "Notifying" && this.cd.connectionStatus == "Connected") {
+		console.log(`DRAWER.ssc.isNotifying: ${this.ssc.isNotifying}`);
+		if(this.ssc.isNotifying && this.cd.connectionStatus == "Connected") {
 			this.setPageShow('Input Devices', true);
 			this.setPageShow('Output Devices', true);
 			this.setPageShow('System Settings', true);
@@ -88,13 +96,14 @@ export default class Drawer extends Vue {
 		this.updatePages();
 	}
 
-	@Watch("cd.ecoglinkAvailableStatus")
-	updateOnECOGSTAT(): void {
+	@Watch("cd.primaryServiceAvailableStatus")
+	updateOnServiceStatus(): void {
 		this.updatePages();
 	}
 
-	@Watch("cd.notifyStatus")
+	@Watch("ssc.isNotifying")
 	updateOnNotifyStatus(): void {
+		console.log("notifying changed");
 		this.updatePages();
 	}
 

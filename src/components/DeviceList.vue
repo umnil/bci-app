@@ -1,13 +1,15 @@
 <template>
-	<Page @loaded="loadDevices">
-		<ActionBar :title="title" />
+	<Page @loaded="refreshSettings">
+		<ActionBar :title="title">
+			<StatusIndicator name="main" />
+		</ActionBar>
 		<StackLayout>
 			<ListView ref="deviceList" for="device in devices" height="100%" v-show="!busy">
 				<v-template>
 					<StackLayout orientation="horizontal" width="100%" height="55">
-						<Label :class="selectionclass(device.device_name)" :text="selection_marker" />
+						<Label :class="selectionclass(device.device_name)" :text="selectionMarker" />
 						<Label class="device-listing" :text="device.device_name" @tap="select(device)"/>
-						<Label class="fa settings" :text="settings_symbol" @tap="toSettings(device)" />
+						<Label class="fa settings" :text="settingsSymbol" @tap="toSettings(device)" />
 					</StackLayout>
 				</v-template>
 			</ListView>
@@ -18,68 +20,79 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch } from 'vue-property-decorator';
-import Dialogs from '@nativescript/core/ui/dialogs';
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
+import { Dialogs } from '@nativescript/core/ui/dialogs';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
-import DeviceSettings from './DeviceSettings.vue';
+import { default as DeviceSettingsVue } from './DeviceSettings.vue';
+import { DeviceDataController } from '../controllers/DeviceDataController';
 
 @Component
 export default class DeviceList extends Vue {
 
+	@Prop() listSet: string
+
 	// Members
-	private listSet: string = "";  // Input or Output
 	private bus: any = (this as any).$bus;
-	private cd: ConnectionDelegate = this.bus.cd;
+	private cd: ConnectionDelegate;
+	private ddc: DeviceDataController;
 	private busy: boolean = false;
-	selection_marker: string = String.fromCharCode(0xf00c);
-	settings_symbol: string = String.fromCharCode(0xf013);
-	selected_device_setting: string = "";
-	devices: any[] = [];
+	selectionMarker: string = String.fromCharCode(0xf00c);
+	settingsSymbol: string = String.fromCharCode(0xf013);
+	selectedDeviceSetting: string = "";
 
 	// Methods
 	constructor() {
 		super();
+		this.cd = this.bus.cd;
+		this.ddc = this.bus.controllers.deviceDataController;
 		this.bus.deviceList = this;
 	}
 
+	/**
+	 * toSettings
+	 * Navigate to the settings page of the given device
+	 * @param {DeviceSettings} device - the device who's settings to view
+	 */
 	toSettings(device: any): void {
-		this.bus.settings_selected_device = device.device_name;
-		this.bus.settings_io = `${this.listSet.toLowerCase()}Devices`;
-		(this as any).$navigateTo(DeviceSettings);
+		let properties = {
+			props: {
+				collectionName: `${this.listSet.toLowerCase()}devices`,
+				deviceName: device.device_name,
+				deviceSettings: device.device_settings,
+				refreshSettings: this.refreshSettings.bind(this)
+			}
+		};
+		this.$navigateTo(DeviceSettingsVue, properties);
 	}
 
-	select(device: any): void {
+	/**
+	 * select
+	 * Function used to select the desired device
+	 * @param {DeviceSettings} device - the settings for the device
+	 */
+	select(device: DeviceSettings): void {
 		console.log(`Selected: ${device.device_name}`);
-		this.selected_device = device.device_name;
+		this.selectedDevice = device.device_name;
 		this.setDevice();
 		(this.$refs.deviceList as any).refresh();
 	}
 
-	loadDevices(): void {
-		this.getListSet();
-		if(this.listSet == "") {
-			throw "Cannot create this component without a defined list set";
-		}
-
-		this.bus[`${this.listSet}s`] = this;
-		this.getDevices();
-	}
-
+	/**
+	 * setDevice
+	 * Use the DeviceDataController to store the selection on the server
+	 */
 	setDevice(): void {
 		this.busy = true;
-		let deviceData: any = {
-			'selected_device': this.selected_device,
-			'devices': this.devices
-		}
-		this.cd[`set${this.listSet}DeviceData`](deviceData).then(
+		this.ddc.deviceData[this.listIndex].selected_device = this.selectedDevice
+		this.ddc.saveDeviceSettingsCollection(this.listIndex, this.deviceList).then(
 			()=>{this.busy = false;},
-			(err)=>{this.busy = false;Dialogs.alert("Failed");}
+			(err)=>{this.busy = false; Dialogs.alert("Failed to select device");}
 		);
 	}
 
 	refreshSettings(): void {
 		this.busy = true;
-		this.cd.readDeviceSettings().then(
+		this.ddc.loadDeviceData().then(
 			()=>{this.busy = false;},
 			(err)=>{this.bus = false;Dialogs.alert("Failed to refresh settings");}
 		);
@@ -90,41 +103,32 @@ export default class DeviceList extends Vue {
 		return `${this.listSet} Devices`;
 	}
 
-	get deviceIndex(): string {
-		return `${this.listSet.toLowerCase()}Devices`;
+	get listIndex(): string {
+		return `${this.listSet.toLowerCase()}devices`;
 	}
 
-	get selected_device(): string {
-		// call to worker func
-		let devices: any = this.cd[this.deviceIndex];
-		return devices.selected_device || "None";
+	get deviceList(): DeviceSettingsCollection {
+		return this.ddc.deviceData[this.listIndex];
 	}
 
-	set selected_device(name: string) {
-		this.cd[this.deviceIndex].selected_device = name;
+	get selectedDevice(): string {
+		return this.deviceList.selected_device || "None";
 	}
 
-	// Computed
+	set selectedDevice(name: string) {
+		this.deviceList.selected_device = name;
+	}
+
 	get selectionclass() {
-		return device_name => ({
+		return deviceName => ({
 			"fa": true,
 			"selection-marker": true,
-			"invisible": device_name != this.selected_device
+			"invisible": deviceName != this.selectedDevice
 		});
 	}
 
-	@Watch("bus.listSet")
-	getListSet(): void {
-		this.listSet = (this as any).$bus.listSet;
-		console.log(`listSet: ${this.listSet}`);
-	}
-
-	@Watch("cd.device_settings")
-	getDevices(): void {
-		// call to worker func
-		let devices: any = this.listSet == "Input" ? this.cd.inputDevices : this.cd.outputDevices;
-		console.log(`${this.listSet.toUpperCase()}S: ${devices.devices}`);
-		this.devices = devices.devices || [];
+	get devices(): DeviceSettings[] {
+		return this.deviceList.devices;
 	}
 }
 </script>

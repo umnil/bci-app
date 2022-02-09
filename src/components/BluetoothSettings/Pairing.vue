@@ -52,7 +52,7 @@ export default class BluetoothPairing extends Vue {
 	async connect(peripheral: any): Promise<void> {
 		this.selected_peripheral = peripheral.UUID;
 		let connected: boolean = await this.cd.connect(peripheral);
-		if(connected) Frame.topmost().goBack();
+		if(connected) this.$navigateBack();
 	}
 
 	// Computed

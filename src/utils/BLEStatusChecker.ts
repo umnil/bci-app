@@ -66,7 +66,7 @@ export class BLEStatusChecker {
 		}
 		else {
 			result = Status.CONNECTED;
-			if(this.cd.ecoglinkAvailableStatus == "Available") {
+			if(this.cd.primaryServiceAvailableStatus == "Available") {
 				result = Status.AVAILABLE;
 				if(this.cd.notifyStatus == "Notifying") {
 					result = Status.LIVE;
