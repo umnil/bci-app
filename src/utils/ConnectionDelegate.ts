@@ -205,6 +205,7 @@ export default class ConnectionDelegate {
 	 * @returns {boolean} - true if disconnect is successful
 	 */
 	async disconnect(): Promise<boolean> {
+		await this.bluetooth.stopScanning();
 		this.log(`Disconnecting from ${this.selectedPeripheral}`);
 		let connectionOptions = {
 			UUID: this.selectedPeripheral['UUID']
