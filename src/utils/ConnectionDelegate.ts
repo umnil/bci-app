@@ -284,7 +284,7 @@ export default class ConnectionDelegate {
 		writeOptions['characteristicUUID'] = uuid;
 		writeOptions['value'] = utils.T2ab(value);
 		return this.bluetooth.write(writeOptions).then(
-			() => {},
+			() => this.log("Successfully wrote system command"),
 			(err) => this.log(`Failed to write: ${err}`)
 		);
 	}
