@@ -31,13 +31,17 @@ import * as appSettings from '@nativescript/core/application-settings';
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import ConnectionDelegate from '../utils/ConnectionDelegate';
 import ItemSelector from './Editors/ItemSelector.vue';
+import { SystemControlSignalController } from '../controllers/SystemControlSignalController';
+import { DeviceDataController } from '../controllers/DeviceDataController';
 
 @Component
 export default class SystemSettings extends Vue {
 
 	// Attributes
 	private bus: any = (this as any).$bus;
-	private cd: ConnectionDelegate = this.bus.cd;
+	private cd: ConnectionDelegate;
+	private ddc: DeviceDataController;
+	private scsc: SystemControlSignalController;
 	private busy: boolean = false;
 	private maxReconnectAttempts: number = appSettings.getNumber("maxReconnectAttempts", 5);
 	private reconnectOptions: number[] = Array(11).fill(0).map((e, i)=>i);
@@ -45,6 +49,9 @@ export default class SystemSettings extends Vue {
 	// Methods
 	constructor() {
 		super();
+		this.cd = this.bus.cd;
+		this.scsc = this.bus.controllers["systemControlSignalController"];
+		this.ddc = this.bus.controllers["deviceDataController"];
 	}
 
 	log: (message: any) => void = console.log.bind(console, "SystemSettings: ");
@@ -52,7 +59,8 @@ export default class SystemSettings extends Vue {
 	async reloadDevices(): Promise<void> {
 		this.log("Reload Devices");
 		this.busy = true;
-		await this.cd.writeSysCtrl("RELOAD_DEVICE");
+		await this.scsc.sendCommand("RELOAD_DEVICE");
+		await this.ddc.loadDeviceData();
 		this.busy = false;
 	}
 
