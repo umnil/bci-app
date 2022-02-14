@@ -9,6 +9,7 @@ import ConnectionDelegate from "./utils/ConnectionDelegate";
 import { DeviceDataController } from './controllers/DeviceDataController';
 import { SystemStatusController } from './controllers/SystemStatusController';
 import { PromptController } from './controllers/PromptController';
+import { SystemControlSignalController } from './controllers/SystemControlSignalController';
 
 require('nativescript-nodeify');
 
@@ -25,7 +26,8 @@ Vue.prototype.$bus.cd = new ConnectionDelegate();
 Vue.prototype.$bus.controllers = {
 	"deviceDataController": new DeviceDataController(Vue.prototype.$bus),
 	"systemStatusController": new SystemStatusController(Vue.prototype.$bus),
-	"promptController": new PromptController(Vue.prototype.$bus)
+	"promptController": new PromptController(Vue.prototype.$bus),
+	"systemControlSignalController": new SystemControlSignalController(Vue.prototype.$bus)
 };
 
 new Vue({

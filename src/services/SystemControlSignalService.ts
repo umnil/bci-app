@@ -35,7 +35,12 @@ export class SystemControlSignalService {
 	 */
 	async read(): Promise<SystemControlSignal> {
 		this.log("Reading");
-		return this.connection.read<SystemControlSignal>(this.uuid);
+		return this.connection.read<string>(this.uuid).then((value: string) => {
+			return new SystemControlSignal(value);
+		}, (err) => {
+			this.log(`ERR: ${err}`);
+			return new SystemControlSignal("");
+		});
 	}
 
 	/**
@@ -44,7 +49,8 @@ export class SystemControlSignalService {
 	 * @param {SystemControlSignal} signal - the signal to send
 	 */
 	async write(signal: SystemControlSignal): Promise<void> {
-		this.log("Writing ${signal.command}");
-		return this.connection.write(this.uuid, signal.command);
+		this.log(`Writing ${signal.command}`);
+		await this.connection.write(this.uuid, signal.command);
+		this.log(`Done writing command: ${signal.command}`);
 	}
 }

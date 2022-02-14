@@ -142,7 +142,7 @@ export default class ConnectionDelegate {
 			let isTimedout: boolean = dt >= this.connectingTimeout*1000;
 			if(isTimedout) {
 				this.log("Connection timeout...");
-				await this.disconnect();
+				this.disconnect();
 				return false;
 			}
 			await new Promise<void>(resolve => setTimeout(resolve, 10))
@@ -205,6 +205,14 @@ export default class ConnectionDelegate {
 	 * @returns {boolean} - true if disconnect is successful
 	 */
 	async disconnect(): Promise<boolean> {
+		await this.bluetooth.stopScanning();
+		if (this.selectedPeripheral == null) {
+			this.selectedPeripheral = null;
+			this.connectionState = ConnectionState.disconnected;
+			this.isNotifying = false;
+			this.isPrimaryServiceAvailable = false;
+			this.intentionalDisconnect = false;
+		}
 		this.log(`Disconnecting from ${this.selectedPeripheral}`);
 		let connectionOptions = {
 			UUID: this.selectedPeripheral['UUID']
@@ -220,6 +228,7 @@ export default class ConnectionDelegate {
 				this.intentionalDisconnect = false;
 				resolve(true);
 			}, (err)=>{
+				this.log(`Failed to disconnect: ${err}`);
 				this.selectedPeripheral = null;
 				this.connectionState = ConnectionState.disconnected;
 				this.isNotifying = false;
@@ -283,7 +292,7 @@ export default class ConnectionDelegate {
 		writeOptions['characteristicUUID'] = uuid;
 		writeOptions['value'] = utils.T2ab(value);
 		return this.bluetooth.write(writeOptions).then(
-			() => {},
+			() => this.log("Successfully wrote system command"),
 			(err) => this.log(`Failed to write: ${err}`)
 		);
 	}

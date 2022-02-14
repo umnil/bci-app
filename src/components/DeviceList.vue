@@ -48,6 +48,10 @@ export default class DeviceList extends Vue {
 		this.bus.deviceList = this;
 	}
 
+	log(message: any): void {
+		this.cd.log(`DeviceList: ${message}`);
+	}
+
 	/**
 	 * toSettings
 	 * Navigate to the settings page of the given device
@@ -94,7 +98,11 @@ export default class DeviceList extends Vue {
 		this.busy = true;
 		this.ddc.loadDeviceData().then(
 			()=>{this.busy = false;},
-			(err)=>{this.bus = false;Dialogs.alert("Failed to refresh settings");}
+			(err)=>{
+				this.log(`Failed to refresh settings: ${err}`);
+				this.bus = false;
+				Dialogs.alert("Failed to refresh settings");
+			}
 		);
 	}
 
