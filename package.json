@@ -16,6 +16,7 @@
     "msgpack": "^1.0.3",
     "nativescript": "^7.2.1",
     "nativescript-dev-version": "^0.2.0",
+    "nativescript-gif": "^5.0.0",
     "nativescript-insomnia": "^1.2.3",
     "nativescript-nodeify": "^0.8.0",
     "nativescript-ui-sidedrawer": "^9.0.3",
