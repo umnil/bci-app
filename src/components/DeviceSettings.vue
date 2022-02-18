@@ -101,8 +101,13 @@ export default class DeviceSettings extends Vue {
 		// save settings
 		this.saveSettings();
 
+		let properties: any = {
+			props: {
+				deviceSettings: this.deviceSettings
+			}
+		};
 		// navigate to the calibration screen
-		(this as any).$navigateTo(Calibrate);
+		(this as any).$navigateTo(Calibrate, properties);
 	}
 
 	stopCalibrating(): void {

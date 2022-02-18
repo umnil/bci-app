@@ -17,6 +17,9 @@ module.exports = (env) => {
 		config.module.rule('esm').test(/\.m?jsx?$/).resolve.set('fullySpecified', false)
 	});
 
+	// GIF animations
+	webpack.Utils.addCopyRule('**/*.gif') 
+
 	return webpack.resolveConfig();
 };
 

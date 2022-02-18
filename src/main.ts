@@ -1,6 +1,7 @@
 import Vue from 'nativescript-vue';
 import App from './components/App.vue';
 import RadSideDrawer from 'nativescript-ui-sidedrawer/vue';
+import { Gif } from 'nativescript-gif';
 import StatusIndicator from './components/StatusIndicator.vue';
 import DeviceSettingButton from './components/DeviceSettings/Button.vue';
 import DeviceSettingSlider from './components/DeviceSettings/Slider.vue';
@@ -14,6 +15,7 @@ import { SystemControlSignalController } from './controllers/SystemControlSignal
 require('nativescript-nodeify');
 
 Vue.use(RadSideDrawer);
+Vue.registerElement("Gif", () => Gif);
 Vue.component('StatusIndicator', StatusIndicator);
 
 Vue.component('DeviceSettingButton', DeviceSettingButton);
