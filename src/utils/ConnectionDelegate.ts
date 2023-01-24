@@ -305,7 +305,7 @@ export default class ConnectionDelegate {
 	 */
 	async subscribe<T>(uuid: string, onNotify: (arg0: T)=>void): Promise<void> {
 		let notifyOptions: any = this.standardRequestOptions;
-		notifyOptions['characteristicUUID'] = uuid;
+		notifyOptions['characteristicUUID'] = uuid.toLowerCase();
 		notifyOptions['onNotify'] = (result: ReadResult) => onNotify(utils.ab2T<T>(result.value));
 		return this.bluetooth.startNotifying(notifyOptions).then(
 			()=>this.log(`Subscribed to ${uuid}`),
