@@ -14,7 +14,7 @@
     "buffer": "^6.0.3",
     "clean-webpack-plugin": "^4.0.0",
     "msgpack": "^1.0.3",
-    "nativescript": "^8.4.0",
+    "nativescript": "^8.5.3",
     "nativescript-dev-version": "^0.2.0",
     "nativescript-gif": "^5.0.0",
     "nativescript-insomnia": "^2.0.0",
