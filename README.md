@@ -17,8 +17,8 @@ npm install -g npm@latest
 
 # enable conda environment specific variables
 ENV_DIR=$(conda env list | grep "*" | sed -Ee s/[^\/]+//)
-mkdir -p ${ENV_DIR}/etc/activate.d
-printf '#!/bin/bash\n\nexport CXXFLAGS="--std=c++14"' > ${ENV_DIR}/etc/activate.d/activate.sh
+mkdir -p "${ENV_DIR}/etc/conda/activate.d"
+printf '#!/bin/bash\n\nexport CXXFLAGS="--std=c++14"' > "${ENV_DIR}/etc/conda/activate.d/activate.sh"
 
 # Install dependencies
 npm install
@@ -30,8 +30,8 @@ ns doctor <ios|android>
 ns build <ios|android> --device <DEVICEID>
 
 # Update cocoapod build files
-PODFILE=$(find . -name *Pods*.sh)
-sed -Ee '/readlink/s/readlink[^$]+/readlink -f /i' $PODFILE > $PODFILE
+PODFILE=$(find . -name "*Pods*.sh")
+sed -Ee '/readlink/s/readlink[^$]+/readlink -f /i' "${PODFILE}" > "${PODFILE}"
 
 # Build, watch for changes and debug the application
 ns run <ios|android> --device <DEVICEID>
