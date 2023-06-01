@@ -16,7 +16,7 @@ conda activate bciapp
 npm install -g npm@latest
 
 # enable conda environment specific variables
-ENV_DIR=$(conda env list | grep "*" | sed -Ee s/[^\/]+//)
+ENV_DIR=$(conda env list | grep "*" | sed -Ee "s/[^\/]+//")
 mkdir -p "${ENV_DIR}/etc/conda/activate.d"
 printf '#!/bin/bash\n\nexport CXXFLAGS="--std=c++14"' > "${ENV_DIR}/etc/conda/activate.d/activate.sh"
 
