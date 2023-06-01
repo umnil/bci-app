@@ -20,18 +20,14 @@ ENV_DIR=$(conda env list | grep "*" | sed -Ee "s/[^\/]+//")
 mkdir -p "${ENV_DIR}/etc/conda/activate.d"
 printf '#!/bin/bash\n\nexport CXXFLAGS="--std=c++14"' > "${ENV_DIR}/etc/conda/activate.d/activate.sh"
 
+# Ensure cocoapods are up to date
+sudo gem update cocoapods
+
 # Install dependencies
 npm install
 
 # Check health (only write ios or android to check the specific platform)
 ns doctor <ios|android>
-
-# Build the application
-ns build <ios|android> --device <DEVICEID>
-
-# Update cocoapod build files
-PODFILE=$(find . -name "*Pods*.sh")
-sed -Ee '/readlink/s/readlink[^$]+/readlink -f /i' "${PODFILE}" > "${PODFILE}"
 
 # Build, watch for changes and debug the application
 ns run <ios|android> --device <DEVICEID>
