@@ -15,3 +15,6 @@ report.*.json
 .update_backup/
 .migration*
 package-lock.json
+
+#React Native
+App_Resources
