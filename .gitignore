@@ -17,4 +17,4 @@ report.*.json
 package-lock.json
 
 #React Native
-App_Resources
+App_Resources/*
