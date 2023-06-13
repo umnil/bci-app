@@ -1,21 +1,18 @@
 import React from "react";
 import { View, Text, Button } from "react-native";
-import { NavigationContainer } from
-  "@react-navigation/native";
-import { createNativeStackNavigator } from
-  "@react-navigation/native-stack";
+import { createBottomTabNavigator } from
+  "@react-navigation/bottom-tabs";
 import SessionsManagerScreen from "./SessionsManagerScreen"
-import SessionsCreationScreen from "./SessionsCreationScreen"
+import SettingsScreen from "./SettingsScreen"
 
-
-const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
   return (
-        <Stack.Navigator>
-            <Stack.Screen name="Sessions" component={SessionsManagerScreen} 
+        <Tab.Navigator>
+            <Tab.Screen name="Sessions List" component={SessionsManagerScreen} 
                 options={({route, navigation}) => ({
-                    headerLeft: () => {
+                    headerRight: () => {
                         return (
                             <Button
                                title="Add" 
@@ -23,9 +20,18 @@ export default function HomeScreen() {
                             />    
                         );
                     },
+                    headerLeft: () => {
+                        return (
+                            <Button
+                               title="Edit" 
+                               onPress={() => {}}
+                            />    
+                        );
+                    },
+
                 })}
-             />
-            <Stack.Screen name="Create Session" component={SessionsCreationScreen}/>
-       </Stack.Navigator>
+            />
+            <Tab.Screen name="Settings" component={SettingsScreen} />
+        </Tab.Navigator>
   );
 }

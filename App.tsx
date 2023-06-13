@@ -1,34 +1,29 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View, Button } from 'react-native';
 import { NavigationContainer } from
   "@react-navigation/native";
-import { createBottomTabNavigator } from
-  "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from
+  "@react-navigation/native-stack";
 import HomeScreen from './screens/HomeScreen'
-import SettingsScreen from './screens/SettingsScreen'
+import DataCollectionScreen from './screens/DataCollectionScreen'
+import SessionsCreationScreen from "./screens/SessionsCreationScreen"
 
-
-const Tab = createBottomTabNavigator();
+ 
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-        <Tab.Navigator>
-            <Tab.Screen name="Home" component={HomeScreen} 
+        <Stack.Navigator>
+            <Stack.Screen name="Sessions Manager" component={HomeScreen} 
             options={{
                 headerShown: false,
             }}
-            />
-            <Tab.Screen name="Settings" component={SettingsScreen} />
-        </Tab.Navigator>
+                            />
+            <Stack.Screen name="Create Session" component={SessionsCreationScreen}/>
+            <Stack.Screen name="Data Collection" component={DataCollectionScreen}/>
+        </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+/*
+*/
