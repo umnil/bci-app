@@ -17,7 +17,7 @@ export default function PresetCreationScreen() {
     const [isScroll , setScroll] = useState(true);
     return (
         <ScrollView nestedScrollEnabled = {true}>
-              <TwoPanelButton titleLeft="Form" titleRight="Drag&Drop" 
+              <TwoPanelButton titleLeft="Form" titleRight="Drag"  
                onPressLeft={() => {setForm(true);}} onPressRight={() => {setForm(false);}}/>  
                <FormTextInput label="Preset Name" />
                <FormPicker label="Server" items={[{label: "mac", value: "mac"}, {label: "mac1", value: "mac1"}]} />
