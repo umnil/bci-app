@@ -78,4 +78,8 @@ yarn-error.log
 web-build/
 dist/
 
+# Vim
+*.swp
+
 # @end expo-cli
+
