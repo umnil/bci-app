@@ -7,7 +7,7 @@ export default function FormTextInput(props) {
     return (
        <View>
            <Text> {props.label} </Text>
-           <TextInput onChangeText={
+           <TextInput style={styles.textInput} onChangeText={
             (e) => { changeText(e);
                      props.onChangeText(e);   
             }}
@@ -30,4 +30,13 @@ FormTextInput.propTypes = {
     defaultText: PropTypes.string.isRequired,
 };
     
+
+const styles = StyleSheet.create({
+    textInput: {
+        height: 40,
+        margin: 12,
+        borderWidth: 1,
+        padding: 10,
+    },
+});
 
