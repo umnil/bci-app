@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Button} from "react-native";
 export default function SettingsScreen() {
   return (
-    <View >
-      <Text>Settings Content</Text>
-</View> );
+    <View>
+      <Button title="Reload Devices"/>
+    </View> 
+    );
 }
