@@ -1,15 +1,42 @@
 import { StyleSheet, View, Pressable, Button, Text } from 'react-native';
 import { useState } from 'react';
+import  Animated, {
+         useSharedValue,
+         useAnimatedStyle,
+         withSpring,
+         withTiming } from 'react-native-reanimated'
+import { Gesture,
+         GestureDetector } from 'react-native-gesture-handler'
 import  PropTypes from "prop-types";
 
 export default function TwoPanelButton(props) {
-    const [isForm, setForm] =  useState(true);
+    const timing = 5;
+    const left = useSharedValue(0);
+    const leftRadius = useSharedValue(10); 
+    const animatedStyles = useAnimatedStyle(() => {
+        return {
+          transform: [
+            { translateX: left.value },
+          ],
+          borderBottomRightRadius: 10 - leftRadius.value,
+          borderTopRightRadius: 10 - leftRadius.value,   
+          borderBottomLeftRadius: leftRadius.value,
+          borderTopLeftRadius: leftRadius.value,                
+        };
+    });
     return (
         <View style={styles.container}>
-            <Pressable style={[styles.buttonLeft, {opacity: isForm ? 1 : 0.5}]} onPress={() => {setForm(true); props.onPressLeft();}} disabled={props.disabledLeft}>
+            <Animated.View style={[styles.overlaySquare, animatedStyles ]}/>
+            <Pressable style={[styles.buttonLeft]} onPress={() => {
+                left.value = withTiming(0, timing);
+                leftRadius.value = withTiming(10, timing);
+                props.onPressLeft();}} disabled={props.disabledLeft}>
                 <Text style={styles.buttonLeftText}> {props.titleLeft} </Text>
             </Pressable>
-            <Pressable style={[styles.buttonRight, {opacity: !isForm ? 1 : 0.5}]} onPress={() => {setForm(false); props.onPressRight();}} disabled={props.disabledRight}>
+            <Pressable style={[styles.buttonRight]} onPress={() => {
+                left.value = withTiming(60, timing);
+                leftRadius.value = withTiming(0, timing);
+                props.onPressRight();}} disabled={props.disabledRight}>
                 <Text style={styles.buttonRightText}> {props.titleRight} </Text>
             </Pressable>
          </View>
@@ -49,10 +76,18 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         marginHorizontal: 10,
     },
+    overlaySquare: {
+        height: 60,
+        width:60, 
+        zIndex: 2, 
+        backgroundColor: "grey",
+        opacity: 0.5,
+        position: 'absolute',
+    },
     buttonRight: {
         height:60,
         width:60,
-        backgroundColor: 'grey',
+        backgroundColor: 'white',
         justifyContent: 'center', 
         alignItems: 'center',
         borderBottomRightRadius: 10,
@@ -67,7 +102,7 @@ const styles = StyleSheet.create({
     buttonLeft: {
         height:60,
         width:60,
-        backgroundColor: 'grey',
+        backgroundColor: 'white',
         justifyContent: 'center', 
         alignItems: 'center',
         borderBottomLeftRadius: 10,
