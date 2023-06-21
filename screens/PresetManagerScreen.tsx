@@ -1,12 +1,9 @@
 import { StyleSheet, Button, FlatList, Text, View } from 'react-native';
 import { useEffect } from 'react';
+import { getPresets } from '../reducer';
+import { connect } from 'react-redux';
 
-const data = new Array(100)
-  .fill(null)
-  .map((v, i) => ({ key: i.toString(), value: ('Item ' + i.toString())
-}));
-
-export default function PresetManagerScreen({ route, navigation, isEdit, setEdit }) {
+function PresetManagerScreen({ presets, route, navigation, isEdit, setEdit }) {
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('blur', () => {
@@ -18,14 +15,27 @@ export default function PresetManagerScreen({ route, navigation, isEdit, setEdit
     return (
         <View>
             <FlatList
-                data={data}
+                data={presets}
                 renderItem={({item}) => 
                     <Button 
-                        title={item.value} 
+                        title={item.name} 
                         onPress={() => {navigation.navigate("Data Collection", {});}}
+                        key={item.id}
                     />
                 }
             />
         </View>
     );
 }
+
+const mapStateToProps = state => {
+    return {
+        presets: state.presets,
+    };
+}
+
+const matchDispatchToProps = {
+    getPresets
+};
+
+export default connect(mapStateToProps, matchDispatchToProps)(PresetManagerScreen);

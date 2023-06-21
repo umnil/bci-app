@@ -1,18 +1,22 @@
 import 'react-native-gesture-handler';
 import { Text, View, Button } from 'react-native';
 import { NavigationContainer } from
-  "@react-navigation/native";
+  '@react-navigation/native';
 import { createNativeStackNavigator } from
-  "@react-navigation/native-stack";
-import HomeScreen from './screens/HomeScreen'
-import DataCollectionScreen from './screens/DataCollectionScreen'
-import PresetCreationScreen from "./screens/PresetCreationScreen"
+  '@react-navigation/native-stack';
+import HomeScreen from './screens/HomeScreen';
+import DataCollectionScreen from './screens/DataCollectionScreen';
+import PresetCreationScreen from './screens/PresetCreationScreen';
+import store from './store';
+import { Provider } from 'react-redux';
 
  
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
+  <Provider store={store}>
     <NavigationContainer>
         <Stack.Navigator>
             <Stack.Screen name="Home" component={HomeScreen} 
@@ -26,7 +30,6 @@ export default function App() {
                     return (
                         <Button
                            title="Save" 
-                           onPress={() => {navigation.navigate("Presets", {});}}
                         />    
                     );
                 },
@@ -34,7 +37,6 @@ export default function App() {
                     return (
                         <Button
                            title="Cancel" 
-                           onPress={() => {navigation.navigate("Presets", {});}}
                         />    
                     );
                 },
@@ -45,7 +47,6 @@ export default function App() {
             <Stack.Screen name="Data Collection" component={DataCollectionScreen}/>
         </Stack.Navigator>
     </NavigationContainer>
+  </Provider>
   );
 }
-/*
-*/

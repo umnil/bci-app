@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
         height: 60,
         width:60, 
         zIndex: 2, 
+        elevation: 2,
         backgroundColor: "grey",
         opacity: 0.5,
         position: 'absolute',
