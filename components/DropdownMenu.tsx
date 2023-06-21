@@ -8,11 +8,6 @@ import  Animated, {
 } from 'react-native-reanimated'
 import PropTypes from "prop-types";
 
-const data = new Array(100)
-  .fill(null)
-  .map((v, i) => ({ key: i.toString(), value: ('Item ' + i.toString())
-}));
-
 export default function DropdownMenu(props) {
     const dropHeight = 100;
     const timing = 10;
@@ -41,7 +36,7 @@ export default function DropdownMenu(props) {
             </Pressable>
             <Animated.ScrollView style={[styles.scrollView, animatedStyles]}>
                 {props.items.map(item => { return (<Pressable onPress={() => {
-                changeSelected(item.label); props.onSelect(item);}} style={props.itemStyle}> 
+                changeSelected(item.label); props.onSelect(item);}} style={props.itemStyle} key={item.label}> 
                     <Text> {item.label} </Text>
                     </Pressable>);})}
             </Animated.ScrollView>

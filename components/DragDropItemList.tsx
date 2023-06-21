@@ -20,7 +20,7 @@ export default function DragDropItemList(props) {
    return(
     <ScrollView style={{width:100, height:200}}>
         {props.data.map(item => {return (
-<DragDropItem item={item} key={item.key} renderItem={props.renderItem} kDrop={kDrop} zIncr={zIncr}
+<DragDropItem item={item} key={item.label} renderItem={props.renderItem} kDrop={kDrop} zIncr={zIncr}
     />);})}
     </ScrollView>
     );

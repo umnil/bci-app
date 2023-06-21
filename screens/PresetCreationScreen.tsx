@@ -5,21 +5,7 @@ import DragDropItemList from "../components/DragDropItemList";
 import DropdownMenu from "../components/DropdownMenu";
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { SET_PRESET_PROGRESS_NAME, 
-         SET_PRESET_PROGRESS_SERVER, 
-         SET_PRESET_PROGRESS_INPUT, 
-         SET_PRESET_PROGRESS_DECODER, 
-         SET_PRESET_PROGRESS_OUTPUT, 
-         COMMIT_PRESET_PROGRESS, 
-         FLUSH_PRESET_PROGRESS, 
-         setPresetInProgressName,
-         setPresetInProgressServer,
-         setPresetInProgressInput,
-         setPresetInProgressDecoder,
-         setPresetInProgressOutput,
-         commitPresetInProgress,
-         flushPresetInProgress,
-} from '../reducer';
+import * as ActionCreators from '../actionCreators'; 
 
 const items = new Array(20)
   .fill(null)
@@ -68,13 +54,13 @@ function PresetCreationScreen(props) {
 
 const matchDispatchToProps = (dispatch) => { 
     return {
-        commitPreset: () => dispatch({type: COMMIT_PRESET_PROGRESS}),
-        flushPreset: () => dispatch({type: FLUSH_PRESET_PROGRESS}),
-        setName: (e) => dispatch({type: SET_PRESET_PROGRESS_NAME, payload:{name:e}}),
-        setServer: (e) => dispatch({type: SET_PRESET_PROGRESS_SERVER, payload:{server:e}}),
-        setInput: (e) => dispatch({type: SET_PRESET_PROGRESS_INPUT, payload:{input:e}}),
-        setDecoder: (e) => dispatch({type: SET_PRESET_PROGRESS_DECODER, payload:{decoder:e}}),
-        setOutput: (e) => dispatch({type: SET_PRESET_PROGRESS_OUTPUT, payload:{output:e}}),
+        commitPreset: () => dispatch(ActionCreators.commitPresetInProgess()),
+        flushPreset: () => dispatch(ActionCreators.flushPresetInProgess()),
+        setName: (e) => dispatch(ActionCreators.setPresetInProgessName(e)),
+        setServer: (e) => dispatch(ActionCreators.setPresetInProgessServer(e)),
+        setInput: (e) => dispatch(ActionCreators.setPresetInProgessInput(e)),
+        setDecoder: (e) => dispatch(ActionCreators.setPresetInProgessDecoder(e)),
+        setOutput: (e) => dispatch(ActionCreators.setPresetInProgessOutput(e)),
     };
 };
 
