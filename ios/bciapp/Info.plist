@@ -54,6 +54,8 @@
         </dict>
       </dict>
     </dict>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>This appliction requires bluetooth to function properly</string>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>

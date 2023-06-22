@@ -7,16 +7,17 @@ import { createNativeStackNavigator } from
 import HomeScreen from './screens/HomeScreen';
 import DataCollectionScreen from './screens/DataCollectionScreen';
 import PresetCreationScreen from './screens/PresetCreationScreen';
-import store from './store';
+import { store, persistor } from './store';
 import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 
- 
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
   <Provider store={store}>
+  <PersistGate loading={<Text>Loading...</Text>} persistor={persistor}>
     <NavigationContainer>
         <Stack.Navigator>
             <Stack.Screen name="Home" component={HomeScreen} 
@@ -47,6 +48,7 @@ export default function App() {
             <Stack.Screen name="Data Collection" component={DataCollectionScreen}/>
         </Stack.Navigator>
     </NavigationContainer>
+  </PersistGate>
   </Provider>
   );
 }
