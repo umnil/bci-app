@@ -6,6 +6,7 @@ import DropdownMenu from "../components/DropdownMenu";
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import * as ActionCreators from '../actionCreators'; 
+import { manager } from '../bleManager';
 
 const items = new Array(20)
   .fill(null)
@@ -13,8 +14,54 @@ const items = new Array(20)
 }));
 
 
+const scanAndAcc = (arr, setArr, isScan) => {
+    if(!isScan) {
+        manager.stopDeviceScan();
+        return; 
+    }
+    manager.startDeviceScan(null, null, (error, device) =>
+    {
+        if (error) {
+            return;
+        }
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i].id == device.id) {
+                return;
+            }
+        }
+        setArr([...arr, device]);
+    });
+};
+
+const deviceToItems = (devices) => {
+    const named = [];
+    const nnamed = [];
+    for(let i = 0; i < devices.length; i++) {
+        if (devices[i].name) {
+            named.push({label: devices[i].name, sublabel: devices[i].id , value: devices[i], key: devices[i].id}); 
+        } else {
+            nnamed.push({label: "Unknown", sublabel: devices[i].id , value: devices[i], key: devices[i].id}); 
+        }
+    } 
+    named.sort((i1,i2) => i1.rssi > i2.rssi)
+    const items = named.concat(nnamed);
+    return items;
+};
+
+
 function PresetCreationScreen(props) {
     const [isForm , setForm] = useState(true);
+    const [devices, setDevices] = useState([]);
+    const [isServerScan, setServerScan] = useState(false);
+    useEffect(() => {
+      const subscription = manager.onStateChange((state) => {
+          if (state === 'PoweredOn') {
+              subscription.remove();
+              scanAndAcc(devices, setDevices, isServerScan);
+          }
+      }, true);
+      return () => { subscription.remove(); manager.stopDeviceScan();}
+    }, [manager, isServerScan, devices]);
     useEffect(() => {
         props.navigation.setOptions({
             headerRight: () => (
@@ -30,14 +77,15 @@ function PresetCreationScreen(props) {
                 } } title="Cancel" />
             ),
         });
+
     }, [props.navigation]);
     return (
         <ScrollView nestedScrollEnabled = {true}>
               <TwoPanelButton titleLeft="Form" titleRight="Drag"  
                onPressLeft={() => {setForm(true);}} onPressRight={() => {setForm(false);}}/>  
                <FormTextInput onChangeText={(e)=>{props.setName(e);}} label="Preset Name" />
-               <DropdownMenu label="Server" onSelect={(e)=>props.setServer(e)}
-                    items={[{label: "mac", value: "mac"}, {label: "mac1", value: "mac1"}]} />
+               <DropdownMenu label="Server" onSelect={(e)=>props.setServer(e.value)} onDrop={()=>{setDevices([]); setServerScan(true);}} onClose={()=>setServerScan(false)}
+                     items={deviceToItems(devices)}/>
                { isForm ? 
                         <>
                             <DropdownMenu label="Input Device" items={items} onSelect={(e)=>props.setInput(e)}/>

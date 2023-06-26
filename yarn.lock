@@ -1172,6 +1172,11 @@
     "@babel/helper-validator-identifier" "^7.22.5"
     to-fast-properties "^2.0.0"
 
+"@config-plugins/react-native-ble-plx@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@config-plugins/react-native-ble-plx/-/react-native-ble-plx-6.0.0.tgz#1dcec7bb3211d4400c0a4f425444fcbd9e095aac"
+  integrity sha512-Uyag6VV2wQyntem6VDui9VrGYjRcoIfgIUjLm0/P0XBCJivSibA8hvO63aPSmBPOX0j9fLPyOe+TjRdYawgSqQ==
+
 "@egjs/hammerjs@^2.0.17":
   version "2.0.17"
   resolved "https://registry.yarnpkg.com/@egjs/hammerjs/-/hammerjs-2.0.17.tgz#5dc02af75a6a06e4c2db0202cae38c9263895124"
@@ -5844,6 +5849,11 @@ react-native-ble-manager@^10.1.2:
   version "10.1.2"
   resolved "https://registry.yarnpkg.com/react-native-ble-manager/-/react-native-ble-manager-10.1.2.tgz#ffdb0cef02cd7ac57e1025d8baf9898897745387"
   integrity sha512-IuxslzyKvol9ZD1ctlbSzPEmBLNqTOPi94owrV4W6wU2Zb96JWIyIJHy4xTnLz6qqtVdUQoISf9MxtGJuL2GHg==
+
+react-native-ble-plx@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/react-native-ble-plx/-/react-native-ble-plx-2.0.3.tgz#b0a746f33389dbf7fd7b158513330d487d5d0fbb"
+  integrity sha512-62LRDBPf/03K7sge+qq2ZuF8PWCGB782G+SBrpgNm5fA5Hs3FCY1ExTJZ1G0tB5ZhBPYEXcKRxPLuFegcDFrqA==
 
 react-native-codegen@^0.71.5:
   version "0.71.5"

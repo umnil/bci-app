@@ -36,7 +36,7 @@ export default function HomeScreen() {
             > 
             {(props) => <PresetManagerScreen {...props} isEdit={isEdit} setEdit={setEdit} />}
             </Tab.Screen>
-            <Tab.Screen name="Dynamic Configuration" component={SettingsScreen} />
+            <Tab.Screen name="Sandbox" component={SettingsScreen} />
             <Tab.Screen name="Analytics" component={SettingsScreen} />
             <Tab.Screen name="Settings" component={SettingsScreen} />
         </Tab.Navigator>

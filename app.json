@@ -1,5 +1,6 @@
 {
   "expo": {
+    "plugins": ["@config-plugins/react-native-ble-plx"],
     "name": "bci-app",
     "slug": "bci-app",
     "version": "1.0.0",

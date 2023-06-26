@@ -9,10 +9,10 @@ import  Animated, {
 import PropTypes from "prop-types";
 
 export default function DropdownMenu(props) {
-    const dropHeight = 100;
-    const timing = 10;
+    const dropHeight = 200;
+    const timing = 5;
     const height = useSharedValue(0);
-    const [selected, changeSelected] = useState("None");
+    const [selected, changeSelected] = useState(props.default);
     const animatedStyles = useAnimatedStyle(() => {
         return {
            borderRightWidth: height.value != 0 ? 1 : 0,
@@ -27,17 +27,19 @@ export default function DropdownMenu(props) {
             <Pressable style={styles.text} onPress={() => 
                 {
                     if (height.value == dropHeight) {
-                        height.value = withTiming(0, timing)
+                        props.onClose();
+                        height.value = withTiming(0, timing);
                     } else {
-                        height.value = withTiming(dropHeight, timing)
+                        props.onDrop();
+                        height.value = withTiming(dropHeight, timing);
                     }
                 }}> 
-                <Text> {selected} </Text> 
+                {props.renderSelected(selected)}    
             </Pressable>
             <Animated.ScrollView style={[styles.scrollView, animatedStyles]}>
                 {props.items.map(item => { return (<Pressable onPress={() => {
-                changeSelected(item.label); props.onSelect(item);}} style={props.itemStyle} key={item.label}> 
-                    <Text> {item.label} </Text>
+                changeSelected(item); props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
+                    {props.renderItem(item)} 
                     </Pressable>);})}
             </Animated.ScrollView>
         </View>
@@ -46,24 +48,43 @@ export default function DropdownMenu(props) {
 
 DropdownMenu.defaultProps = {
     label: "Select Item",
-    onSelectValue: (e) => {},
-    default: "None", 
+    default: {label: "None"},
     items: {},
     itemStyle: {},
+    renderSelected: (item) => (
+        <View style={styles.selected}>
+            <Text style={styles.label}> {item == null ? "" : (item.label.length > 30 ? (item.label.substring(0,30) + "...") : item.label) } </Text> 
+            {(item != null && item.hasOwnProperty('sublabel')) && (<Text style={styles.sublabel}> {item.sublabel} </Text>)}
+        </View>
+    ),
+    renderItem: (item) => (
+        <View style={styles.item}>
+            <Text style={styles.label}> {item == null ? "" : item.label } </Text> 
+            {(item != null && item.hasOwnProperty('sublabel')) && (<Text style={styles.sublabel}> {item.sublabel} </Text>)}
+        </View>
+    ),
     onSelect: (item)=>{},
+    onDrop: ()=>{},
+    onClose: ()=>{},
+
 };
 
 
 DropdownMenu.propTypes = {
     label: PropTypes.string.isRequired,
-    onSelectValue: PropTypes.func.isRequired,
     default: PropTypes.string.isRequired,
+    renderItem: PropTypes.func.isRequired,
+    renderSelected: PropTypes.func.isRequired,
     items: PropTypes.arrayOf(PropTypes.shape({
         label: PropTypes.string.isRequired,
+        sublabel: PropTypes.string,
         value: PropTypes.any.isRequired,
+        key: PropTypes.any.isRequired,
     })).isRequired,
     itemStyle: PropTypes.object.isRequired,
     onSelect: PropTypes.func.isRequired,
+    onDrop: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired,
 };
  
 const styles = StyleSheet.create({
@@ -80,10 +101,28 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         zIndex: 2,
-       marginLeft: 12,
+        marginLeft: 12,
         marginRight: 12,
         marginBottom: 12,
-    }
+    },
+    label: {
+       fontSize: 15, 
+    },
+    sublabel: {
+       fontSize: 10, 
+    },
+    selected: {
+        margin: 5,
+        padding: 3,
+        borderWidth: 0.2,
+    },
+    item: {
+        margin: 5,
+        padding: 3,
+        borderWidth: 0.5,
+        borderStyle: 'dashed',
+    },
+
  
 });
             
