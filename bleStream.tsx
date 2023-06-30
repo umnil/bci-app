@@ -36,9 +36,8 @@ const int2nbo = (i) => {
 };
 
 const nbo2int = (byteStr) => {
-    console.log(byteStr.length);
     const byteArr = byteStr.split('');
-    const hexArr = byteArr.map(c => c.charCodeAt(0).toString(16)).reverse();
+    const hexArr = byteArr.map(c => c.charCodeAt(0).toString(16).padStart(2,'0')).reverse();
     const hexStr = hexArr.join('');
     const num = parseInt(hexStr, 16);
     return num;
@@ -79,7 +78,6 @@ const readIdx = (manager, device, serviceUUID) => {
         if (value == null) {
             return(null);
         } else {
-            console.log(value);
             return(parseInt(nbo2int(atob(value)), 10));
         }
 
