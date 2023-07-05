@@ -8,7 +8,7 @@ import  Animated, {
 } from 'react-native-reanimated'
 import PropTypes from "prop-types";
 
-export default function DropdownMenu(props) {
+export default function FormDropdownMenu(props) {
     const dropHeight = 200;
     const timing = 5;
     const height = useSharedValue(0);
@@ -22,7 +22,7 @@ export default function DropdownMenu(props) {
         };
     });
     return (
-        <View styles={styles.container}>
+        <>
             <Text> {props.label} </Text>
             <Pressable style={styles.text} onPress={() => 
                 {
@@ -42,14 +42,14 @@ export default function DropdownMenu(props) {
                     {props.renderItem(item)} 
                     </Pressable>);})}
             </Animated.ScrollView>
-        </View>
+        </>
     );
 }
 
 DropdownMenu.defaultProps = {
     label: "Select Item",
-    default: {label: "None"},
-    items: {},
+    default: {label: "None", value: "None"},
+    items: [],
     itemStyle: {},
     renderSelected: (item) => (
         <View style={styles.selected}>
@@ -88,9 +88,6 @@ DropdownMenu.propTypes = {
 };
  
 const styles = StyleSheet.create({
-    container: {
-        zIndex: 2
-    },
     text: {
         borderWidth: 1,
         padding: 10,

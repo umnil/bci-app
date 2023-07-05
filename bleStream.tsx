@@ -225,8 +225,7 @@ const streamWrite = (manager, device, serviceUUID, data) => {
                 })
             );
         })
-        .then(() => subscriptionRef.remove())
-        .catch((error) => console.log("error: " + error));
+        .then(() => subscriptionRef.remove());
             
 };
 

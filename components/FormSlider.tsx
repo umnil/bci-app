@@ -1,34 +1,73 @@
+import 'react-native-reanimated';
 import React, { useState } from 'react'; 
-import { StyleSheet, View, Text, useWindowDimensions} from 'react-native';
+import { StyleSheet, View, Text, TextInput, useWindowDimensions} from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
+    runOnJS,
+    runOnUI,
     useSharedValue,
     useAnimatedStyle,
+    useAnimatedProps,
     withSpring,
 } from 'react-native-reanimated';
 
 import PropTypes from 'prop-types';
 
+Animated.addWhitelistedNativeProps({ text: true });
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
+const pos2value = (gLower, gUpper, lower, upper, pos) => {
+    const cutoffPos = pos < gLower ? gLower :
+                      pos > gUpper ? gUpper :
+                      pos;
+    const toUnit = ((cutoffPos - gLower)/(gUpper - gLower));
+    const toValue = toUnit * (upper - lower) + lower;
+    return toValue;
+};
+
+const value2pos = (gLower, gUpper, lower, upper, value) => {
+    const cutoffValue = value < lower ? lower :
+                        value > upper ? upper :
+                        value;
+    const toUnit = ((cutoffValue - lower)/(upper - lower));
+    const toPos = toUnit * (gUpper - gLower) + gLower;
+    return toPos;
+
+};
 
 
 export default function FormSlider(props) {
+    props.initial = props.initial == -1 ? props.lower : props.initial;
     const width = useWindowDimensions().width;
+    
     const slideStart = 10;
-    const slideEnd = width - 52;
-    const isPressed = useSharedValue(false);
-    const offset = useSharedValue(slideStart);
-    const start = useSharedValue(slideStart);
+    const slideEnd = width - 50;
 
+    const ballSlideStart = slideStart;
+    const ballSlideEnd = slideEnd - 10;
+
+    const isPressed = useSharedValue(false);
+    const initialPos = value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial);
+    const offset = useSharedValue(initialPos);
+    const start = useSharedValue(initialPos);
+    const text = useSharedValue(props.initial.toString());
     const gesture = Gesture.Pan()
         .onBegin(() => {
             isPressed.value = true;
         })
         .onUpdate((e) => {
             const rawOffset = e.translationX + start.value;
-            const boundedOffset = rawOffset < slideStart ? slideStart :
-                                 rawOffset > slideEnd ? slideEnd :
+            const boundedOffset = rawOffset < ballSlideStart ? ballSlideStart :
+                                 rawOffset > ballSlideEnd ? ballSlideEnd:
                                  rawOffset;
+            const toUnit = ((boundedOffset - ballSlideStart)/(ballSlideEnd - ballSlideStart));
+            const value = toUnit * (props.upper - props.lower) + props.lower;
+
+//            const value = runOnJS(pos2value)(ballSlideStart, ballSlideEnd, props.lower, props.upper, boundedOffset);
+            text.value = value.toString();
             offset.value = boundedOffset; 
+            runOnJS(props.onSlide)(value);
         })
         .onEnd(() => {
             start.value = offset.value;
@@ -44,23 +83,61 @@ export default function FormSlider(props) {
                 ],
             };
         });
-    
+        const emptyBarAnimatedStyles = useAnimatedStyle(() => {
+            return {
+                width: slideEnd - offset.value,
+            };
+        });   
+        const selectBarAnimatedStyles = useAnimatedStyle(() => {
+            return {
+                width: offset.value,
+            };
+        });   
+        const textInputProps = useAnimatedProps(() => {
+            return {
+                text: text.value,
+            };
+        });
+
     return (
         <>
             <Text> {props.label} </Text>
-            <View>
-                <View style={styles.slideContainer}>
-                    <GestureDetector gesture={gesture}>
-                        <Animated.View style={[styles.slideCircle, ballAnimatedStyles]} />
-                    </GestureDetector>
-                    <Animated.View style={[styles.slideBar]} />
+            <View style={styles.slideContainer}>
+                <GestureDetector gesture={gesture}>
+                    <Animated.View style={[styles.slideCircle, ballAnimatedStyles]} />
+                </GestureDetector>
+                <View style={styles.slideBar}>
+                    <Animated.View style={[styles.slideBarSelect, selectBarAnimatedStyles]}/>
+                    <Animated.View style={[styles.slideBarEmpty, emptyBarAnimatedStyles]}/>
                 </View>
+            </View>
+            <View style={styles.displayContainer}>
+                <Text> Value: </Text>
+                <AnimatedTextInput style={{color: 'black'}} value={text.value} 
+                editable={false} animatedProps={textInputProps}/> 
             </View>
         </>
     );
 
 }
 
+FormSlider.defaultProps = {
+    label: "Slider",
+    lower: 0,
+    upper: 1,
+    initial: -1,
+    onSlide: (e) => {},
+};
+
+
+FormSlider.propTypes = {
+    label: PropTypes.string.isRequired,
+    onSlide: PropTypes.func.isRequired,
+    lower: PropTypes.number.isRequired,
+    upper: PropTypes.number.isRequired,
+    initial: PropTypes.number.isRequired,
+};
+ 
 
 const styles = StyleSheet.create({
     slideContainer: {
@@ -71,9 +148,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     slideCircle: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,    
+        width: 25,
+        height: 25,
+        borderRadius: 15,    
         borderColor: 'grey',
         borderWidth: 1.1,
         backgroundColor: 'lightgray',
@@ -82,10 +159,28 @@ const styles = StyleSheet.create({
         position: 'absolute',
     },
     slideBar: {
+        flexDirection: 'row',
+        zIndex: 2,
+    },
+    slideBarEmpty: {
         height: 7,
-        borderRadius: 10,
+        borderTopRightRadius: 10,
+        borderBottomRightRadius: 10,
         backgroundColor: 'silver',
         zIndex: 2,
+    },
+    slideBarSelect: {
+        height: 7,
+        borderTopLeftRadius: 10,
+        borderBottomLeftRadius: 10,
+        backgroundColor: 'blue',
+        zIndex: 2,
+    },
+    displayContainer: {
+        flexDirection: 'row',
+        margin: 12,
+        padding: 10,
+        borderWidth: 1,
     },
 
 });
