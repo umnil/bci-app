@@ -46,7 +46,7 @@ export default function FormDropdownMenu(props) {
     );
 }
 
-DropdownMenu.defaultProps = {
+FormDropdownMenu.defaultProps = {
     label: "Select Item",
     default: {label: "None", value: "None"},
     items: [],
@@ -70,7 +70,7 @@ DropdownMenu.defaultProps = {
 };
 
 
-DropdownMenu.propTypes = {
+FormDropdownMenu.propTypes = {
     label: PropTypes.string.isRequired,
     default: PropTypes.string.isRequired,
     renderItem: PropTypes.func.isRequired,
