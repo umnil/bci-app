@@ -64,15 +64,15 @@ const str2payload = (str) => {
     return json2payload(JSON.parse(str));
 };
 
-const writeIdx = (manager, device, serviceUUID, index) => {
+const writeIdx = (manager, deviceID, serviceUUID, index) => {
     const data = btoa(int2nbo(index));
     const charUUID = incrementUUID(serviceUUID, 2);
-    return manager.writeCharacteristicWithResponseForDevice(device.id, serviceUUID, charUUID, data);
+    return manager.writeCharacteristicWithResponseForDevice(deviceID, serviceUUID, charUUID, data);
 };
 
-const readIdx = (manager, device, serviceUUID) => {
+const readIdx = (manager, deviceID, serviceUUID) => {
     const charUUID = incrementUUID(serviceUUID, 2);
-    return manager.readCharacteristicForDevice(device.id, serviceUUID, charUUID)
+    return manager.readCharacteristicForDevice(deviceID, serviceUUID, charUUID)
     .then((characteristic) => {
         const value = characteristic.value;
         if (value == null) {
@@ -85,15 +85,15 @@ const readIdx = (manager, device, serviceUUID) => {
     });
 };
 
-const writePayload = (manager, device, serviceUUID, payload) => { 
+const writePayload = (manager, deviceID, serviceUUID, payload) => { 
     const data = btoa(JSON.stringify(payload));
     const charUUID = incrementUUID(serviceUUID, 1);
-    return manager.writeCharacteristicWithResponseForDevice(device.id, serviceUUID, charUUID, data);
+    return manager.writeCharacteristicWithResponseForDevice(deviceID, serviceUUID, charUUID, data);
 };
 
-const readPayload = (manager, device, serviceUUID, index) => {
+const readPayload = (manager, deviceID, serviceUUID, index) => {
     const charUUID = incrementUUID(serviceUUID, 1);
-    return manager.readCharacteristicForDevice(device.id, serviceUUID, charUUID) 
+    return manager.readCharacteristicForDevice(deviceID, serviceUUID, charUUID) 
     .then((characteristic) => {
         const value = characteristic.value;
         if (value == null) {
@@ -112,7 +112,7 @@ const promiseWhile = (condition, action) => {
     return nextIter();
 };
 
-const streamRead = (manager, device, serviceUUID) => {
+const streamRead = (manager, deviceID, serviceUUID) => {
     let data: string[] = new Array(1);
     let idx : number = 0;
     let total: number = -1;
@@ -121,9 +121,9 @@ const streamRead = (manager, device, serviceUUID) => {
         promiseWhile(
                 ()=>(idx != total), 
                 () => new Promise((resolve, reject) => {
-                    writeIdx(manager, device, serviceUUID, idx)
+                    writeIdx(manager, deviceID, serviceUUID, idx)
                     .then((characteristic) => {
-                       return readPayload(manager, device, serviceUUID);
+                       return readPayload(manager, deviceID, serviceUUID);
                     })  
                     .then((resStr) => {
                          if(resStr == null) {
@@ -160,41 +160,41 @@ const streamRead = (manager, device, serviceUUID) => {
             });
 };
 
-const notifyHandlerFactory = (manager, device, serviceUUID) => {
+const notifyHandlerFactory = (manager, deviceID, serviceUUID) => {
     let indicator = 0;
     const notifyHandler = () => {
-        writeIdx(manager, device, serviceUUID, 0).then(()=> {indicator = 1;});
+        writeIdx(manager, deviceID, serviceUUID, 0).then(()=> {indicator = 1;});
     };
     return { callback: notifyHandler, readIndicator: (() => indicator) };
 };
 
-const notifyInit = (manager, device, serviceUUID) => {
+const notifyInit = (manager, deviceID, serviceUUID) => {
     return new Promise ((resolve, reject) => {
         const charUUID = incrementUUID(serviceUUID, 3);
-        const notifyHandler = notifyHandlerFactory(manager, device, serviceUUID);
-        const subscription = manager.monitorCharacteristicForDevice(device.id, serviceUUID, charUUID, notifyHandler.callback);
+        const notifyHandler = notifyHandlerFactory(manager, deviceID, serviceUUID);
+        const subscription = manager.monitorCharacteristicForDevice(deviceID, serviceUUID, charUUID, notifyHandler.callback);
         resolve({subscription: subscription, readIndicator: notifyHandler.readIndicator});
     });
 };
 
-const writeInit = (manager, device, serviceUUID, numSegments, readIndicator) => {
+const writeInit = (manager, deviceID, serviceUUID, numSegments, readIndicator) => {
     let payload = { type: 1, total: numSegments, index: 0, size: size, data:"" }; 
-    return writePayload(manager, device, serviceUUID, payload)
+    return writePayload(manager, deviceID, serviceUUID, payload)
     .then(() => promiseWhile(
         () => (readIndicator) == 0),
         () => new Promise(resolve => setTimeout(resolve, 500))
     );
 };
 
-const streamWrite = (manager, device, serviceUUID, data) => {
+const streamWrite = (manager, deviceID, serviceUUID, data) => {
     const encodedData = btoa(data);
     const numSegments = Math.ceil(encodedData.length/size);
     let index = 0;
     let subscriptionRef = null;
-    return notifyInit(manager, device, serviceUUID)
+    return notifyInit(manager, deviceID, serviceUUID)
         .then(({subscription, readIndicator}) => { 
             subscriptionRef = subscription;
-            return writeInit(manager, device, serviceUUID, numSegments, readIndicator);
+            return writeInit(manager, deviceID, serviceUUID, numSegments, readIndicator);
         })
         .then(() => {
             return promiseWhile(
@@ -210,9 +210,9 @@ const streamWrite = (manager, device, serviceUUID, data) => {
                         size: dataSegment.length,
                         data: dataSegment,
                     };
-                    writePayload(manager, device, serviceUUID, payload)
+                    writePayload(manager, deviceID, serviceUUID, payload)
                     .then(() => {
-                        return readIdx(manager, device, serviceUUID); 
+                        return readIdx(manager, deviceID, serviceUUID); 
                     })
                     .then((readValue) => {
                         if (readValue == null) {

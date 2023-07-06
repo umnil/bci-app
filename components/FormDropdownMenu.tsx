@@ -9,10 +9,16 @@ import  Animated, {
 import PropTypes from "prop-types";
 
 export default function FormDropdownMenu(props) {
+    // Default keys for items
+    if (props.items.length != 0 && !props.items[0].hasOwnProperty("key")) {
+        props.items = props.items.map((item,index) => {
+            return ({...item, key: index});
+        });
+    }
     const dropHeight = 200;
     const timing = 5;
     const height = useSharedValue(0);
-    const [selected, changeSelected] = useState(props.default);
+    const [selected, changeSelected] = useState({label: props.initialLabel});
     const animatedStyles = useAnimatedStyle(() => {
         return {
            borderRightWidth: height.value != 0 ? 1 : 0,
@@ -48,10 +54,12 @@ export default function FormDropdownMenu(props) {
 
 FormDropdownMenu.defaultProps = {
     label: "Select Item",
-    default: {label: "None", value: "None"},
+    initialLabel: "Select item...",
+    initialSublabel: "",
     items: [],
     itemStyle: {},
-    renderSelected: (item) => (
+    renderSelected: (item) => 
+    (
         <View style={styles.selected}>
             <Text style={styles.label}> {item == null ? "" : (item.label.length > 30 ? (item.label.substring(0,30) + "...") : item.label) } </Text> 
             {(item != null && item.hasOwnProperty('sublabel')) && (<Text style={styles.sublabel}> {item.sublabel} </Text>)}
@@ -72,7 +80,8 @@ FormDropdownMenu.defaultProps = {
 
 FormDropdownMenu.propTypes = {
     label: PropTypes.string.isRequired,
-    default: PropTypes.string.isRequired,
+    initialLabel: PropTypes.string.isRequired,    
+    initialSublabel: PropTypes.string,
     renderItem: PropTypes.func.isRequired,
     renderSelected: PropTypes.func.isRequired,
     items: PropTypes.arrayOf(PropTypes.shape({
