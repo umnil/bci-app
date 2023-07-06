@@ -64,15 +64,14 @@ export default function FormSlider(props) {
             const toUnit = ((boundedOffset - ballSlideStart)/(ballSlideEnd - ballSlideStart));
             const value = toUnit * (props.upper - props.lower) + props.lower;
 
-//            const value = runOnJS(pos2value)(ballSlideStart, ballSlideEnd, props.lower, props.upper, boundedOffset);
             text.value = value.toString();
             offset.value = boundedOffset; 
-            runOnJS(props.onSlide)(value);
         })
         .onEnd(() => {
             start.value = offset.value;
         })
         .onFinalize(() => {
+            runOnJS(props.onSlide)(parseFloat(text.value));
             isPressed.value = false;
         }); 
         const ballAnimatedStyles = useAnimatedStyle(() => {
@@ -112,9 +111,10 @@ export default function FormSlider(props) {
                 </View>
             </View>
             <View style={styles.displayContainer}>
-                <Text> Value: </Text>
-                <AnimatedTextInput style={{color: 'black'}} value={text.value} 
-                editable={false} animatedProps={textInputProps}/> 
+               <Text> Value: </Text>
+               <AnimatedTextInput style={{color: 'black'}} value={text.value} 
+               editable={false} animatedProps={textInputProps}/> 
+
             </View>
         </>
     );
