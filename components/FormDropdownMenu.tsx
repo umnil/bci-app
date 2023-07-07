@@ -18,7 +18,10 @@ export default function FormDropdownMenu(props) {
     const dropHeight = 200;
     const timing = 5;
     const height = useSharedValue(0);
-    const [selected, changeSelected] = useState({label: props.initialLabel});
+    const first = props.items.length > 0 ? props.items[0] : null;
+    const [isInit, setInit] = useState(props.items.length > 0 ? props.items[0] : null);
+    const [selected, setSelected] = useState({label: props.initialLabel});
+
     const animatedStyles = useAnimatedStyle(() => {
         return {
            borderRightWidth: height.value != 0 ? 1 : 0,
@@ -40,11 +43,13 @@ export default function FormDropdownMenu(props) {
                         height.value = withTiming(dropHeight, timing);
                     }
                 }}> 
-                {props.renderSelected(selected)}    
+                
+                { props.renderSelected((first == isInit) || props.dynamic ? selected : {label: props.initialLabel})}
+                
             </Pressable>
             <Animated.ScrollView style={[styles.scrollView, animatedStyles]}>
                 {props.items.map(item => { return (<Pressable onPress={() => {
-                changeSelected(item); props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
+                setSelected(item); setInit(first); props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
                     {props.renderItem(item)} 
                     </Pressable>);})}
             </Animated.ScrollView>
@@ -54,6 +59,7 @@ export default function FormDropdownMenu(props) {
 
 FormDropdownMenu.defaultProps = {
     label: "Select Item",
+    dynamic: false,
     initialLabel: "Select item...",
     initialSublabel: "",
     items: [],
@@ -80,6 +86,7 @@ FormDropdownMenu.defaultProps = {
 
 FormDropdownMenu.propTypes = {
     label: PropTypes.string.isRequired,
+    dynamic: PropTypes.bool.isRequired,
     initialLabel: PropTypes.string.isRequired,    
     initialSublabel: PropTypes.string,
     renderItem: PropTypes.func.isRequired,
@@ -88,7 +95,6 @@ FormDropdownMenu.propTypes = {
         label: PropTypes.string.isRequired,
         sublabel: PropTypes.string,
         value: PropTypes.any.isRequired,
-        key: PropTypes.any.isRequired,
     })).isRequired,
     itemStyle: PropTypes.object.isRequired,
     onSelect: PropTypes.func.isRequired,
