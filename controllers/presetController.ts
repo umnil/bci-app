@@ -154,6 +154,11 @@ export const setSelectedOutputValue = (obj, fieldName, value) => {
     return {...obj, outputdevices: { ...obj.outputdevices, devices: modifiedDevList} }; 
 };
 
+
+export const setCalibrationTrue = (obj) => {
+    return setSelectedInputValue(obj, "calibrating", true);    
+};
+
 export const verifySettingsObj = (obj) => {
     return obj.hasOwnProperty("inputdevices") && obj.hasOwnProperty("outputdevices");
 };
@@ -186,6 +191,7 @@ export default Controller = {
     getSelectedOutputSettings,
     setSelectedInputValue,       
     setSelectedOutputValue,       
+    setCalibrationTrue,
     verifySettingsObj,
     addPreset,
     deletePreset,

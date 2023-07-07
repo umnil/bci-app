@@ -112,53 +112,6 @@ const promiseWhile = (condition, action) => {
     return nextIter();
 };
 
-const streamRead = (manager, deviceID, serviceUUID) => {
-    let data: string[] = new Array(1);
-    let idx : number = 0;
-    let total: number = -1;
-    let resendFlag: boolean = false;
-    return new Promise((resolve, reject) => {    
-        promiseWhile(
-                ()=>(idx != total), 
-                () => new Promise((resolve, reject) => {
-                    writeIdx(manager, deviceID, serviceUUID, idx)
-                    .then((characteristic) => {
-                       return readPayload(manager, deviceID, serviceUUID);
-                    })  
-                    .then((resStr) => {
-                         if(resStr == null) {
-                            resendFlag = true;        
-                         } else {
-
-                         const payload = str2payload(resStr); 
-                          
-                         resendFlag = payload.index != idx;
-                         if (idx == 0) {
-                            total = payload.total;
-                            data = new Array(total);
-                         }
-                         if (payload.size != payload.data.length) {
-                            reject()
-                         }
-                         data[idx] = payload.data;
-                         idx++;
-                        }
-                        resolve();
-                    })
-                    .catch((error) => {
-                            reject(error);
-                    });
-                }))
-                .then(() => {
-                    const encodedData = data.join(''); 
-                    const decodedData = atob(encodedData); 
-                    resolve(decodedData);
-                })
-                .catch((error) => {
-                    reject(error);
-                });
-            });
-};
 
 const notifyHandlerFactory = (manager, deviceID, serviceUUID) => {
     let indicator = 0;
@@ -186,59 +139,128 @@ const writeInit = (manager, deviceID, serviceUUID, numSegments, readIndicator) =
     );
 };
 
-const streamWrite = (() => {
+const [streamWrite, streamRead] = (() => {
     let devqueues = [];
-    return (manager, deviceID, serviceUUID, data) => {
-        const encodedData = btoa(data);
-        const numSegments = Math.ceil(encodedData.length/size);
-        let index = 0;
-        let subscriptionRef = null;
-        const match = devqueues.filter((item) => item.deviceID == deviceID); 
-        if (match.length == 0) {
-            devqueues.push({deviceID: deviceID, chain: (new Promise((resolve) => resolve()))});
-        } 
-        let selected = devqueues.filter((item) => item.deviceID == deviceID)[0].chain;
-        
-        selected = selected.then(() => notifyInit(manager, deviceID, serviceUUID)
-            .then(({subscription, readIndicator}) => { 
-                subscriptionRef = subscription;
-                return writeInit(manager, deviceID, serviceUUID, numSegments, readIndicator);
-            })
-            .then(() => {
-                return promiseWhile(
-                    () => {return (index != numSegments)},
-                    () => new Promise((resolve, reject) => {
-                        const start = index * size;    
-                        const end = start + size;    
-                        const dataSegment = encodedData.slice(start, end);
-                        const payload = {
-                            type: 0,
-                            total: numSegments,
-                            index: index,
-                            size: dataSegment.length,
-                            data: dataSegment,
-                        };
-                        writePayload(manager, deviceID, serviceUUID, payload)
-                        .then(() => {
-                            return readIdx(manager, deviceID, serviceUUID); 
+    return [
+        (manager, deviceID, serviceUUID, data) => {
+            const encodedData = btoa(data);
+            const numSegments = Math.ceil(encodedData.length/size);
+            let index = 0;
+            let subscriptionRef = null;
+            const match = devqueues.filter((item) => item.deviceID == deviceID); 
+            if (match.length == 0) {
+                devqueues.push({deviceID: deviceID, chain: (new Promise((resolve) => resolve()))});
+            } 
+            let selected = devqueues.filter((item) => item.deviceID == deviceID)[0].chain;
+            
+            selected = selected.then(() => notifyInit(manager, deviceID, serviceUUID)
+                .then(({subscription, readIndicator}) => { 
+                    subscriptionRef = subscription;
+                    return writeInit(manager, deviceID, serviceUUID, numSegments, readIndicator);
+                })
+                .then(() => {
+                    return promiseWhile(
+                        () => {return (index != numSegments)},
+                        () => new Promise((resolve, reject) => {
+                            const start = index * size;    
+                            const end = start + size;    
+                            const dataSegment = encodedData.slice(start, end);
+                            const payload = {
+                                type: 0,
+                                total: numSegments,
+                                index: index,
+                                size: dataSegment.length,
+                                data: dataSegment,
+                            };
+                            writePayload(manager, deviceID, serviceUUID, payload)
+                            .then(() => {
+                                return readIdx(manager, deviceID, serviceUUID); 
+                            })
+                            .then((readValue) => {
+                                if (readValue == null) {
+                                    reject();
+                                }
+                                index = readValue;
+                                resolve();
+                            }); 
+                            
                         })
-                        .then((readValue) => {
-                            if (readValue == null) {
-                                reject();
-                            }
-                            index = readValue;
-                            resolve();
-                        }); 
-                        
-                    })
-                );
-            })
-            .then(() => subscriptionRef.remove())
-        );
-        devqueues = devqueues.map((item) => item.deviceID == deviceID ? 
-                                                { deviceID: deviceID, chain: selected} : item);
-        return selected;
-    }
+                    );
+                })
+                .then(() => subscriptionRef.remove())
+           )
+           .catch((error) => {
+               devqueues = devqueues.map((item) => item.deviceID == deviceID ? 
+                                        { deviceID: deviceID, chain: new Promise((resolve) => resolve())} : item);
+        
+           }); 
+ 
+            devqueues = devqueues.map((item) => item.deviceID == deviceID ? 
+                                                    { deviceID: deviceID, chain: selected} : item);
+            return selected;
+        },
+        (manager, deviceID, serviceUUID) => {
+            const match = devqueues.filter((item) => item.deviceID == deviceID); 
+            if (match.length == 0) {
+                devqueues.push({deviceID: deviceID, chain: (new Promise((resolve) => resolve()))});
+            } 
+            let selected = devqueues.filter((item) => item.deviceID == deviceID)[0].chain;
+
+            let data: string[] = new Array(1);
+            let idx : number = 0;
+            let total: number = -1;
+            let resendFlag: boolean = false;
+
+                 
+            selected = selected.then(() => promiseWhile(
+                        ()=>(idx != total), 
+                        () => new Promise((resolve, reject) => {
+                            writeIdx(manager, deviceID, serviceUUID, idx)
+                            .then((characteristic) => {
+                               return readPayload(manager, deviceID, serviceUUID);
+                            })  
+                            .then((resStr) => {
+                                 if(resStr == null) {
+                                    resendFlag = true;        
+                                 } else {
+
+                                 const payload = str2payload(resStr); 
+                                  
+                                 resendFlag = payload.index != idx;
+                                 if (idx == 0) {
+                                    total = payload.total;
+                                    data = new Array(total);
+                                 }
+                                 if (payload.size != payload.data.length) {
+                                    reject()
+                                 }
+                                 data[idx] = payload.data;
+                                 idx++;
+                                }
+                                resolve();
+                            })
+                            .catch((error) => {
+                                    reject(error);
+                            });
+                        }))
+                        .then(() => {
+                            const encodedData = data.join(''); 
+                            const decodedData = atob(encodedData); 
+                            return(decodedData);
+                        })
+                )
+                .catch((error) => {
+                    devqueues = devqueues.map((item) => item.deviceID == deviceID ? 
+                                                    { deviceID: deviceID, chain: new Promise((resolve) => resolve())} : item);
+        
+                }); 
+                devqueues = devqueues.map((item) => item.deviceID == deviceID ? 
+                                                    { deviceID: deviceID, chain: selected} : item);
+                return selected;
+                
+            },
+
+        ];
 
 })();
 

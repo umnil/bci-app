@@ -2,7 +2,6 @@ import { StyleSheet, Pressable, FlatList, Text, View } from 'react-native';
 import { useEffect } from 'react';
 import * as ActionCreators from '../actionCreators';
 import { connect } from 'react-redux';
-import { writeDeviceSettings } from '../controllers/presetController';
 
 function PresetManagerScreen({presets, deletePreset, route, navigation, isEdit, setEdit }) {
 
@@ -20,8 +19,9 @@ function PresetManagerScreen({presets, deletePreset, route, navigation, isEdit, 
                 renderItem={({item}) => 
                 <View style={styles.itemContainer} key={item.id}>
                     <Pressable 
-                        onPress={() => {writeDeviceSettings(item.deviceID, item.settings);
-navigation.navigate("Data Collection", {});}}
+                        onPress={() => {
+                            navigation.navigate("Data Collection", {preset: item});
+                            }}
                     >
                         <Text style={styles.text}> {item.name} </Text> 
                     </Pressable>

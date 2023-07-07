@@ -94,12 +94,13 @@ const settings2Views = (settings, onChange) =>
                 settings.map((obj) => {
                     switch(obj.type) {
                         case "ListPicker":    
-                            console.log(obj.items[parseInt(obj.value)] + "");
                             return (<FormDropdownMenu items={obj.items.map((curr, index) => 
                             ({label: curr + "", value: index}))} 
                             initialLabel={obj.items[parseInt(obj.value)] + ""}
                             label={obj.display_name}
+                            init={false}
                             onSelect={(item) => onChange(obj.name, item.value)}/>);
+                            
                         case "Slider":    
                             return (<FormSlider 
                                     lower={parseFloat(obj.minValue)} 
@@ -138,11 +139,13 @@ function PresetCreationScreen(props) {
     useBLEScanAndAccEffect(isServerScan, devices, setDevices);
 
     const onInputSettingChange = (fieldName, value) => {
-        setSettings(setSelectedInputValue(settings, fieldName, value));
+        const modObj = setSelectedInputValue(settings, fieldName, value);
+        setSettings(modObj);
     };
 
     const onOutputSettingChange = (fieldName, value) => {
-        setSettings(setSelectedOutputValue(settings, fieldName, value));
+        const modObj = setSelectedOutputValue(settings, fieldName, value);
+        setSettings(modObj);
     };
 
 
@@ -152,10 +155,10 @@ function PresetCreationScreen(props) {
                onPressLeft={() => {setForm(true);}} onPressRight={() => {setForm(false);}}
                 disabledRight={true}/>  
                <FormTextInput onChangeText={(e)=>setName(e)} label="Preset Name" />
-               <FormDropdownMenu label="Server" 
+               <FormDropdownMenu label="Server" dynamic={true}
                 onSelect={(item) => serverSelect(item, setServerID, setSettings, setSelect)}
                 onDrop={()=>{setDevices([]); setServerScan(true);}} onClose={()=>setServerScan(false)}
-                     items={serversToItems(devices)}/>
+                items={serversToItems(devices)}/>
                {
                 isSelect ?  
                 isForm ? 
