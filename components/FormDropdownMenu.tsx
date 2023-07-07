@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Pressable, Text, View, ScrollView, StyleSheet } from 'react-native';
 import  Animated, {
          useSharedValue,
@@ -15,12 +15,15 @@ export default function FormDropdownMenu(props) {
             return ({...item, key: index});
         });
     }
+
     const dropHeight = 200;
     const timing = 5;
     const height = useSharedValue(0);
-    const first = props.items.length > 0 ? props.items[0] : null;
-    const [isInit, setInit] = useState(props.items.length > 0 ? props.items[0] : null);
     const [selected, setSelected] = useState({label: props.initialLabel});
+    useEffect(() => {
+        setSelected({label: props.initialLabel});
+        return () => setSelected({label: props.initialLabel}); 
+    }, [props.initialLabel]);
 
     const animatedStyles = useAnimatedStyle(() => {
         return {
@@ -44,12 +47,12 @@ export default function FormDropdownMenu(props) {
                     }
                 }}> 
                 
-                { props.renderSelected((first == isInit) || props.dynamic ? selected : {label: props.initialLabel})}
+                {props.renderSelected(selected)}
                 
             </Pressable>
             <Animated.ScrollView style={[styles.scrollView, animatedStyles]}>
                 {props.items.map(item => { return (<Pressable onPress={() => {
-                setSelected(item); setInit(first); props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
+                setSelected(item); props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
                     {props.renderItem(item)} 
                     </Pressable>);})}
             </Animated.ScrollView>
@@ -86,7 +89,6 @@ FormDropdownMenu.defaultProps = {
 
 FormDropdownMenu.propTypes = {
     label: PropTypes.string.isRequired,
-    dynamic: PropTypes.bool.isRequired,
     initialLabel: PropTypes.string.isRequired,    
     initialSublabel: PropTypes.string,
     renderItem: PropTypes.func.isRequired,

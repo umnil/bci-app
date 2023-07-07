@@ -58,6 +58,13 @@ export const useBLEScanAndAccEffect = (isServerScan, devices, setDevices) => {
     }, [manager, isServerScan, devices]);
 };
 
+/*
+ * Name: readDeviceSettings
+ * Returns a promise with the device settings from the device with
+ * deviceID
+ * @param {deviceID} deviceID - the uuid of the device hosting the server 
+ * @returns {Promise<obj>} - json settings object within a promise
+ */
 export const readDeviceSettings = (deviceID) => {
     const settingsUUID = '51ff12bb-3ed8-46e5-b4f9-d64e2fec021b';
     return manager.connectToDevice(deviceID) 
@@ -80,6 +87,13 @@ export const readDeviceSettings = (deviceID) => {
     });
 };
 
+/*
+ * Name: WriteDeviceSettings
+ * returns a promise that resolves once given settings object gets written
+ * @param {deviceID} deviceID - the uuid of the device hosting the server 
+ * @param {obj} - json settings object to send
+ * @returns {Promise<null>} - promise that resolves once write succeeds.
+ */
 export const writeDeviceSettings = (deviceID, obj) => {
     const settingsUUID = '51ff12bb-3ed8-46e5-b4f9-d64e2fec021b';
     return manager.connectToDevice(deviceID) 

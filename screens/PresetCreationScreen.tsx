@@ -155,7 +155,7 @@ function PresetCreationScreen(props) {
                onPressLeft={() => {setForm(true);}} onPressRight={() => {setForm(false);}}
                 disabledRight={true}/>  
                <FormTextInput onChangeText={(e)=>setName(e)} label="Preset Name" />
-               <FormDropdownMenu label="Server" dynamic={true}
+               <FormDropdownMenu label="Server" 
                 onSelect={(item) => serverSelect(item, setServerID, setSettings, setSelect)}
                 onDrop={()=>{setDevices([]); setServerScan(true);}} onClose={()=>setServerScan(false)}
                 items={serversToItems(devices)}/>
