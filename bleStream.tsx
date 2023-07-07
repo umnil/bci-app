@@ -186,48 +186,61 @@ const writeInit = (manager, deviceID, serviceUUID, numSegments, readIndicator) =
     );
 };
 
-const streamWrite = (manager, deviceID, serviceUUID, data) => {
-    const encodedData = btoa(data);
-    const numSegments = Math.ceil(encodedData.length/size);
-    let index = 0;
-    let subscriptionRef = null;
-    return notifyInit(manager, deviceID, serviceUUID)
-        .then(({subscription, readIndicator}) => { 
-            subscriptionRef = subscription;
-            return writeInit(manager, deviceID, serviceUUID, numSegments, readIndicator);
-        })
-        .then(() => {
-            return promiseWhile(
-                () => {return (index != numSegments)},
-                () => new Promise((resolve, reject) => {
-                    const start = index * size;    
-                    const end = start + size;    
-                    const dataSegment = encodedData.slice(start, end);
-                    const payload = {
-                        type: 0,
-                        total: numSegments,
-                        index: index,
-                        size: dataSegment.length,
-                        data: dataSegment,
-                    };
-                    writePayload(manager, deviceID, serviceUUID, payload)
-                    .then(() => {
-                        return readIdx(manager, deviceID, serviceUUID); 
+const streamWrite = (() => {
+    let devqueues = [];
+    return (manager, deviceID, serviceUUID, data) => {
+        const encodedData = btoa(data);
+        const numSegments = Math.ceil(encodedData.length/size);
+        let index = 0;
+        let subscriptionRef = null;
+        const match = devqueues.filter((item) => item.deviceID == deviceID); 
+        if (match.length == 0) {
+            devqueues.push({deviceID: deviceID, chain: (new Promise((resolve) => resolve()))});
+        } 
+        let selected = devqueues.filter((item) => item.deviceID == deviceID)[0].chain;
+        
+        selected = selected.then(() => notifyInit(manager, deviceID, serviceUUID)
+            .then(({subscription, readIndicator}) => { 
+                subscriptionRef = subscription;
+                return writeInit(manager, deviceID, serviceUUID, numSegments, readIndicator);
+            })
+            .then(() => {
+                return promiseWhile(
+                    () => {return (index != numSegments)},
+                    () => new Promise((resolve, reject) => {
+                        const start = index * size;    
+                        const end = start + size;    
+                        const dataSegment = encodedData.slice(start, end);
+                        const payload = {
+                            type: 0,
+                            total: numSegments,
+                            index: index,
+                            size: dataSegment.length,
+                            data: dataSegment,
+                        };
+                        writePayload(manager, deviceID, serviceUUID, payload)
+                        .then(() => {
+                            return readIdx(manager, deviceID, serviceUUID); 
+                        })
+                        .then((readValue) => {
+                            if (readValue == null) {
+                                reject();
+                            }
+                            index = readValue;
+                            resolve();
+                        }); 
+                        
                     })
-                    .then((readValue) => {
-                        if (readValue == null) {
-                            reject();
-                        }
-                        index = readValue;
-                        resolve();
-                    }); 
-                    
-                })
-            );
-        })
-        .then(() => subscriptionRef.remove());
-            
-};
+                );
+            })
+            .then(() => subscriptionRef.remove())
+        );
+        devqueues = devqueues.map((item) => item.deviceID == deviceID ? 
+                                                { deviceID: deviceID, chain: selected} : item);
+        return selected;
+    }
+
+})();
 
 export default BLEStream = {
     streamRead,
