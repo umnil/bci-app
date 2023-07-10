@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import * as ActionCreators from '../actionCreators';
 import { connect } from 'react-redux';
 import Icon from "react-native-vector-icons/Ionicons";
+import Animated, {Layout, FadeInRight, FadeOutRight, FadeIn, FadeOut} 
+from 'react-native-reanimated';
 
 function PresetManagerScreen({presets, deletePreset, route, navigation, isEdit, setEdit }) {
 
@@ -14,33 +16,47 @@ function PresetManagerScreen({presets, deletePreset, route, navigation, isEdit, 
     }, [navigation]); 
 
     return (
-            <FlatList
+            <Animated.FlatList
+                layout={Layout}
                 data={presets}
                 renderItem={({item}) => 
-                    <Pressable 
-                     onPress={() => navigation.navigate("Data Collection", {preset: item})}
+                    <Animated.View 
+                        entering={FadeIn} 
+                        layout={Layout}
                     >
-                        <View style={styles.itemContainer} key={item.id}>
-                            
-                            <View style={styles.textContainer} key={item.id}>
-                                    <Text style={styles.text}> {item.name} </Text> 
-                                    <Text style={styles.subtext}> Preset </Text> 
+                    <Pressable onPress={() => {
+                              if (!isEdit) {
+                               navigation.navigate("Data Collection", {preset: item});
+                              }
+                        }}
+                    >
+                            <View style={styles.itemContainer} key={item.id}>
+                                
+                                <View style={styles.textContainer} key={item.id}>
+                                        <Text style={styles.text}> {item.name} </Text> 
+                                        <Text style={styles.subtext}> Preset </Text> 
+                                </View>
+                                    {isEdit ? 
+                                        <Animated.View 
+                                         entering={FadeInRight} 
+                                         exiting={FadeOutRight} 
+                                         style={styles.delete}
+                                        >
+                                        <Pressable 
+                                         onPress={() => deletePreset(item.id)}
+                                        >
+                                            <Icon
+                                             name="ios-remove-circle-sharp"
+                                             size={35}    
+                                             color="red"
+                                            />
+                                        </Pressable>
+                                        </Animated.View>
+                                     : <></>
+                                    }
                             </View>
-                                {isEdit ? 
-                                    <Pressable 
-                                        onPress={() => {deletePreset(item.id)}}
-                                        style={styles.delete}
-                                    >
-                                        <Icon
-                                         name="ios-remove-circle-sharp"
-                                         size={35}    
-                                         color="red"
-                                        />
-                                    </Pressable>                
-                                 : <></>
-                                }
-                        </View>
                     </Pressable>
+                    </Animated.View>
                 }
             />
     );
