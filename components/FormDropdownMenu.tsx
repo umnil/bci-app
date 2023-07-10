@@ -6,6 +6,7 @@ import  Animated, {
          withSpring,
          withTiming,
 } from 'react-native-reanimated'
+import Icon from "react-native-vector-icons/Ionicons";
 import PropTypes from "prop-types";
 
 export default function FormDropdownMenu(props) {
@@ -18,18 +19,26 @@ export default function FormDropdownMenu(props) {
     const dropHeight = 200;
     const timing = 5;
     const height = useSharedValue(0);
+    const rotation = useSharedValue(0);
     const [selected, setSelected] = useState({label: props.initialLabel});
     useEffect(() => {
         setSelected({label: props.initialLabel});
         return () => {}; 
     }, [props.initialLabel]);
 
-    const animatedStyles = useAnimatedStyle(() => {
+    const animatedDropStyles = useAnimatedStyle(() => {
         return {
            borderRightWidth: height.value != 0 ? 1 : 0,
            borderLeftWidth:  height.value != 0 ? 1 : 0,
            borderBottomWidth: height.value != 0 ? 1 : 0,
            height: height.value,
+        };
+    });
+    const animatedArrowStyles = useAnimatedStyle(() => {
+        return {
+            transform: [
+                { rotate: rotation.value + 'deg' },
+            ],
         };
     });
     return (
@@ -42,16 +51,22 @@ export default function FormDropdownMenu(props) {
                         if (height.value == dropHeight) {
                             props.onClose();
                             height.value = withTiming(0, timing);
+                            rotation.value = withTiming(0, timing);
                         } else {
                             props.onDrop();
                             height.value = withTiming(dropHeight, timing);
+                            rotation.value = withTiming(-180, timing);
                         }
                     }}> 
                     
                     {props.renderSelected(selected)}
+
+                    <Animated.View style={animatedArrowStyles}>
+                        <Icon name="caret-down" size={20}/>
+                    </Animated.View>
                     
                 </Pressable>
-                <Animated.ScrollView style={[styles.scrollView, animatedStyles]}>
+                <Animated.ScrollView style={[styles.scrollView, animatedDropStyles]}>
                     {props.items.map(item => { return (<Pressable onPress={() => {
                     setSelected(item); props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
                         {props.renderItem(item)} 
@@ -111,6 +126,9 @@ FormDropdownMenu.propTypes = {
  
 const styles = StyleSheet.create({
     text: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         borderWidth: 1,
         padding: 10,
         marginTop: 12,

@@ -1,2 +1,147 @@
-import { PresetCreationScreen } from "./PresetCreationScreen";
-import React, { useState } from 'react';
+import { Alert, Button, ScrollView, TextInput, Text, View, FlatList } from 'react-native';
+import FormTextInput from "../components/FormTextInput";
+import TwoPanelButton from "../components/TwoPanelButton";
+import DragDropItemList from "../components/DragDropItemList";
+import DeviceConfigForm from "../components/DeviceConfigForm";
+import BLEDeviceDropdownMenu from "../components/BLEDeviceDropdownMenu";
+import { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import * as ActionCreators from '../actionCreators'; 
+import { readDeviceSettings, 
+         writeDeviceSettings, 
+         getInputDeviceList,
+         getOutputDeviceList,
+         getSelectedInputName,
+         setSelectedInputName,
+         setSelectedInputValue,
+         getSelectedInputSettings,
+         getSelectedOutputName,
+         setSelectedOutputName,
+         setSelectedOutputValue,
+         getSelectedOutputSettings,
+         getEmptySettings,
+         addPreset,
+        } from '../controllers/presetController';
+
+
+
+const useNavEffect = (navigation, addPreset, name, serverID, settings) => {
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <Button onPress={() =>{
+                    if (name.trim() == "") {
+                        return Alert.alert('Missing Name', 
+                                'Please input a preset name.', [
+                                {
+                                    text: 'Ok',
+                                    onPress: () => {},
+                                },   
+                            ]);   
+                    } else if (serverID == "") {
+                        return Alert.alert('Missing Server', 
+                                'Please select a server.', [
+                                {
+                                    text: 'Ok',
+                                    onPress: () => {},
+                                },   
+                            ]); 
+                    }
+                    navigation.navigate("Presets", {});
+                    addPreset({name: name.trim(), deviceID: serverID, settings: settings});
+                } } title="Save" />
+            ),
+            headerLeft: () => (
+                <Button onPress={() =>{
+                     if (serverID == "") {
+                        return Alert.alert('Missing Server', 
+                                'Please select a server.', [
+                                {
+                                    text: 'Ok',
+                                    onPress: () => {},
+                                },   
+                            ]); 
+                    }
+                    navigation.navigate("Data Collection", {preset: {name: name.trim(), deviceID: serverID, settings: settings}});
+                } } title="Use" />
+            ),
+        });
+
+    }, [navigation, name, serverID, settings]);
+
+};
+
+const devices2Items = (devices) => { 
+   const items = []; 
+   for (const dev of devices) {
+        items.push({ label: dev["device_name"], value: dev["device_name"] }); 
+    }
+   return items;
+}
+
+const serverSelect = (item, setServer, setSettings, setIsSelect) => {
+    setIsSelect(false);
+    const device = item.value;
+    readDeviceSettings(device.id)
+    .then((obj) => {
+        setSettings(obj); 
+        setServer(device.id);
+        setIsSelect(true); 
+    })
+    .catch((error) => {
+         setIsSelect(false);
+         setServer("");
+         setSettings(getEmptySettings());
+         Alert.alert('Cannot connect to server', 
+            'The selected server \'' + device.id + '\' cannot be connected to.\n Error: ' + error, [
+            {
+                text: 'Ok',
+                onPress: () => {},
+            },   
+        ]);
+    }); 
+};
+
+function SandboxScreen(props) {
+    const [isForm , setForm] = useState(true);
+    const [isSelect , setSelect] = useState(false);
+    const [serverID, setServerID] = useState("");
+    const [settings, setSettings] = useState(getEmptySettings());
+    const [name, setName] = useState("");
+    
+    useNavEffect(props.navigation, props.addPreset, name, serverID, settings);
+
+    return (
+        <ScrollView nestedScrollEnabled = {true}>
+               <TwoPanelButton titleLeft="Form" titleRight="Drag"  
+                onPressLeft={() => setForm(true)} 
+                onPressRight={() => setForm(false)}
+                disabledRight={true}/>  
+
+               <FormTextInput onChangeText={(e)=>setName(e)} label="Preset Name" /> 
+
+               <BLEDeviceDropdownMenu label="Server" 
+                onSelect={(dev) => serverSelect(dev, setServerID, setSettings, setSelect)}/>
+               <DeviceConfigForm label="Input Device"
+                display={isSelect && isForm}
+                deviceList={getInputDeviceList(settings)}
+                onSelectDevice={(dname) => setSettings(setSelectedInputName(settings, dname))}
+                onFieldChange={(fieldName, value) => setSettings(setSelectedInputValue(settings,fieldName,value))}
+               />
+               <DeviceConfigForm label="Output Device"
+                display={isSelect && isForm}
+                deviceList={getOutputDeviceList(settings)}
+                onSelectDevice={(dname) => setSettings(setSelectedOutputName(settings, dname))}
+                onFieldChange={(fieldName, value) => setSettings(setSelectedOutputValue(settings,fieldName,value))}
+               />
+         </ScrollView>
+    );
+}
+
+const matchDispatchToProps = (dispatch) => { 
+    return {
+        addPreset: (e) => dispatch(addPreset(e)),
+    };
+};
+
+export default connect(null, matchDispatchToProps)(SandboxScreen);
