@@ -2,14 +2,15 @@ import { Alert, Button, ScrollView, TextInput, Text, View, FlatList } from 'reac
 import FormTextInput from "../components/FormTextInput";
 import TwoPanelButton from "../components/TwoPanelButton";
 import DragDropItemList from "../components/DragDropItemList";
-import FormDropdownMenu from "../components/FormDropdownMenu";
-import FormSlider from "../components/FormSlider";
+import DeviceConfigForm from "../components/DeviceConfigForm";
+import BLEDeviceDropdownMenu from "../components/BLEDeviceDropdownMenu";
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import * as ActionCreators from '../actionCreators'; 
-import { useBLEScanAndAccEffect, 
-         readDeviceSettings, 
+import { readDeviceSettings, 
          writeDeviceSettings, 
+         getInputDeviceList,
+         getOutputDeviceList,
          getSelectedInputName,
          setSelectedInputName,
          setSelectedInputValue,
@@ -18,6 +19,7 @@ import { useBLEScanAndAccEffect,
          setSelectedOutputName,
          setSelectedOutputValue,
          getSelectedOutputSettings,
+         getEmptySettings,
          addPreset,
         } from '../controllers/presetController';
 
@@ -28,8 +30,25 @@ const useNavEffect = (navigation, addPreset, name, serverID, settings) => {
         navigation.setOptions({
             headerRight: () => (
                 <Button onPress={() =>{
+                    if (name.trim() == "") {
+                        return Alert.alert('Missing Name', 
+                                'Please input a preset name.', [
+                                {
+                                    text: 'Ok',
+                                    onPress: () => {},
+                                },   
+                            ]);   
+                    } else if (serverID == "") {
+                        return Alert.alert('Missing Server', 
+                                'Please select a server.', [
+                                {
+                                    text: 'Ok',
+                                    onPress: () => {},
+                                },   
+                            ]); 
+                    }
                     navigation.navigate("Presets", {});
-                    addPreset({name: name, deviceID: serverID, settings: settings});
+                    addPreset({name: name.trim(), deviceID: serverID, settings: settings});
                 } } title="Save" />
             ),
             headerLeft: () => (
@@ -41,20 +60,6 @@ const useNavEffect = (navigation, addPreset, name, serverID, settings) => {
 
     }, [navigation, name, serverID, settings]);
 
-};
-
-const serversToItems = (devices) => {
-    const named = [];
-    const nnamed = [];
-    for(let i = 0; i < devices.length; i++) {
-        if (devices[i].name) {
-            named.push({label: devices[i].name, sublabel: devices[i].id , value: devices[i], key: devices[i].id}); 
-        } else {
-            nnamed.push({label: "Unknown", sublabel: devices[i].id , value: devices[i], key: devices[i].id}); 
-        }
-    } 
-    const items = named.concat(nnamed);
-    return items;
 };
 
 const devices2Items = (devices) => { 
@@ -76,7 +81,10 @@ const serverSelect = (item, setServer, setSettings, setIsSelect) => {
     })
     .catch((error) => {
          setIsSelect(false);
-         Alert.alert('Cannot connect to server!', 'The selected server \'' + device.id + '\' cannot be connected to.\n Error: ' + error, [
+         setServer("");
+         setSettings(getEmptySettings());
+         Alert.alert('Cannot connect to server', 
+            'The selected server \'' + device.id + '\' cannot be connected to.\n Error: ' + error, [
             {
                 text: 'Ok',
                 onPress: () => {},
@@ -85,103 +93,37 @@ const serverSelect = (item, setServer, setSettings, setIsSelect) => {
     }); 
 };
 
-
-const settings2Views = (settings, onChange) =>
-{
-    return (
-        <>
-            {
-                settings.map((obj) => {
-                    switch(obj.type) {
-                        case "ListPicker":    
-                            return (<FormDropdownMenu items={obj.items.map((curr, index) => 
-                            ({label: curr + "", value: index}))} 
-                            initialLabel={obj.items[parseInt(obj.value)] + ""}
-                            label={obj.display_name}
-                            init={false}
-                            onSelect={(item) => onChange(obj.name, item.value)}/>);
-                            
-                        case "Slider":    
-                            return (<FormSlider 
-                                    lower={parseFloat(obj.minValue)} 
-                                    upper={parseFloat(obj.maxValue)} 
-                                    initial={parseFloat(obj.value)} 
-                                    label={obj.display_name}
-                                    onSlide={(item) => {onChange(obj.name, item)}}/>);
-                    }
-                })
-            }
-        </>
-    );
-}
-
 function PresetCreationScreen(props) {
-    const emptySettings = {
-        inputdevices: {
-            selected_device: "",
-            devices: []
-        },
-        outputdevices: {
-            selected_device: "",
-            devices: []
-        },
-    };
     const [isForm , setForm] = useState(true);
     const [isSelect , setSelect] = useState(false);
-    const [devices, setDevices] = useState([]);
-    const [isServerScan, setServerScan] = useState(false);
     const [serverID, setServerID] = useState("");
-    const [settings, setSettings] = useState(emptySettings);
+    const [settings, setSettings] = useState(getEmptySettings());
     const [name, setName] = useState("");
     
     useNavEffect(props.navigation, props.addPreset, name, serverID, settings);
 
-    useBLEScanAndAccEffect(isServerScan, devices, setDevices);
-
-    const onInputSettingChange = (fieldName, value) => {
-        const modObj = setSelectedInputValue(settings, fieldName, value);
-        setSettings(modObj);
-    };
-
-    const onOutputSettingChange = (fieldName, value) => {
-        const modObj = setSelectedOutputValue(settings, fieldName, value);
-        setSettings(modObj);
-    };
-
-
     return (
         <ScrollView nestedScrollEnabled = {true}>
-              <TwoPanelButton titleLeft="Form" titleRight="Drag"  
-               onPressLeft={() => {setForm(true);}} onPressRight={() => {setForm(false);}}
+               <TwoPanelButton titleLeft="Form" titleRight="Drag"  
+                onPressLeft={() => setForm(true)} 
+                onPressRight={() => setForm(false)}
                 disabledRight={true}/>  
                <FormTextInput onChangeText={(e)=>setName(e)} label="Preset Name" />
-               <FormDropdownMenu label="Server" 
-                onSelect={(item) => serverSelect(item, setServerID, setSettings, setSelect)}
-                onDrop={()=>{setDevices([]); setServerScan(true);}} onClose={()=>setServerScan(false)}
-                items={serversToItems(devices)}/>
-               {
-                isSelect ?  
-                isForm ? 
-                        <>
-                            <FormDropdownMenu label="Input Device" 
-                            items={devices2Items(settings.inputdevices.devices)} 
-                            initialLabel={getSelectedInputName(settings)}
-                            onSelect={(e)=>setSettings(setSelectedInputName(settings, e.label))}/>
-                            {settings2Views(getSelectedInputSettings(settings), onInputSettingChange)}
-                            <FormDropdownMenu label="Output Device" 
-                            items={devices2Items(settings.outputdevices.devices)} 
-                            initialLabel={getSelectedOutputName(settings)}
-                            onSelect={(e)=>setSettings(setSelectedOutputName(settings, e.label))}/>
-                            {settings2Views(getSelectedOutputSettings(settings), onOutputSettingChange)}
-                        
-                        </>
- 
-                        :
-                         <DragDropItemList data={items} renderItem={(item) => <Text> {item.value} </Text>}/>
-                        :
-                        <View/>
-               }
-        </ScrollView>
+               <BLEDeviceDropdownMenu label="Server" 
+                onSelect={(dev) => serverSelect(dev, setServerID, setSettings, setSelect)}/>
+               <DeviceConfigForm label="Input Device"
+                display={isSelect && isForm}
+                deviceList={getInputDeviceList(settings)}
+                onSelectDevice={(dname) => setSettings(setSelectedInputName(settings, dname))}
+                onFieldChange={(fieldName, value) => setSettings(setSelectedInputValue(settings,fieldName,value))}
+               />
+               <DeviceConfigForm label="Output Device"
+                display={isSelect && isForm}
+                deviceList={getOutputDeviceList(settings)}
+                onSelectDevice={(dname) => setSettings(setSelectedOutputName(settings, dname))}
+                onFieldChange={(fieldName, value) => setSettings(setSelectedOutputValue(settings,fieldName,value))}
+               />
+         </ScrollView>
     );
 }
 

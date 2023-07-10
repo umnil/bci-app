@@ -100,28 +100,34 @@ export default function FormSlider(props) {
 
     return (
         <>
-            <Text> {props.label} </Text>
-            <View style={styles.slideContainer}>
-                <GestureDetector gesture={gesture}>
-                    <Animated.View style={[styles.slideCircle, ballAnimatedStyles]} />
-                </GestureDetector>
-                <View style={styles.slideBar}>
-                    <Animated.View style={[styles.slideBarSelect, selectBarAnimatedStyles]}/>
-                    <Animated.View style={[styles.slideBarEmpty, emptyBarAnimatedStyles]}/>
-                </View>
-            </View>
-            <View style={styles.displayContainer}>
-               <Text> Value: </Text>
-               <AnimatedTextInput style={{color: 'black'}} value={text.value} 
-               editable={false} animatedProps={textInputProps}/> 
+        { props.display ?
+            <>
+               <Text> {props.label} </Text>
+               <View style={styles.slideContainer}>
+                   <GestureDetector gesture={gesture}>
+                       <Animated.View style={[styles.slideCircle, ballAnimatedStyles]} />
+                   </GestureDetector>
+                   <View style={styles.slideBar}>
+                       <Animated.View style={[styles.slideBarSelect, selectBarAnimatedStyles]}/>
+                       <Animated.View style={[styles.slideBarEmpty, emptyBarAnimatedStyles]}/>
+                   </View>
+               </View>
+               <View style={styles.displayContainer}>
+                  <Text> Value: </Text>
+                  <AnimatedTextInput style={{color: 'black'}} value={text.value} 
+                  editable={false} animatedProps={textInputProps}/> 
 
-            </View>
+               </View>
+            </>
+            : <View/>
+        }
         </>
     );
 
 }
 
 FormSlider.defaultProps = {
+    display: true,
     label: "Slider",
     lower: 0,
     upper: 1,
@@ -131,6 +137,7 @@ FormSlider.defaultProps = {
 
 
 FormSlider.propTypes = {
+    display: PropTypes.bool.isRequired,
     label: PropTypes.string.isRequired,
     onSlide: PropTypes.func.isRequired,
     lower: PropTypes.number.isRequired,

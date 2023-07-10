@@ -117,17 +117,43 @@ export const writeDeviceSettings = (deviceID, obj) => {
  * Device Settings Object Methods
  *
  */
-export const name2settings = (deviceName, settingsList) => {
-    const filteredSettings = settingsList.filter((item) => (item['device_name'] == deviceName));    
-    return filteredSettings[0]['device_settings']; 
+export const name2settings = (deviceName, deviceList) => {
+    const filteredSettings = deviceList.devices.filter((item) => (item.device_name == deviceName));    
+    return filteredSettings[0].device_settings; 
+};
+
+export const getSelectedDeviceNameFromList = (list) => {
+    return list.selected_device;    
+};
+
+export const setSelectedDeviceNameForList = (list, deviceName) => {
+    return { ...list, selected_device: deviceName };    
+};
+
+export const setSelectedDeviceValueForList = (list, fieldName, value) => {
+    return { ...list, devices: list.devices.map((dev) => {
+        if (dev.device_name == list.selected_device) {
+            return { 
+                    ...dev, 
+                    device_settings: dev.device_settings.map((setting) => {
+                        if (setting.name == fieldName) {
+                            return {...setting, value: value};    
+                        }
+                        return setting;
+                    }) 
+            };
+        }    
+        return dev;
+        }),
+    };
 };
 
 export const getSelectedInputSettings = (obj) => {
-    return name2settings(getSelectedInputName(obj), obj.inputdevices.devices);
+    return name2settings(getSelectedInputName(obj), obj.inputdevices);
 };
 
 export const getSelectedOutputSettings = (obj) => {
-    return name2settings(getSelectedOutputName(obj), obj.outputdevices.devices);
+    return name2settings(getSelectedOutputName(obj), obj.outputdevices);
 };
 
 export const getSelectedInputName = (obj) => {
@@ -177,6 +203,29 @@ export const verifySettingsObj = (obj) => {
     return obj.hasOwnProperty("inputdevices") && obj.hasOwnProperty("outputdevices");
 };
 
+export const getEmptySettings = () => {
+    return {
+        inputdevices: {
+            selected_device: "",
+            devices: [{device_name: "", device_settings:[]}]
+        },
+        outputdevices: {
+            selected_device: "",
+            devices: [{device_name: "", device_settings:[]}]
+        },
+    };
+  
+};
+
+export const getInputDeviceList = (obj) => {
+    return obj.inputdevices;
+};
+
+export const getOutputDeviceList = (obj) => {
+    return obj.outputdevices;
+};
+
+
 /*
  *
  * Persistent Storage Methods
@@ -199,14 +248,20 @@ export default Controller = {
     name2settings,
     getSelectedInputName,
     getSelectedOutputName,
+    getInputDeviceList,
+    getOutputDeviceList,
     setSelectedInputName,
     setSelectedOutputName,
     getSelectedInputSettings,
     getSelectedOutputSettings,
+    getSelectedDeviceNameFromList,
+    setSelectedDeviceNameForList,
+    setSelectedDeviceValueForList,
     setSelectedInputValue,       
     setSelectedOutputValue,       
     setCalibrationTrue,
     verifySettingsObj,
+    getEmptySettings,
     addPreset,
     deletePreset,
 };
