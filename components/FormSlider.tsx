@@ -131,7 +131,7 @@ FormSlider.defaultProps = {
     label: "Slider",
     lower: 0,
     upper: 1,
-    initial: -1,
+    initial: 0,
     onSlide: (e) => {},
 };
 
