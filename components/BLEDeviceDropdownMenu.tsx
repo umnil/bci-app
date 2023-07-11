@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { RefreshControl } from 'react-native';
 import { useBLEScanAndAccEffect } from '../controllers/presetController';
 import FormDropdownMenu from "./FormDropdownMenu";
 import PropTypes from "prop-types";
@@ -20,13 +21,22 @@ const serversToItems = (devices) => {
 export default function BLEDeviceDropdownMenu(props) {
     const [devices, setDevices] = useState([]);
     const [isServerScan, setServerScan] = useState(false);
+    const [isRefresh, setRefresh] = useState(false);
 
     useBLEScanAndAccEffect(isServerScan, devices, setDevices);
+    
+    const onRefresh = useCallback(() => {
+        setRefresh(true);
+        setDevices([]);          
+        setRefresh(false);
+    }, []);
+
 
     return (
      <FormDropdownMenu label={props.label} 
      disply={props.display}
      onSelect={(item) => props.onSelect(item)}
+     refreshControl={<RefreshControl refreshing={isRefresh} onRefresh={onRefresh}/>}
      onDrop={()=>{setDevices([]); setServerScan(true);}} onClose={()=>setServerScan(false)}
      items={serversToItems(devices)}/>
  

@@ -1,10 +1,10 @@
-import { Alert, Button, ScrollView, TextInput, Text, View, FlatList } from 'react-native';
+import { RefreshControl, Alert, Button, ScrollView, TextInput, Text, View, FlatList } from 'react-native';
 import FormTextInput from "../components/FormTextInput";
 import TwoPanelButton from "../components/TwoPanelButton";
 import DragDropItemList from "../components/DragDropItemList";
 import DeviceConfigForm from "../components/DeviceConfigForm";
 import BLEDeviceDropdownMenu from "../components/BLEDeviceDropdownMenu";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { connect } from 'react-redux';
 import * as ActionCreators from '../actionCreators'; 
 import { readDeviceSettings, 
@@ -99,12 +99,34 @@ function PresetCreationScreen(props) {
     const [serverID, setServerID] = useState("");
     const [settings, setSettings] = useState(getEmptySettings());
     const [name, setName] = useState("");
+    const [isRefresh , setRefresh] = useState(false);
     
     useNavEffect(props.navigation, props.addPreset, name, serverID, settings);
+    const onRefresh = useCallback(() => {
+        setRefresh(true);
+        if (serverID != "") {
+            setSelect(false); 
+            writeDeviceSettings(serverID, settings)
+            .then(() => readDeviceSettings(serverID))
+            .then((obj) => {
+                    setSettings(obj); 
+                    setSelect(true); 
+                    setRefresh(false)
+             })
+             .catch(() => setRefresh(false));
+        } else {
+            console.log("here");
+            setRefresh(false);
+        }
+    }, [serverID, settings]);
+
 
     return (
-        <ScrollView nestedScrollEnabled = {true}>
-               <TwoPanelButton titleLeft="Form" titleRight="Drag"  
+        <ScrollView nestedScrollEnabled = {true}
+          refreshControl={
+                    <RefreshControl refreshing={isRefresh} onRefresh={onRefresh}/>}
+        >
+              <TwoPanelButton titleLeft="Form" titleRight="Drag"  
                 onPressLeft={() => setForm(true)} 
                 onPressRight={() => setForm(false)}
                 disabledRight={true}/>  

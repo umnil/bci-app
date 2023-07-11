@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pressable, Text, View, ScrollView, StyleSheet } from 'react-native';
+import { RefreshControl, Pressable, Text, View, ScrollView, StyleSheet } from 'react-native';
 import  Animated, {
          useSharedValue,
          useAnimatedStyle,
@@ -66,7 +66,10 @@ export default function FormDropdownMenu(props) {
                     </Animated.View>
                     
                 </Pressable>
-                <Animated.ScrollView style={[styles.scrollView, animatedDropStyles]}>
+                <Animated.ScrollView 
+                 style={[styles.scrollView, animatedDropStyles]}
+                 refreshControl={props.refreshControl}
+                >
                     {props.items.map(item => { return (<Pressable onPress={() => {
                     setSelected(item); props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
                         {props.renderItem(item)} 
@@ -86,6 +89,7 @@ FormDropdownMenu.defaultProps = {
     initialSublabel: "",
     items: [],
     itemStyle: {},
+    refreshControl: null,
     renderSelected: (item) => 
     (
         <View style={styles.selected}>
