@@ -27,7 +27,9 @@ export default function BLEDeviceDropdownMenu(props) {
     
     const onRefresh = useCallback(() => {
         setRefresh(true);
+        setServerScan(false);
         setDevices([]);          
+        setServerScan(true);
         setRefresh(false);
     }, []);
 

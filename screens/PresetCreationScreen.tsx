@@ -1,9 +1,5 @@
 import { RefreshControl, Alert, Button, ScrollView, TextInput, Text, View, FlatList } from 'react-native';
-import FormTextInput from "../components/FormTextInput";
-import TwoPanelButton from "../components/TwoPanelButton";
-import DragDropItemList from "../components/DragDropItemList";
-import DeviceConfigForm from "../components/DeviceConfigForm";
-import BLEDeviceDropdownMenu from "../components/BLEDeviceDropdownMenu";
+import PresetCreationForm from "../components/PresetCreationForm";
 import { useEffect, useState, useCallback } from 'react';
 import { connect } from 'react-redux';
 import * as ActionCreators from '../actionCreators'; 
@@ -62,90 +58,19 @@ const useNavEffect = (navigation, addPreset, name, serverID, settings) => {
 
 };
 
-const devices2Items = (devices) => { 
-   const items = []; 
-   for (const dev of devices) {
-        items.push({ label: dev["device_name"], value: dev["device_name"] }); 
-    }
-   return items;
-}
-
-const serverSelect = (item, setServer, setSettings, setIsSelect) => {
-    setIsSelect(false);
-    const device = item.value;
-    readDeviceSettings(device.id)
-    .then((obj) => {
-        setSettings(obj); 
-        setServer(device.id);
-        setIsSelect(true); 
-    })
-    .catch((error) => {
-         setIsSelect(false);
-         setServer("");
-         setSettings(getEmptySettings());
-         Alert.alert('Cannot connect to server', 
-            'The selected server \'' + device.id + '\' cannot be connected to.\n Error: ' + error, [
-            {
-                text: 'Ok',
-                onPress: () => {},
-            },   
-        ]);
-    }); 
-};
-
 function PresetCreationScreen(props) {
-    const [isForm , setForm] = useState(true);
-    const [isSelect , setSelect] = useState(false);
-    const [serverID, setServerID] = useState("");
-    const [settings, setSettings] = useState(getEmptySettings());
-    const [name, setName] = useState("");
-    const [isRefresh , setRefresh] = useState(false);
-    
-    useNavEffect(props.navigation, props.addPreset, name, serverID, settings);
-    const onRefresh = useCallback(() => {
-        setRefresh(true);
-        if (serverID != "") {
-            setSelect(false); 
-            writeDeviceSettings(serverID, settings)
-            .then(() => readDeviceSettings(serverID))
-            .then((obj) => {
-                    setSettings(obj); 
-                    setSelect(true); 
-                    setRefresh(false)
-             })
-             .catch(() => setRefresh(false));
-        } else {
-            console.log("here");
-            setRefresh(false);
-        }
-    }, [serverID, settings]);
-
-
+    const [preset, setPreset] = useState({
+        name: "",
+        deviceID: "",
+        settings: getEmptySettings(),
+    }); 
+    useNavEffect(props.navigation, props.addPreset, preset.name, preset.deviceID, preset.settings);
     return (
-        <ScrollView nestedScrollEnabled = {true}
-          refreshControl={
-                    <RefreshControl refreshing={isRefresh} onRefresh={onRefresh}/>}
-        >
-              <TwoPanelButton titleLeft="Form" titleRight="Drag"  
-                onPressLeft={() => setForm(true)} 
-                onPressRight={() => setForm(false)}
-                disabledRight={true}/>  
-               <FormTextInput onChangeText={(e)=>setName(e)} label="Preset Name" />
-               <BLEDeviceDropdownMenu label="Server" 
-                onSelect={(dev) => serverSelect(dev, setServerID, setSettings, setSelect)}/>
-               <DeviceConfigForm label="Input Device"
-                display={isSelect && isForm}
-                deviceList={getInputDeviceList(settings)}
-                onSelectDevice={(dname) => setSettings(setSelectedInputName(settings, dname))}
-                onFieldChange={(fieldName, value) => setSettings(setSelectedInputValue(settings,fieldName,value))}
-               />
-               <DeviceConfigForm label="Output Device"
-                display={isSelect && isForm}
-                deviceList={getOutputDeviceList(settings)}
-                onSelectDevice={(dname) => setSettings(setSelectedOutputName(settings, dname))}
-                onFieldChange={(fieldName, value) => setSettings(setSelectedOutputValue(settings,fieldName,value))}
-               />
-         </ScrollView>
+        <PresetCreationForm preset={preset} 
+         onSettingsChange={(s)=>setPreset(p=>({...p, settings:s}))}
+         onDeviceIDChange={(d)=>setPreset(p=>({...p, deviceID:d}))}
+         onNameChange={(n)=>setPreset(p=>({...p, name:n}))}
+        />
     );
 }
 

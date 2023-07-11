@@ -5,8 +5,6 @@ import DragDropItemList from "../components/DragDropItemList";
 import DeviceConfigForm from "../components/DeviceConfigForm";
 import BLEDeviceDropdownMenu from "../components/BLEDeviceDropdownMenu";
 import { useEffect, useState, useCallback } from 'react';
-import { connect } from 'react-redux';
-import * as ActionCreators from '../actionCreators'; 
 import { readDeviceSettings, 
          writeDeviceSettings, 
          getInputDeviceList,
@@ -20,7 +18,6 @@ import { readDeviceSettings,
          setSelectedOutputValue,
          getSelectedOutputSettings,
          getEmptySettings,
-         addPreset,
         } from '../controllers/presetController';
 import PropTypes from "prop-types";
 
@@ -66,7 +63,7 @@ function PresetCreationForm(props) {
         if (props.preset.deviceID != "") {
             setSelect(false); 
             writeDeviceSettings(props.preset.deviceID, props.preset.settings)
-            .then(() => readDeviceSettings(deviceID))
+            .then(() => readDeviceSettings(props.preset.deviceID))
             .then((obj) => {
                     props.onSettingsChange(obj); 
                     setSelect(true); 
@@ -110,7 +107,7 @@ function PresetCreationForm(props) {
 
 PresetCreationForm.propTypes = {
     preset: PropTypes.shape({
-        settings: PropType.shape({
+        settings: PropTypes.shape({
             inputdevices: PropTypes.shape({
                 selected_device: PropTypes.string.isRequired,
                 devices: PropTypes.arrayOf(PropTypes.shape({
@@ -170,20 +167,14 @@ PresetCreationForm.propTypes = {
                 })).isRequired
             }).isRequired,
         }).isRequired,
-        name: PropTypes.string.isRequired,
-        deviceID: PropTypes.string.isRequired,
     }).isRequired,
+    name: PropTypes.string.isRequired,
+    deviceID: PropTypes.string.isRequired,
     onSettingsChange: PropTypes.func.isRequired,
     onDeviceIDChange: PropTypes.func.isRequired,
     onNameChange: PropTypes.func.isRequired,
 };
 
-const matchDispatchToProps = (dispatch) => { 
-    return {
-        addPreset: (e) => dispatch(addPreset(e)),
-    };
-};
-
-export default connect(null, matchDispatchToProps)(PresetCreationForm);
+export default PresetCreationForm;
 
 
