@@ -55,18 +55,19 @@ const serverSelect = (item, setServer, setSettings, setIsSelect) => {
 
 function PresetCreationForm(props) {
     const [isForm , setForm] = useState(true);
-    const [isSelect , setSelect] = useState(false);
     const [isRefresh , setRefresh] = useState(false);
+    const [shouldDisplay, setShouldDisplay] = useState(true);
+    const display = isForm && props.preset.deviceID != "" && shouldDisplay;
     
     const onRefresh = useCallback(() => {
         setRefresh(true);
         if (props.preset.deviceID != "") {
-            setSelect(false); 
+            setShouldDisplay(false); 
             writeDeviceSettings(props.preset.deviceID, props.preset.settings)
             .then(() => readDeviceSettings(props.preset.deviceID))
             .then((obj) => {
                     props.onSettingsChange(obj); 
-                    setSelect(true); 
+                    setShouldDisplay(true); 
                     setRefresh(false)
              })
              .catch(() => setRefresh(false));
@@ -88,15 +89,15 @@ function PresetCreationForm(props) {
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
                <BLEDeviceDropdownMenu label="Server" 
                 onSelect={(dev) => serverSelect(dev, props.onDeviceIDChange,
-                 props.onSettingsChange, setSelect)}/>
+                 props.onSettingsChange, setShouldDisplay)}/>
                <DeviceConfigForm label="Input Device"
-                display={isSelect && isForm}
+                display={display}
                 deviceList={getInputDeviceList(props.preset.settings)}
                 onSelectDevice={(dname) => props.onSettingsChange(setSelectedInputName(props.preset.settings, dname))}
                 onFieldChange={(fieldName, value) => props.onSettingsChange(setSelectedInputValue(props.preset.settings,fieldName,value))}
                />
                <DeviceConfigForm label="Output Device"
-                display={isSelect && isForm}
+                display={display}
                 deviceList={getOutputDeviceList(props.preset.settings)}
                 onSelectDevice={(dname) => props.onSettingsChange(setSelectedOutputName(props.preset.settings, dname))}
                 onFieldChange={(fieldName, value) => props.onSettingsChange(setSelectedOutputValue(props.preset.settings,fieldName,value))}
@@ -167,9 +168,9 @@ PresetCreationForm.propTypes = {
                 })).isRequired
             }).isRequired,
         }).isRequired,
+        name: PropTypes.string.isRequired,
+        deviceID: PropTypes.string.isRequired,
     }).isRequired,
-    name: PropTypes.string.isRequired,
-    deviceID: PropTypes.string.isRequired,
     onSettingsChange: PropTypes.func.isRequired,
     onDeviceIDChange: PropTypes.func.isRequired,
     onNameChange: PropTypes.func.isRequired,
