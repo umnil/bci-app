@@ -1,21 +1,8 @@
-import { Alert, Button, ScrollView, TextInput, Text, View, FlatList, RefreshControl } from 'react-native';
+import { Button } from 'react-native';
 import PresetCreationForm from "../components/PresetCreationForm";
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import * as ActionCreators from '../actionCreators'; 
-import { readDeviceSettings, 
-         writeDeviceSettings, 
-         getInputDeviceList,
-         getOutputDeviceList,
-         getSelectedInputName,
-         setSelectedInputName,
-         setSelectedInputValue,
-         getSelectedInputSettings,
-         getSelectedOutputName,
-         setSelectedOutputName,
-         setSelectedOutputValue,
-         getSelectedOutputSettings,
-         getEmptySettings,
+import { getEmptySettings,
          addPreset,
         } from '../controllers/presetController';
 
