@@ -14,7 +14,8 @@ FOR IOS:
 7. run `eas build --profile development --platform ios` 
 8. after step 7, a QR code should appear in terminal, scan this to install the development build on your iphone
 9. run `npx expo start --dev-client --tunnel`
-10. after step 9, a QR code should appear in terminal, scan this to connect your development app to the server 
+10. after step 9, a QR code should appear in terminal, scan this to connect your development app to the server
+11. to make an internal distribution preview build, run `eas build --profile preview --platform ios` 
 
 
 
