@@ -4,10 +4,10 @@ import { NavigationContainer } from
   '@react-navigation/native';
 import { createNativeStackNavigator } from
   '@react-navigation/native-stack';
-import HomeScreen from './screens/HomeScreen';
-import DataCollectionScreen from './screens/DataCollectionScreen';
-import PresetCreationScreen from './screens/PresetCreationScreen';
-import { store, persistor } from './store';
+import HomeScreen from './src/screens/HomeScreen';
+import DataCollectionScreen from './src/screens/DataCollectionScreen';
+import PresetCreationScreen from './src/screens/PresetCreationScreen';
+import { store, persistor } from './src/store';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
