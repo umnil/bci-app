@@ -6,7 +6,7 @@ Note: have NPM and Yarn installed
 2. run `yarn add package.json`
 3. run `npx expo-doctor` and make sure all tests pass
 4. create an expo account at https://expo.dev/signup
-5. run `eas login` and input account info from step 3 
+5. run `eas login` and input account info from step 4
 6. run `eas device:create` and input device info
 
 FOR IOS: 
