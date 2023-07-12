@@ -20,11 +20,6 @@ export default function FormDropdownMenu(props) {
     const timing = 5;
     const height = useSharedValue(0);
     const rotation = useSharedValue(0);
-    const [selected, setSelected] = useState({label: props.initialLabel});
-    useEffect(() => {
-        setSelected({label: props.initialLabel});
-        return () => {}; 
-    }, [props.initialLabel]);
 
     const animatedDropStyles = useAnimatedStyle(() => {
         return {
@@ -59,7 +54,7 @@ export default function FormDropdownMenu(props) {
                         }
                     }}> 
                     
-                    {props.renderSelected(selected)}
+                    {props.renderSelected(props.selected)}
 
                     <Animated.View style={animatedArrowStyles}>
                         <Icon name="caret-down" size={20}/>
@@ -71,7 +66,7 @@ export default function FormDropdownMenu(props) {
                  refreshControl={props.refreshControl}
                 >
                     {props.items.map(item => { return (<Pressable onPress={() => {
-                    setSelected(item); props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
+                    props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
                         {props.renderItem(item)} 
                         </Pressable>);})}
                 </Animated.ScrollView>
@@ -85,8 +80,7 @@ export default function FormDropdownMenu(props) {
 FormDropdownMenu.defaultProps = {
     display: true,
     label: "Select Item",
-    initialLabel: "Select item...",
-    initialSublabel: "",
+    selected: {label: "Select Item ...", value: null},
     items: [],
     itemStyle: {},
     refreshControl: null,
@@ -113,8 +107,11 @@ FormDropdownMenu.defaultProps = {
 FormDropdownMenu.propTypes = {
     display: PropTypes.bool.isRequired,
     label: PropTypes.string.isRequired,
-    initialLabel: PropTypes.string.isRequired,    
-    initialSublabel: PropTypes.string,
+    selected: PropTypes.shape({
+        label: PropTypes.string.isRequired,
+        sublabel: PropTypes.string,
+        value: PropTypes.any.isRequired,
+    }).isRequired,
     renderItem: PropTypes.func.isRequired,
     renderSelected: PropTypes.func.isRequired,
     items: PropTypes.arrayOf(PropTypes.shape({

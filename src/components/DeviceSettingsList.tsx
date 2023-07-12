@@ -13,7 +13,7 @@ export default function DeviceSettingsList(props) {
                             display={props.display}
                             items={obj.items.map((curr, index) => 
                                 ({label: curr + "", value: index}))} 
-                            initialLabel={obj.items[parseInt(obj.value)] + ""}
+                            selected={{label: obj.items[parseInt(obj.value)] + "", value: parseInt(obj.value)}}
                             label={obj.display_name}
                             onSelect={(item) => props.onChange(obj.name, item.value)}/>);
                             

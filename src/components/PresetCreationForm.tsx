@@ -21,25 +21,20 @@ import { readDeviceSettings,
         } from '../controllers/presetController';
 import PropTypes from "prop-types";
 
+const defaultDev = {name: "Select Device", id:""};
 
-const devices2Items = (devices) => { 
-   const items = []; 
-   for (const dev of devices) {
-        items.push({ label: dev["device_name"], value: dev["device_name"] }); 
-    }
-   return items;
-}
-
-const serverSelect = (item, setServer, setSettings, setIsSelect) => {
+const serverSelect = (item, setServer, setSettings, setIsSelect, setSelectedDev) => {
     setIsSelect(false);
     const device = item.value;
     readDeviceSettings(device.id)
     .then((obj) => {
         setSettings(obj); 
         setServer(device.id);
+        setSelectedDev(device);
         setIsSelect(true); 
     })
     .catch((error) => {
+         setSelectedDev(defaultDev);
          setIsSelect(false);
          setServer("");
          setSettings(getEmptySettings());
@@ -57,6 +52,7 @@ function PresetCreationForm(props) {
     const [isForm , setForm] = useState(true);
     const [isRefresh , setRefresh] = useState(false);
     const [shouldDisplay, setShouldDisplay] = useState(true);
+    const [selectedDev, setSelectedDev] = useState(defaultDev);
     const display = isForm && props.preset.deviceID != "" && shouldDisplay;
     
     const onRefresh = useCallback(() => {
@@ -70,9 +66,9 @@ function PresetCreationForm(props) {
                     setShouldDisplay(true); 
                     setRefresh(false)
              })
-             .catch(() => {
+             .catch((error) => {
                 setRefresh(false)
-                 Alert.alert('An Error Occurred', 
+                Alert.alert('An Error Occurred', 
                     '', [
                     {
                         text: 'Ok',
@@ -97,8 +93,11 @@ function PresetCreationForm(props) {
                 disabledRight={true}/>  
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
                <BLEDeviceDropdownMenu label="Server" 
-                onSelect={(dev) => serverSelect(dev, props.onDeviceIDChange,
-                 props.onSettingsChange, setShouldDisplay)}/>
+                selectedDevice={selectedDev} 
+                onSelect={(dev) => { serverSelect(dev, props.onDeviceIDChange,
+                 props.onSettingsChange, setShouldDisplay, setSelectedDev); 
+                  }}
+                />
                <DeviceConfigForm label="Input Device"
                 display={display}
                 deviceList={getInputDeviceList(props.preset.settings)}

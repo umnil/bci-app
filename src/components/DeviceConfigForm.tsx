@@ -22,14 +22,16 @@ const devices2Items = (devices) => {
 };
 
 export default function DeviceConfigForm(props) {
+    const devName = getSelectedDeviceNameFromList(props.deviceList);
+    const selected = {label: devName, value: devName} 
     return (
         <>
             <FormDropdownMenu label={props.label} 
             display={props.display}
             items={devices2Items(props.deviceList.devices)} 
-            initialLabel={getSelectedDeviceNameFromList(props.deviceList)}
+            selected={selected}
             onSelect={(e)=>{
-                props.onSelectDevice(e.label)}}/>
+                props.onSelectDevice(e.label);}}/>
             <DeviceSettingsList settings={name2settings(getSelectedDeviceNameFromList(props.deviceList), props.deviceList)} 
             display={props.display}
             onChange={(fieldName,value)=>{
