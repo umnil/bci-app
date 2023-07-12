@@ -68,24 +68,25 @@ export const useBLEScanAndAccEffect = (isServerScan, devices, setDevices) => {
 export const readDeviceSettings = (deviceID) => {
     const settingsUUID = '51ff12bb-3ed8-46e5-b4f9-d64e2fec021b';
     return manager.connectToDevice(deviceID) 
-    .then((device) => {
-        return device.discoverAllServicesAndCharacteristics();
-    })
-    .then((services) => {
-        return BLEStream.streamRead(manager, deviceID, settingsUUID);
+        .then((device) => {
+            return device.discoverAllServicesAndCharacteristics();
+        })
+        .then((services) => {
+            return BLEStream.streamRead(manager, deviceID, settingsUUID);
 
-    })
-    .then((resStr) => {
-          let obj : any;
-          try {
-            obj = JSON.parse(resStr);
-            return obj;
-          }
-          catch {
-            reject(error);
-          }
-    });
-};
+        })
+        .then((resStr) => {
+              let obj : any;
+              try {
+                return JSON.parse(resStr);
+              }
+              catch {
+                console.log("Not a valid JSON: " + resStr);
+                throw new Error(resStr);  
+              }
+        })
+
+ };
 
 /*
  * Name: WriteDeviceSettings
@@ -97,18 +98,19 @@ export const readDeviceSettings = (deviceID) => {
 export const writeDeviceSettings = (deviceID, obj) => {
     const settingsUUID = '51ff12bb-3ed8-46e5-b4f9-d64e2fec021b';
     return manager.connectToDevice(deviceID) 
-    .then((device) => {
-        return device.discoverAllServicesAndCharacteristics();
-    })
-    .then((services) => {
-        try {
-            const data = JSON.stringify(obj);            
-            return BLEStream.streamWrite(manager, deviceID, settingsUUID, data);
-        }
-        catch {
-            reject(error);
-        }            
-    });
+        .then((device) => {
+            return device.discoverAllServicesAndCharacteristics();
+        })
+        .then((services) => {
+            try {
+                return JSON.stringify(obj);            
+            }
+            catch {
+                console.log("Could not stringify: "  + obj);
+                throw new Error(obj);
+            }            
+        })
+        .then((dataStr) => BLEStream.streamWrite(manager, deviceID, settingsUUID, dataStr));
 };
 
 

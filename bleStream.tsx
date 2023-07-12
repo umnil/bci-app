@@ -193,6 +193,7 @@ const [streamWrite, streamRead] = (() => {
                devqueues = devqueues.map((item) => item.deviceID == deviceID ? 
                                         { deviceID: deviceID, chain: new Promise((resolve) => resolve())} : item);
         
+               throw error;
            }); 
  
             devqueues = devqueues.map((item) => item.deviceID == deviceID ? 
@@ -252,6 +253,7 @@ const [streamWrite, streamRead] = (() => {
                 .catch((error) => {
                     devqueues = devqueues.map((item) => item.deviceID == deviceID ? 
                                                     { deviceID: deviceID, chain: new Promise((resolve) => resolve())} : item);
+                    throw error;
         
                 }); 
                 devqueues = devqueues.map((item) => item.deviceID == deviceID ? 

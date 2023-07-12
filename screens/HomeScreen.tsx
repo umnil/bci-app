@@ -70,7 +70,9 @@ export default function HomeScreen() {
             > 
             {(props) => <PresetManagerScreen {...props} isEdit={isEdit} setEdit={setEdit} />}
             </Tab.Screen>
+
             <Tab.Screen name="Sandbox" component={SandboxScreen} />
+
             <Tab.Screen name="Analytics" component={SettingsScreen} />
             <Tab.Screen name="Settings" component={SettingsScreen} />
         </Tab.Navigator>

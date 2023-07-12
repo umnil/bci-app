@@ -28,19 +28,17 @@
           <string>com.anonymous.bci-app</string>
         </array>
       </dict>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>exp+bci-app</string>
+        </array>
+      </dict>
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
-    <key>NSExceptionDomains</key>
-    <dict>
-        <key>localhost</key>
-        <dict>
-            <key>NSExceptionAllowsInsecureHTTPLoads</key>
-            <true/>
-        </dict>
-    </dict>
     <key>NSAppTransportSecurity</key>
     <dict>
       <key>NSAllowsArbitraryLoads</key>
@@ -55,7 +53,12 @@
       </dict>
     </dict>
     <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>This appliction requires bluetooth to function properly</string>
+    <string>Allow $(PRODUCT_NAME) to connect to bluetooth devices</string>
+    <key>UIBackgroundModes</key>
+    <array>
+      <string>bluetooth-central</string>
+      <string>bluetooth-peripheral</string>
+    </array>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>

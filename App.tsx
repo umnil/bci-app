@@ -25,6 +25,7 @@ export default function App() {
                 headerShown: false,
             }}
                             />
+
             <Stack.Screen name="Create Preset" component={PresetCreationScreen}
             options={({route, navigation}) => ({
                 headerRight: () => {
@@ -45,6 +46,7 @@ export default function App() {
             })}
  
                             />
+
             <Stack.Screen name="Data Collection" component={DataCollectionScreen}/>
         </Stack.Navigator>
     </NavigationContainer>

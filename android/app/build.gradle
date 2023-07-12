@@ -113,7 +113,7 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.bciapp"
+    namespace 'android.com'
     defaultConfig {
         applicationId 'android.com'
         minSdkVersion rootProject.ext.minSdkVersion

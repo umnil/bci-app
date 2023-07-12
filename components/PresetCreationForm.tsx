@@ -70,7 +70,16 @@ function PresetCreationForm(props) {
                     setShouldDisplay(true); 
                     setRefresh(false)
              })
-             .catch(() => setRefresh(false));
+             .catch(() => {
+                setRefresh(false)
+                 Alert.alert('An Error Occurred', 
+                    '', [
+                    {
+                        text: 'Ok',
+                        onPress: () => {},
+                    },   
+                ]);
+            });
         } else {
             setRefresh(false);
         }

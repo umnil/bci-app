@@ -1,6 +1,15 @@
 {
   "expo": {
-    "plugins": ["@config-plugins/react-native-ble-plx"],
+    "plugins": [
+        [
+            "@config-plugins/react-native-ble-plx",
+            {
+                "isBackgroundEnabled":true,
+                "modes": ["peripheral", "central"],
+                "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
+            }    
+        ]
+    ],
     "name": "bci-app",
     "slug": "bci-app",
     "version": "1.0.0",

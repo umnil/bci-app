@@ -4,6 +4,7 @@
   },
   "build": {
     "development": {
+      "developmentClient": true, 
       "distribution": "internal",
       "android": {
         "gradleCommand": ":app:assembleDebug"
@@ -12,6 +13,13 @@
         "buildConfiguration": "Debug"
       }
     },
+    "development-simulator": {
+        "developmentClient": true,
+        "distribution": "internal",   
+        "ios": {
+            "simulator":true
+        }    
+    },     
     "preview": {
       "distribution": "internal"
     },
