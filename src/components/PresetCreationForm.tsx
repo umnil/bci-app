@@ -1,4 +1,8 @@
-import { RefreshControl, Alert, Button, ScrollView, TextInput, Text, View, FlatList } from 'react-native';
+import { 
+        RefreshControl, 
+        Alert, 
+        ScrollView,
+        ActivityIndicator } from 'react-native';
 import FormTextInput from "../components/FormTextInput";
 import TwoPanelButton from "../components/TwoPanelButton";
 import DragDropItemList from "../components/DragDropItemList";
@@ -21,10 +25,11 @@ import { readDeviceSettings,
         } from '../controllers/presetController';
 import PropTypes from "prop-types";
 
-const defaultDev = {name: "Select Device", id:""};
+const defaultDev = {name: "Select Device", id:"Tap Here"};
 
-const serverSelect = (item, setServer, setSettings, setIsSelect, setSelectedDev) => {
+const serverSelect = (item, setServer, setSettings, setIsSelect, setSelectedDev, setConnecting) => {
     setIsSelect(false);
+    setConnecting(true); 
     const device = item.value;
     readDeviceSettings(device.id)
     .then((obj) => {
@@ -32,10 +37,12 @@ const serverSelect = (item, setServer, setSettings, setIsSelect, setSelectedDev)
         setServer(device.id);
         setSelectedDev(device);
         setIsSelect(true); 
+        setConnecting(false); 
     })
     .catch((error) => {
          setSelectedDev(defaultDev);
          setIsSelect(false);
+         setConnecting(false); 
          setServer("");
          setSettings(getEmptySettings());
          Alert.alert('Cannot connect to server', 
@@ -53,7 +60,9 @@ function PresetCreationForm(props) {
     const [isRefresh , setRefresh] = useState(false);
     const [shouldDisplay, setShouldDisplay] = useState(true);
     const [selectedDev, setSelectedDev] = useState(defaultDev);
+    const [isConnecting, setConnecting] = useState(false);
     const display = isForm && props.preset.deviceID != "" && shouldDisplay;
+    const connecting = isConnecting && !shouldDisplay;
     
     const onRefresh = useCallback(() => {
         setRefresh(true);
@@ -85,7 +94,7 @@ function PresetCreationForm(props) {
     return (
         <ScrollView nestedScrollEnabled = {true}
           refreshControl={
-                    <RefreshControl refreshing={isRefresh} onRefresh={onRefresh}/>}
+                <RefreshControl refreshing={isRefresh} onRefresh={onRefresh}/>}
         >
               <TwoPanelButton titleLeft="Form" titleRight="Drag"  
                 onPressLeft={() => setForm(true)} 
@@ -95,7 +104,7 @@ function PresetCreationForm(props) {
                <BLEDeviceDropdownMenu label="Server" 
                 selectedDevice={selectedDev} 
                 onSelect={(dev) => { serverSelect(dev, props.onDeviceIDChange,
-                 props.onSettingsChange, setShouldDisplay, setSelectedDev); 
+                 props.onSettingsChange, setShouldDisplay, setSelectedDev, setConnecting); 
                   }}
                 />
                <DeviceConfigForm label="Input Device"
@@ -110,6 +119,8 @@ function PresetCreationForm(props) {
                 onSelectDevice={(dname) => props.onSettingsChange(setSelectedOutputName(props.preset.settings, dname))}
                 onFieldChange={(fieldName, value) => props.onSettingsChange(setSelectedOutputValue(props.preset.settings,fieldName,value))}
                />
+
+               <ActivityIndicator size="large" animating={isConnecting}/>
          </ScrollView>
     );
 };
