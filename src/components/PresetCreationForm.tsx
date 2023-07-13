@@ -6,6 +6,7 @@ import {
         View,
         ActivityIndicator } from 'react-native';
 import FormTextInput from "../components/FormTextInput";
+import FormButton from "../components/FormButton";
 import TwoPanelButton from "../components/TwoPanelButton";
 import DragDropItemList from "../components/DragDropItemList";
 import DeviceConfigForm from "../components/DeviceConfigForm";
@@ -13,6 +14,7 @@ import BLEDeviceDropdownMenu from "../components/BLEDeviceDropdownMenu";
 import { useEffect, useState, useCallback } from 'react';
 import { readDeviceSettings, 
          writeDeviceSettings, 
+         cancelDeviceOperation,
          getInputDeviceList,
          getOutputDeviceList,
          getEmptySettings,
@@ -106,7 +108,7 @@ function PresetCreationForm(props) {
                     onPressLeft={() => setForm(true)} 
                     onPressRight={() => setForm(false)}
                     disabledRight={true}/>  
-                  <Button onPress={props.onTestPress} title="Test" />
+                  <FormButton disabled={connecting} onPress={props.onTestPress} label="Test" />
             </View>    
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
                <BLEDeviceDropdownMenu 
@@ -131,6 +133,7 @@ function PresetCreationForm(props) {
                 onFieldChange={(fieldName, value) => props.onSettingsChange(setSelectedOutputValue(props.preset.settings,fieldName,value))}
                />
 
+               <FormButton label="Cancel Connection" onPress={()=>cancelDeviceOperation(selectedDev.id)} display={connecting}/>
                <ActivityIndicator size="large" animating={isConnecting}/>
          </ScrollView>
     );

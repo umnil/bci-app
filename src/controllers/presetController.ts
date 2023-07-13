@@ -113,6 +113,11 @@ export const writeDeviceSettings = (deviceID, obj) => {
         .then((dataStr) => BLEStream.streamWrite(manager, deviceID, settingsUUID, dataStr));
 };
 
+export const cancelDeviceOperation = (deviceID) =>
+{
+    return manager.cancelDeviceConnection(deviceID);
+}
+
 
 /*
  *
@@ -253,6 +258,7 @@ export default Controller = {
     useBLEScanAndAccEffect,
     readDeviceSettings,
     writeDeviceSettings,
+    cancelDeviceOperation,
     name2settings,
     getSelectedInputName,
     getSelectedOutputName,
