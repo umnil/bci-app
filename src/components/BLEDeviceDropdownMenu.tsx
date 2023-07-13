@@ -46,6 +46,7 @@ export default function BLEDeviceDropdownMenu(props) {
      onSelect={(item) => props.onSelect(item)}
      refreshControl={<RefreshControl refreshing={isRefresh} onRefresh={onRefresh}/>}
      onDrop={()=>{setDevices([]); setServerScan(true);}} onClose={()=>setServerScan(false)}
+     lock={props.lock}
      items={servers2Items(devices)}/>
  
     );
@@ -60,6 +61,7 @@ BLEDeviceDropdownMenu.propTypes = {
     }),
     onSelect: PropTypes.func.isRequired,
     display: PropTypes.bool.isRequired,
+    lock: PropTypes.bool.isRequired,
 };
 
 BLEDeviceDropdownMenu.defaultProps = {
@@ -67,6 +69,7 @@ BLEDeviceDropdownMenu.defaultProps = {
     selectedDevice: {name: "Select Device", id: ""},
     label: "Peripheral Devices", 
     onSelect: (device) => {},
+    lock: false,
 };
 
 

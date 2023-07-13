@@ -15,6 +15,7 @@ import { readDeviceSettings,
          writeDeviceSettings, 
          getInputDeviceList,
          getOutputDeviceList,
+         getEmptySettings,
          setSelectedInputName,
          setSelectedInputValue,
          setSelectedOutputName,
@@ -28,11 +29,11 @@ const serverSelect = (item, setServer, setSettings, setIsSelect, setSelectedDev,
     setIsSelect(false);
     setConnecting(true); 
     const device = item.value;
+    setSelectedDev(device);
     readDeviceSettings(device.id)
     .then((obj) => {
         setSettings(obj); 
         setServer(device.id);
-        setSelectedDev(device);
         setIsSelect(true); 
         setConnecting(false); 
     })
@@ -91,7 +92,7 @@ function PresetCreationForm(props) {
     return (
         <ScrollView nestedScrollEnabled = {true}
           refreshControl={
-                <RefreshControl refreshing={isRefresh} onRefresh={onRefresh}/>}
+                <RefreshControl refreshing={!connecting && isRefresh} onRefresh={onRefresh}/>}
         >
             <View style={
                   {
@@ -108,7 +109,10 @@ function PresetCreationForm(props) {
                   <Button onPress={props.onTestPress} title="Test" />
             </View>    
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
-               <BLEDeviceDropdownMenu label="Server" 
+               <BLEDeviceDropdownMenu 
+                lock={connecting}
+                display={props.displayServerSelect}
+                label="Server" 
                 selectedDevice={selectedDev} 
                 onSelect={(dev) => serverSelect(dev, props.onDeviceIDChange,
                  props.onSettingsChange, setShouldDisplay, setSelectedDev, setConnecting) 
@@ -132,64 +136,67 @@ function PresetCreationForm(props) {
     );
 };
 
+PresetCreationForm.defaultProps = {
+    displayServerSelect: true, 
+}
 PresetCreationForm.propTypes = {
     preset: PropTypes.shape({
         settings: PropTypes.shape({
             inputdevices: PropTypes.shape({
-                selected_device: PropTypes.string.isRequired,
+                selected_device: PropTypes.string,
                 devices: PropTypes.arrayOf(PropTypes.shape({
-                    type: PropTypes.string.isRequired,
-                    name: PropTypes.string.isRequired,
-                    dispaly_name: PropTypes.string.isRequired,
+                    type: PropTypes.string,
+                    name: PropTypes.string,
+                    dispaly_name: PropTypes.string,
                     items(props, ...rest) {
                         if (props.type == "ListPicker") {
-                            return PropTypes.arrayOf(Proptypes.string).isRequired(props, ...rest);
+                            return PropTypes.arrayOf(Proptypes.string);
                         }     
                         return PropTypes.any(props, ...rest);
                     },
                     minValue(props, ...rest) {
                         if (props.type == "Slider") {
-                            return PropTypes.number.isRequired(props, ...rest);
+                            return PropTypes.number;
                         }     
                         return PropTypes.any(props, ...rest);
                     },
                     maxValue(props, ...rest) {
                         if (props.type == "Slider") {
-                            return PropTypes.number.isRequired(props, ...rest);
+                            return PropTypes.number;
                         }     
                         return PropTypes.any(props, ...rest);
                     },
  
-                    value: PropTypes.number.isRequired,
+                    value: PropTypes.number,
  
                 })).isRequired
             }).isRequired,
             outputdevices: PropTypes.shape({
                 selected_device: PropTypes.string.isRequired,
                 devices: PropTypes.arrayOf(PropTypes.shape({
-                    type: PropTypes.string.isRequired,
-                    name: PropTypes.string.isRequired,
-                    dispaly_name: PropTypes.string.isRequired,
+                    type: PropTypes.string,
+                    name: PropTypes.string,
+                    dispaly_name: PropTypes.string,
                     items(props, ...rest) {
                         if (props.type == "ListPicker") {
-                            return PropTypes.arrayOf(Proptypes.string).isRequired(props, ...rest);
+                            return PropTypes.arrayOf(Proptypes.string);
                         }     
                         return PropTypes.any(props, ...rest);
                     },
                     minValue(props, ...rest) {
                         if (props.type == "Slider") {
-                            return PropTypes.number.isRequired(props, ...rest);
+                            return PropTypes.number;
                         }     
                         return PropTypes.any(props, ...rest);
                     },
                     maxValue(props, ...rest) {
                         if (props.type == "Slider") {
-                            return PropTypes.number.isRequired(props, ...rest);
+                            return PropTypes.number;
                         }     
                         return PropTypes.any(props, ...rest);
                     },
  
-                    value: PropTypes.number.isRequired,
+                    value: PropTypes.number,
  
                 })).isRequired
             }).isRequired,
@@ -201,6 +208,7 @@ PresetCreationForm.propTypes = {
     onDeviceIDChange: PropTypes.func.isRequired,
     onNameChange: PropTypes.func.isRequired,
     onTestPress: PropTypes.func.isRequired,
+    displayServerSelect: PropTypes.bool.isRequired,
 };
 
 export default PresetCreationForm;

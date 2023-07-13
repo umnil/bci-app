@@ -10,6 +10,7 @@ export default function DeviceSettingsList(props) {
                     switch(obj.type) {
                         case "ListPicker":    
                             return (<FormDropdownMenu 
+                            key={obj.name}
                             display={props.display}
                             items={obj.items.map((curr, index) => 
                                 ({label: curr + "", value: index}))} 
@@ -19,6 +20,7 @@ export default function DeviceSettingsList(props) {
                             
                         case "Slider":    
                             return (<FormSlider 
+                            key={obj.name}
                             display={props.display}
                             lower={parseFloat(obj.minValue)} 
                             upper={parseFloat(obj.maxValue)} 

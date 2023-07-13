@@ -26,13 +26,13 @@ export default function FormDropdownMenu(props) {
            borderRightWidth: height.value != 0 ? 1 : 0,
            borderLeftWidth:  height.value != 0 ? 1 : 0,
            borderBottomWidth: height.value != 0 ? 1 : 0,
-           height: height.value,
+           height: (props.lock ? 0 : height.value),
         };
     });
     const animatedArrowStyles = useAnimatedStyle(() => {
         return {
             transform: [
-                { rotate: rotation.value + 'deg' },
+                { rotate: (props.lock ? 0 : rotation.value) + 'deg' },
             ],
         };
     });
@@ -43,6 +43,9 @@ export default function FormDropdownMenu(props) {
                 <Text> {props.label} </Text>
                 <Pressable style={styles.text} onPress={() => 
                     {
+                        if (props.lock) { 
+                            return;
+                        }
                         if (height.value == dropHeight) {
                             props.onClose();
                             height.value = withTiming(0, timing);
@@ -56,9 +59,12 @@ export default function FormDropdownMenu(props) {
                     
                     {props.renderSelected(props.selected)}
 
-                    <Animated.View style={animatedArrowStyles}>
-                        <Icon name="caret-down" size={20}/>
-                    </Animated.View>
+                    {props.lock ?
+                        <Icon name="lock-closed-outline" size={20}/>
+                        : <Animated.View style={animatedArrowStyles}>
+                            <Icon name="caret-down" size={20}/>
+                        </Animated.View>
+                    }
                     
                 </Pressable>
                 <Animated.ScrollView 
@@ -66,6 +72,9 @@ export default function FormDropdownMenu(props) {
                  refreshControl={props.refreshControl}
                 >
                     {props.items.map(item => { return (<Pressable onPress={() => {
+                    if (props.lock) {
+                        return; 
+                    }
                     props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
                         {props.renderItem(item)} 
                         </Pressable>);})}
@@ -100,6 +109,7 @@ FormDropdownMenu.defaultProps = {
     onSelect: (item)=>{},
     onDrop: ()=>{},
     onClose: ()=>{},
+    lock: false,
 
 };
 
@@ -123,6 +133,7 @@ FormDropdownMenu.propTypes = {
     onSelect: PropTypes.func.isRequired,
     onDrop: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
+    lock: PropTypes.bool.isRequired,
 };
  
 const styles = StyleSheet.create({

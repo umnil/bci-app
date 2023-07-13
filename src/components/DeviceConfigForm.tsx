@@ -51,29 +51,29 @@ DeviceConfigForm.propTypes = {
     deviceList: PropTypes.shape({
         selected_device: PropTypes.string.isRequired,
         devices: PropTypes.arrayOf(PropTypes.shape({
-            type: PropTypes.string.isRequired,
-            name: PropTypes.string.isRequired,
-            dispaly_name: PropTypes.string.isRequired,
+            type: PropTypes.string,
+            name: PropTypes.string,
+            dispaly_name: PropTypes.string,
             items(props, ...rest) {
                 if (props.type == "ListPicker") {
-                    return PropTypes.arrayOf(Proptypes.string).isRequired(props, ...rest);
+                    return PropTypes.arrayOf(Proptypes.string);
                 }     
                 return PropTypes.any(props, ...rest);
             },
             minValue(props, ...rest) {
                 if (props.type == "Slider") {
-                    return PropTypes.number.isRequired(props, ...rest);
+                    return PropTypes.number;
                 }     
                 return PropTypes.any(props, ...rest);
             },
             maxValue(props, ...rest) {
                 if (props.type == "Slider") {
-                    return PropTypes.number.isRequired(props, ...rest);
+                    return PropTypes.number;
                 }     
                 return PropTypes.any(props, ...rest);
             },
  
-            value: PropTypes.number.isRequired,
+            value: PropTypes.number,
  
         })).isRequired,
 
