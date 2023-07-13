@@ -4,7 +4,6 @@ import { View, Text, Button, Pressable } from "react-native";
 import { createBottomTabNavigator } from
   "@react-navigation/bottom-tabs";
 import PresetManagerScreen from "./PresetManagerScreen"
-import SandboxScreen from "./SandboxScreen"
 import SettingsScreen from "./SettingsScreen"
 import Icon from "react-native-vector-icons/Ionicons";
 
@@ -71,7 +70,6 @@ export default function HomeScreen() {
             {(props) => <PresetManagerScreen {...props} isEdit={isEdit} setEdit={setEdit} />}
             </Tab.Screen>
 
-            <Tab.Screen name="Sandbox" component={SandboxScreen} />
 
             <Tab.Screen name="Analytics" component={SettingsScreen} />
             <Tab.Screen name="Settings" component={SettingsScreen} />

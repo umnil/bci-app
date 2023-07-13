@@ -2,6 +2,8 @@ import {
         RefreshControl, 
         Alert, 
         ScrollView,
+        Button,
+        View,
         ActivityIndicator } from 'react-native';
 import FormTextInput from "../components/FormTextInput";
 import TwoPanelButton from "../components/TwoPanelButton";
@@ -96,10 +98,13 @@ function PresetCreationForm(props) {
           refreshControl={
                 <RefreshControl refreshing={isRefresh} onRefresh={onRefresh}/>}
         >
-              <TwoPanelButton titleLeft="Form" titleRight="Drag"  
-                onPressLeft={() => setForm(true)} 
-                onPressRight={() => setForm(false)}
-                disabledRight={true}/>  
+            <View style={{flexDirection:'row'}}>
+                  <TwoPanelButton titleLeft="Form" titleRight="Drag"  
+                    onPressLeft={() => setForm(true)} 
+                    onPressRight={() => setForm(false)}
+                    disabledRight={true}/>  
+                  <Button onPress={props.onTestPress} title="Test" />
+            </View>    
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
                <BLEDeviceDropdownMenu label="Server" 
                 selectedDevice={selectedDev} 
@@ -193,6 +198,7 @@ PresetCreationForm.propTypes = {
     onSettingsChange: PropTypes.func.isRequired,
     onDeviceIDChange: PropTypes.func.isRequired,
     onNameChange: PropTypes.func.isRequired,
+    onTestPress: PropTypes.func.isRequired,
 };
 
 export default PresetCreationForm;

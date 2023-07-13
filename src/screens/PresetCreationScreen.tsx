@@ -57,6 +57,20 @@ function PresetCreationScreen(props) {
          onSettingsChange={(s)=>setPreset(p=>({...p, settings:s}))}
          onDeviceIDChange={(d)=>setPreset(p=>({...p, deviceID:d}))}
          onNameChange={(n)=>setPreset(p=>({...p, name:n}))}
+         onTestPress={()=>{
+                    if (preset.deviceID == "") {
+                       return Alert.alert('Missing Server', 
+                               'Please select a server.', [
+                               {
+                                   text: 'Ok',
+                                   onPress: () => {},
+                               },   
+                           ]); 
+                   }
+                   props.navigation.navigate("Data Collection", { 
+                       preset: preset
+                   });
+        }}
         />
     );
 }
