@@ -2,7 +2,7 @@ Steps to build:
 
 Note: have NPM and Yarn installed
 
-1. run `npm install -g expo-cli eas react-native-cli` 
+1. run `npm install -g expo-cli eas-cli react-native-cli` 
 2. run `yarn add package.json`
 3. run `npx expo-doctor` and make sure all tests pass
 4. create an expo account at https://expo.dev/signup
