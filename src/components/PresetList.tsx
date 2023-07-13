@@ -1,17 +1,17 @@
-import { SafeAreaView, StyleSheet, Pressable, FlatList, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Pressable, ScrollView, Text, View } from 'react-native';
 import Icon from "react-native-vector-icons/Ionicons";
-import Animated, {Layout, FadeInRight, FadeOutRight, FadeIn, FadeOut} 
+import Animated, {Layout, FadeInRight, FadeOutRight, FadeIn, SlideOutRight} 
 from 'react-native-reanimated';
 
 export default function PresetList(props) {
     return (
-            <Animated.FlatList
-                layout={Layout}
-                data={props.presets}
-                renderItem={({item}) => 
+            <ScrollView>
+                {props.presets.map((item, index) => 
                     <Animated.View 
+                        key={item.id}
                         entering={FadeIn} 
-                        layout={Layout}
+                        exiting={FadeOutRight}
+                        layout={Layout.delay(index * 100)}
                     >
                     <Pressable onPress={() => {
                         if (!props.isEdit) {
@@ -48,8 +48,8 @@ export default function PresetList(props) {
                             </View>
                     </Pressable>
                     </Animated.View>
-                }
-            />
+                )}
+            </ScrollView>
     );
 };
 
