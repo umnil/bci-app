@@ -21,7 +21,7 @@ import {decode as atob, encode as btoa} from 'base-64'
  * @param {serverID} serverID - ID for the device running the server
  * @param {promptHandler} promptHandler - callback receiving the monitored prompt 
  */
-export const useToggleTestingEffect = (serverID, settings, promptHandler) =>
+export const useToggleTestingEffect = (serverID, settings, promptHandler, watchArr) =>
 {
     const targetServUUID = "a07498ca-ad5b-474e-940d-16f1fbe7e8cd";
     const promptCharUUID = "E58AC8E3-615A-45C4-A96B-590F64D3492A";
@@ -33,7 +33,7 @@ export const useToggleTestingEffect = (serverID, settings, promptHandler) =>
       return () => subscriptionPromise
                     .then((subscription) => subscription.remove()) 
                     .then(() => writeDeviceSettings(serverID, settings)); 
-    }, []);
+    }, watchArr);
 }
 
 

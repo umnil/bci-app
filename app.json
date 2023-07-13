@@ -11,6 +11,7 @@
         ]
     ],
     "name": "bci-app",
+    "owner":"umnil",
     "slug": "bci-app",
     "version": "1.0.0",
     "orientation": "portrait",

@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Text, Button} from "react-native";
+import { SafeAreaView, View, Text, Button} from "react-native";
 export default function SettingsScreen() {
   return (
-    <View>
+    <SafeAreaView style={{flex:1}}>
       <Button title="Reload Devices"/>
-    </View> 
+    </SafeAreaView> 
     );
 }

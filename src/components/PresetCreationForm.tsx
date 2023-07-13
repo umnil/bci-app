@@ -15,15 +15,10 @@ import { readDeviceSettings,
          writeDeviceSettings, 
          getInputDeviceList,
          getOutputDeviceList,
-         getSelectedInputName,
          setSelectedInputName,
          setSelectedInputValue,
-         getSelectedInputSettings,
-         getSelectedOutputName,
          setSelectedOutputName,
          setSelectedOutputValue,
-         getSelectedOutputSettings,
-         getEmptySettings,
         } from '../controllers/presetController';
 import PropTypes from "prop-types";
 
@@ -98,7 +93,14 @@ function PresetCreationForm(props) {
           refreshControl={
                 <RefreshControl refreshing={isRefresh} onRefresh={onRefresh}/>}
         >
-            <View style={{flexDirection:'row'}}>
+            <View style={
+                  {
+                    flex: 1, 
+                    flexDirection:'row', 
+                    justifyContent:'center', 
+                    alignItems:'center'
+                  }
+            }>
                   <TwoPanelButton titleLeft="Form" titleRight="Drag"  
                     onPressLeft={() => setForm(true)} 
                     onPressRight={() => setForm(false)}
@@ -108,9 +110,9 @@ function PresetCreationForm(props) {
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
                <BLEDeviceDropdownMenu label="Server" 
                 selectedDevice={selectedDev} 
-                onSelect={(dev) => { serverSelect(dev, props.onDeviceIDChange,
-                 props.onSettingsChange, setShouldDisplay, setSelectedDev, setConnecting); 
-                  }}
+                onSelect={(dev) => serverSelect(dev, props.onDeviceIDChange,
+                 props.onSettingsChange, setShouldDisplay, setSelectedDev, setConnecting) 
+                 }
                 />
                <DeviceConfigForm label="Input Device"
                 display={display}

@@ -218,6 +218,12 @@ export const getEmptySettings = () => {
     };
   
 };
+export const getEmptyPreset = () => ({
+        name: "",
+        deviceID: "",
+        settings: getEmptySettings(),
+   
+});
 
 export const getInputDeviceList = (obj) => {
     return obj.inputdevices;
@@ -264,6 +270,7 @@ export default Controller = {
     setCalibrationTrue,
     verifySettingsObj,
     getEmptySettings,
+    getEmptyPreset,
     addPreset,
     deletePreset,
 };

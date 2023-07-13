@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { SafeAreaView, Text, StyleSheet } from "react-native";
 import React, { useState, useEffect } from 'react';
 import { useToggleTestingEffect } from '../controllers/dataCollectionController.ts';
 
@@ -8,12 +8,12 @@ export default function DataCollectionScreen(props) {
     const deviceID = preset.deviceID;
     const settings = preset.settings;
 
-    useToggleTestingEffect(preset.deviceID, settings, (v) => setPrompt(v));
+    useToggleTestingEffect(preset.deviceID, settings, (v) => setPrompt(v), []);
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.text}> {prompt} </Text>
-        </View>
+        </SafeAreaView>
     );
 }
 

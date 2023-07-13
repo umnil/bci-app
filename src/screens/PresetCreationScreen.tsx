@@ -1,8 +1,8 @@
-import { Button, Alert } from 'react-native';
+import { SafeAreaView, Button, Alert } from 'react-native';
 import PresetCreationForm from "../components/PresetCreationForm";
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { getEmptySettings,
+import { getEmptyPreset,
          addPreset,
         } from '../controllers/presetController';
 
@@ -46,13 +46,10 @@ const useNavEffect = (navigation, addPreset, name, serverID, settings) => {
 };
 
 function PresetCreationScreen(props) {
-    const [preset, setPreset] = useState({
-        name: "",
-        deviceID: "",
-        settings: getEmptySettings(),
-    }); 
+    const [preset, setPreset] = useState(getEmptyPreset());
     useNavEffect(props.navigation, props.addPreset, preset.name, preset.deviceID, preset.settings);
     return (
+    <SafeAreaView style={{flex:1}}>
         <PresetCreationForm preset={preset} 
          onSettingsChange={(s)=>setPreset(p=>({...p, settings:s}))}
          onDeviceIDChange={(d)=>setPreset(p=>({...p, deviceID:d}))}
@@ -72,6 +69,7 @@ function PresetCreationScreen(props) {
                    });
         }}
         />
+    </SafeAreaView>
     );
 }
 
