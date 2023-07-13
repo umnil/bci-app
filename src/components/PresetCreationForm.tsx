@@ -112,7 +112,7 @@ function PresetCreationForm(props) {
             </View>    
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
                <BLEDeviceDropdownMenu 
-                lock={connecting}
+                lock={connecting || isRefresh}
                 display={props.displayServerSelect}
                 label="Server" 
                 selectedDevice={selectedDev} 
