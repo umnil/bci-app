@@ -36,6 +36,14 @@ export default function FormDropdownMenu(props) {
             ],
         };
     });
+
+    useEffect(() => {
+        if (props.lock) {
+            props.onClose();
+            height.value = withTiming(0, timing);
+            rotation.value = withTiming(0, timing);
+        }
+    }, [props.lock]); 
     return (
         <>
         { props.display ?
@@ -75,7 +83,8 @@ export default function FormDropdownMenu(props) {
                     if (props.lock) {
                         return; 
                     }
-                    props.onSelect(item);}} style={props.itemStyle} key={item.key}> 
+                    props.onSelect(item);
+                   }} style={props.itemStyle} key={item.key}> 
                         {props.renderItem(item)} 
                         </Pressable>);})}
                 </Animated.ScrollView>
