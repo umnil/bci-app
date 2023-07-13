@@ -60,7 +60,7 @@ export default function FormDropdownMenu(props) {
                     {props.renderSelected(props.selected)}
 
                     {props.lock ?
-                        <Icon name="lock-closed-outline" size={20}/>
+                        <Icon name="lock-closed" size={20}/>
                         : <Animated.View style={animatedArrowStyles}>
                             <Icon name="caret-down" size={20}/>
                         </Animated.View>
