@@ -16,7 +16,7 @@ export default function FormDropdownMenu(props) {
             return ({...item, key: index});
         });
     }
-    const dropHeight = 200;
+    const dropHeight = 300;
     const timing = 5;
     const height = useSharedValue(0);
     const rotation = useSharedValue(0);

@@ -25,6 +25,8 @@ export default function TwoPanelButton(props) {
         };
     });
     return (
+    <>
+    {props.display ?
         <View style={styles.container}>
             <Animated.View style={[styles.overlaySquare, animatedStyles ]}/>
             <Pressable style={[styles.buttonLeft]} onPress={() => {
@@ -40,6 +42,9 @@ export default function TwoPanelButton(props) {
                 <Text style={styles.buttonRightText}> {props.titleRight} </Text>
             </Pressable>
          </View>
+        : null
+    }   
+    </>
     );
 }
 
@@ -48,12 +53,14 @@ TwoPanelButton.defaultProps = {
     titleRight: "Right",
     disabledLeft: false,
     disabledRight: false,
+    display: true,
 };
 
 TwoPanelButton.propTypes = {
     titleLeft: PropTypes.string.isRequired,
     titleRight: PropTypes.string.isRequired,
     disabledLeft: PropTypes.bool.isRequired,
+    display: PropTypes.bool.isRequired,
     disabledRight: PropTypes.bool.isRequired,
     onPressLeft(props, ...rest) {
         if (!props.disabledLeft) {

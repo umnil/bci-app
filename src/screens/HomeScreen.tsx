@@ -6,10 +6,11 @@ import { createBottomTabNavigator } from
 import PresetManagerScreen from "./PresetManagerScreen"
 import SettingsScreen from "./SettingsScreen"
 import Icon from "react-native-vector-icons/Ionicons";
+import { connect } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 
-export default function HomeScreen() {
+function HomeScreen(props) {
    const [isEdit, setEdit] = useState(false); 
   return (
         <Tab.Navigator 
@@ -57,22 +58,35 @@ export default function HomeScreen() {
                        );
                     },
                     headerLeft: () => {
-                        return (
-                            <Button
-                               title= {isEdit ? "Done" : "Edit"} 
-                               onPress={() => {setEdit(v => !v);}}
-                            />    
+                        return ( 
+                         <>
+                            { props.presets.length > 0 ?
+                                <Button
+                                   title= {isEdit ? "Done" : "Edit"} 
+                                   onPress={() => {setEdit(v => !v);}}
+                                />  : null  
+                            }
+                        </>
                         );
                     },
 
                 })}
-            > 
+            >
             {(props) => <PresetManagerScreen {...props} isEdit={isEdit} setEdit={setEdit} />}
             </Tab.Screen>
 
-
-            <Tab.Screen name="Analytics" component={SettingsScreen} />
-            <Tab.Screen name="Settings" component={SettingsScreen} />
+{
+//            <Tab.Screen name="Analytics" component={SettingsScreen} />
+//            <Tab.Screen name="Settings" component={SettingsScreen} />
+}
         </Tab.Navigator>
   );
 }
+const mapStateToProps = (state) => {
+    return {
+        presets: state.presets,
+    };
+};
+
+
+export default connect(mapStateToProps, null)(HomeScreen);

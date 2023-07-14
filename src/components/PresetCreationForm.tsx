@@ -100,15 +100,18 @@ function PresetCreationForm(props) {
                   {
                     flex: 1, 
                     flexDirection:'row', 
-                    justifyContent:'center', 
+                    justifyContent:'flex-end', 
                     alignItems:'center'
                   }
             }>
-                  <TwoPanelButton titleLeft="Form" titleRight="Drag"  
+                  <TwoPanelButton 
+                    titleLeft="Form" 
+                    titleRight="Drag"  
+                    display={false}
                     onPressLeft={() => setForm(true)} 
                     onPressRight={() => setForm(false)}
                     disabledRight={true}/>  
-                  <FormButton disabled={connecting} onPress={props.onTestPress} label="Test" />
+                  <FormButton disabled={connecting} onPress={props.onTestPress} label="Check Accuracy" />
             </View>    
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
                <BLEDeviceDropdownMenu 
@@ -120,13 +123,13 @@ function PresetCreationForm(props) {
                  props.onSettingsChange, setShouldDisplay, setSelectedDev, setConnecting) 
                  }
                 />
-               <DeviceConfigForm label="Input Device"
+               <DeviceConfigForm label="Selected Input Device"
                 display={display}
                 deviceList={getInputDeviceList(props.preset.settings)}
                 onSelectDevice={(dname) => props.onSettingsChange(setSelectedInputName(props.preset.settings, dname))}
                 onFieldChange={(fieldName, value) => props.onSettingsChange(setSelectedInputValue(props.preset.settings,fieldName,value))}
                />
-               <DeviceConfigForm label="Output Device"
+               <DeviceConfigForm label="Selected Output Device"
                 display={display}
                 deviceList={getOutputDeviceList(props.preset.settings)}
                 onSelectDevice={(dname) => props.onSettingsChange(setSelectedOutputName(props.preset.settings, dname))}
