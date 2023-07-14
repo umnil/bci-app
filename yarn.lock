@@ -3636,6 +3636,11 @@ expo-modules-core@1.2.7:
     compare-versions "^3.4.0"
     invariant "^2.2.4"
 
+expo-screen-orientation@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/expo-screen-orientation/-/expo-screen-orientation-6.0.3.tgz#d9222df3e7f126f156afb94a3a62f7ddc3422eed"
+  integrity sha512-j/xYS4ZI3dA/ZZDPfEyIRWonByqG88d8ijAYIsh52s+xNpPGshd7GwBnQVTjKBBq62DW6Uv0PTZ9VeCRTOe2yw==
+
 expo-splash-screen@~0.18.2:
   version "0.18.2"
   resolved "https://registry.npmjs.org/expo-splash-screen/-/expo-splash-screen-0.18.2.tgz"

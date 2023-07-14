@@ -25,7 +25,7 @@ export default function PresetList(props) {
                                 
                                 <View style={styles.textContainer} key={item.id}>
                                         <Text style={styles.text}> {item.name} </Text> 
-                                        <Text style={styles.subtext}> Preset </Text> 
+                                        <Text style={styles.subtext}> Tap to Check Accuracy </Text> 
                                 </View>
                                     {props.isEdit ? 
                                         <Animated.View 

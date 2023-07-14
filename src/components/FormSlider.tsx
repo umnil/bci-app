@@ -1,11 +1,12 @@
 import 'react-native-reanimated';
-import React, { useState } from 'react'; 
-import { StyleSheet, View, Text, TextInput, useWindowDimensions} from 'react-native';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'; 
+import { StyleSheet, View, Text, TextInput, useWindowDimensions, Dimensions} from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
     runOnJS,
     runOnUI,
     useSharedValue,
+    useDerivedValue,
     useAnimatedStyle,
     useAnimatedProps,
     withSpring,
@@ -18,6 +19,7 @@ Animated.addWhitelistedNativeProps({ text: true });
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const pos2value = (gLower, gUpper, lower, upper, pos) => {
+    'worklet';
     const cutoffPos = pos < gLower ? gLower :
                       pos > gUpper ? gUpper :
                       pos;
@@ -27,6 +29,7 @@ const pos2value = (gLower, gUpper, lower, upper, pos) => {
 };
 
 const value2pos = (gLower, gUpper, lower, upper, value) => {
+    'worklet';
     const cutoffValue = value < lower ? lower :
                         value > upper ? upper :
                         value;
@@ -35,23 +38,35 @@ const value2pos = (gLower, gUpper, lower, upper, value) => {
     return toPos;
 
 };
+const useComponentSize = () => {
+  const [size, setSize] = useState(null);
+
+  const onLayout = useCallback(event => {
+    const { width, height } = event.nativeEvent.layout;
+    setSize({ width, height });
+  }, []);
+
+  return [size, onLayout];
+};
 
 
 export default function FormSlider(props) {
-    props.initial = props.initial == -1 ? props.lower : props.initial;
-    const width = useWindowDimensions().width;
-    
+    const [size, onLayout] = useComponentSize();
     const slideStart = 10;
-    const slideEnd = width - 50;
-
-    const ballSlideStart = slideStart;
-    const ballSlideEnd = slideEnd - 10;
+    const slideEnd = size ? size.width - 22 : 0;
+    const ballSlideStart = 10;
+    const ballSlideEnd =  slideEnd - 10;
 
     const isPressed = useSharedValue(false);
-    const initialPos = value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial);
-    const offset = useSharedValue(initialPos);
-    const start = useSharedValue(initialPos);
     const text = useSharedValue(props.initial.toString());
+    
+    const offset = useDerivedValue(() => 
+        value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial)
+    );
+    const start = useDerivedValue(() => 
+        value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial)
+    );
+ 
     const gesture = Gesture.Pan()
         .onBegin(() => {
             isPressed.value = true;
@@ -74,36 +89,28 @@ export default function FormSlider(props) {
             runOnJS(props.onSlide)(parseFloat(text.value));
             isPressed.value = false;
         }); 
-        const ballAnimatedStyles = useAnimatedStyle(() => {
-            return {
+        const ballAnimatedStyles = useAnimatedStyle(() => ({
                 transform: [
                     { translateX: offset.value },
                     { scale: withSpring(isPressed.value ? 1.1 : 1) },
                 ],
-            };
-        });
-        const emptyBarAnimatedStyles = useAnimatedStyle(() => {
-            return {
+        }));
+        const emptyBarAnimatedStyles = useAnimatedStyle(() => ({
                 width: slideEnd - offset.value,
-            };
-        });   
-        const selectBarAnimatedStyles = useAnimatedStyle(() => {
-            return {
+        }));   
+        const selectBarAnimatedStyles = useAnimatedStyle(() => ({
                 width: offset.value,
-            };
-        });   
-        const textInputProps = useAnimatedProps(() => {
-            return {
+        }));   
+        const textInputProps = useAnimatedProps(() => ({
                 text: text.value,
-            };
-        });
+        }));
 
     return (
         <>
         { props.display ?
             <>
                <Text> {props.label} </Text>
-               <View style={styles.slideContainer}>
+               <View style={styles.slideContainer} onLayout={onLayout}>
                    <GestureDetector gesture={gesture}>
                        <Animated.View style={[styles.slideCircle, ballAnimatedStyles]} />
                    </GestureDetector>
@@ -119,7 +126,7 @@ export default function FormSlider(props) {
 
                </View>
             </>
-            : <View/>
+            : null 
         }
         </>
     );
