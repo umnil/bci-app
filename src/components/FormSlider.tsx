@@ -55,7 +55,7 @@ export default function FormSlider(props) {
     const slideStart = 10;
     const slideEnd = size ? size.width - 22 : 0;
     const ballSlideStart = 10;
-    const ballSlideEnd =  slideEnd - 10;
+    const ballSlideEnd =  slideEnd - 15;
 
     const isPressed = useSharedValue(false);
     const text = useSharedValue(props.initial.toString());
@@ -66,6 +66,7 @@ export default function FormSlider(props) {
     const start = useDerivedValue(() => 
         value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial)
     );
+    const emptyBarWidth = useDerivedValue(() => slideEnd - offset.value);
  
     const gesture = Gesture.Pan()
         .onBegin(() => {
@@ -96,7 +97,7 @@ export default function FormSlider(props) {
                 ],
         }));
         const emptyBarAnimatedStyles = useAnimatedStyle(() => ({
-                width: slideEnd - offset.value,
+                width: emptyBarWidth.value,
         }));   
         const selectBarAnimatedStyles = useAnimatedStyle(() => ({
                 width: offset.value,
