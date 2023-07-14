@@ -45,6 +45,9 @@ const serverSelect = (item, setServer, setSettings, setIsSelect, setSelectedDev,
          setConnecting(false); 
          setServer("");
          setSettings(getEmptySettings());
+         if (error.hasOwnProperty("message") && error.message == "Operation was cancelled") {
+            return;
+         }
          Alert.alert('Cannot connect to server', 
             'The selected server \'' + device.id + '\' cannot be connected to.\n Error: ' + error, [
             {
