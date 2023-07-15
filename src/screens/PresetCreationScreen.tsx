@@ -1,0 +1,82 @@
+import { SafeAreaView, Button, Alert } from 'react-native';
+import PresetCreationForm from "../components/PresetCreationForm";
+import { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { getEmptyPreset,
+         addPreset,
+        } from '../controllers/presetController';
+
+
+
+const useNavEffect = (navigation, addPreset, name, serverID, settings) => {
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <Button onPress={() =>{
+                    if (name.trim() == "") {
+                        return Alert.alert('Missing Name', 
+                                'Please input a preset name.', [
+                                {
+                                    text: 'Ok',
+                                    onPress: () => {},
+                                },   
+                            ]);   
+                    } else if (serverID == "") {
+                        return Alert.alert('Missing Server', 
+                                'Please select a server.', [
+                                {
+                                    text: 'Ok',
+                                    onPress: () => {},
+                                },   
+                            ]); 
+                    }
+                    navigation.navigate("Presets", {});
+                    addPreset({name: name.trim(), deviceID: serverID, settings: settings});
+                } } title="Save" />
+            ),
+            headerLeft: () => (
+                <Button onPress={() =>{
+                    navigation.navigate("Presets", {});
+                } } title="Cancel" />
+            ),
+        });
+
+    }, [navigation, name, serverID, settings]);
+
+};
+
+function PresetCreationScreen(props) {
+    const [preset, setPreset] = useState(getEmptyPreset());
+    useNavEffect(props.navigation, props.addPreset, preset.name, preset.deviceID, preset.settings);
+    return (
+    <SafeAreaView style={{flex:1}}>
+        <PresetCreationForm preset={preset} 
+         onSettingsChange={(s)=>setPreset(p=>({...p, settings:s}))}
+         onDeviceIDChange={(d)=>setPreset(p=>({...p, deviceID:d}))}
+         onNameChange={(n)=>setPreset(p=>({...p, name:n}))}
+         onTestPress={()=>{
+                    if (preset.deviceID == "") {
+                       return Alert.alert('Missing Server', 
+                               'Please select a server.', [
+                               {
+                                   text: 'Ok',
+                                   onPress: () => {},
+                               },   
+                           ]); 
+                   }
+                   props.navigation.navigate("Data Collection", { 
+                       preset: preset
+                   });
+        }}
+        />
+    </SafeAreaView>
+    );
+}
+
+const matchDispatchToProps = (dispatch) => { 
+    return {
+        addPreset: (e) => dispatch(addPreset(e)),
+    };
+};
+
+export default connect(null, matchDispatchToProps)(PresetCreationScreen);

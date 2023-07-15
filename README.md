@@ -1,38 +1,21 @@
-# BCI App
+Steps to build:
 
-Mobile phone application interface for the python BCI at University of Miami
-Neural Interfaces Laboratory
+Note: have NPM and Yarn installed
 
-## Getting started
+1. run `npm install -g expo-cli eas-cli react-native-cli` 
+2. run `yarn add package.json`
+3. run `npx expo-doctor` and make sure all tests pass
+4. create an expo account at https://expo.dev/signup
+5. run `eas login` and input account info from step 4
+6. run `eas device:create` and input device info
 
-``` bash
-# Create the conda environment
-conda env create
+FOR IOS: 
 
-# Activate conda enviornment
-conda activate bciapp
+7. run `eas build --profile development --platform ios` 
+8. after step 7, a QR code should appear in terminal, scan this to install the development build on your iphone
+9. run `npx expo start --dev-client --tunnel`
+10. after step 9, a QR code should appear in terminal, scan this to connect your development app to the server
+11. to make an internal distribution preview build, run `eas build --profile preview --platform ios` 
 
-# Update to latest node package manager
-npm install -g npm@latest
 
-# enable conda environment specific variables
-ENV_DIR=$(conda env list | grep "*" | sed -Ee "s/[^\/]+//")
-mkdir -p "${ENV_DIR}/etc/conda/activate.d"
-printf '#!/bin/bash\n\nexport CXXFLAGS="--std=c++14"' > "${ENV_DIR}/etc/conda/activate.d/activate.sh"
 
-# Ensure cocoapods are up to date
-sudo gem update cocoapods
-
-# Install dependencies
-npm install
-
-# Check health (only write ios or android to check the specific platform)
-ns doctor <ios|android>
-
-# Build, watch for changes and debug the application
-ns run <ios|android> --device <DEVICEID>
-
-# Build for production
-ns build <platform> --env.production
-
-```
