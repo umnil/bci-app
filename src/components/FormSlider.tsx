@@ -58,7 +58,7 @@ export default function FormSlider(props) {
     const ballSlideEnd =  slideEnd - 15;
 
     const isPressed = useSharedValue(false);
-    const text = useSharedValue(props.initial.toString());
+    const text = useDerivedValue(() => props.initial.toString(), []);
     
     const offset = useDerivedValue(() => 
         value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial)
@@ -124,11 +124,28 @@ export default function FormSlider(props) {
                   <Text> Value: </Text>
                   <AnimatedTextInput style={{color: 'black'}} value={text.value} 
                   editable={true} onChangeText={(e) => {
-                  const fltTxt = parseFloat(e);
-                  text.value = fltTxt < props.lower ? props.lower.toString()
-                               : fltTxt > props.upper ? props.upper.toString()
-                               : e; 
-                  props.onSlide(parseFloat(e)); }}
+                    const empty = e.length == 0;
+                    if(empty) {
+                        e = '0'; 
+                    }
+                    const flt = parseFloat(e);
+                    if (isNaN(flt)) {
+                        return;
+                    }
+                    const fltTxt = flt.toString();
+                    const lenCheck = fltTxt.length < e.length;
+                    const lastDot = e[e.length-1] == '.';
+                    const lastZero = e[e.length-1] == '0';
+                    if (lenCheck && !(lastDot || lastZero)) {
+                        return;  
+                    }
+                   
+                    text.value = flt < props.lower ? props.lower.toString()
+                                 : flt > props.upper ? props.upper.toString()
+                                 : empty ? ""
+                                 : e; 
+                    props.onSlide(parseFloat(e)); 
+                  }}
                   animatedProps={textInputProps}/> 
 
                </View>
