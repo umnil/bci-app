@@ -25,7 +25,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.bci-app"
+      "bundleIdentifier": "edu.miami.umnil.bci-app"
     },
     "android": {
       "adaptiveIcon": {
