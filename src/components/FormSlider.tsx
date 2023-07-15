@@ -81,7 +81,7 @@ export default function FormSlider(props) {
             const value = toUnit * (props.upper - props.lower) + props.lower;
 
             text.value = value.toString();
-            offset.value = boundedOffset; 
+            offset.value = boundedOffset;
         })
         .onEnd(() => {
             start.value = offset.value;
@@ -123,7 +123,13 @@ export default function FormSlider(props) {
                <View style={styles.displayContainer}>
                   <Text> Value: </Text>
                   <AnimatedTextInput style={{color: 'black'}} value={text.value} 
-                  editable={false} animatedProps={textInputProps}/> 
+                  editable={true} onChangeText={(e) => {
+                  const fltTxt = parseFloat(e);
+                  text.value = fltTxt < props.lower ? props.lower.toString()
+                               : fltTxt > props.upper ? props.upper.toString()
+                               : e; 
+                  props.onSlide(parseFloat(e)); }}
+                  animatedProps={textInputProps}/> 
 
                </View>
             </>
