@@ -22,7 +22,7 @@ const devices2Items = (devices) => {
 };
 
 export default function DeviceConfigForm(props) {
-    const devName = getSelectedDeviceNameFromList(props.deviceList);
+    const devName = props.deviceName;
     const selected = {label: devName, value: devName} 
     return (
         <>
@@ -31,53 +31,24 @@ export default function DeviceConfigForm(props) {
             items={devices2Items(props.deviceList.devices)} 
             selected={selected}
             onSelect={(e)=>{
-                props.onSelectDevice(e.label);}}/>
-            <DeviceSettingsList settings={name2settings(getSelectedDeviceNameFromList(props.deviceList), props.deviceList)} 
+                props.onSelectDevice(devName, e.label);}}/>
+            <DeviceSettingsList settings={name2settings(devName, props.deviceList)} 
             display={props.display}
             onChange={(fieldName,value)=>{
-                props.onFieldChange(fieldName, value)}}/>
+                props.onFieldChange(devName, fieldName, value)}}/>
         </>
     );
 };
 
 DeviceConfigForm.defaultProps = {
     display: true, 
-    onSelectDevice: (deviceName) => {},
-    onFieldChange: (fieldName, value) => {},
+    onSelectDevice: (formerDeviceName, newDeviceName) => {},
+    onFieldChange: (deviceName, fieldName, value) => {},
 };
 
 DeviceConfigForm.propTypes = {
     display: PropTypes.bool.isRequired,
-    deviceList: PropTypes.shape({
-        selected_device: PropTypes.string.isRequired,
-        devices: PropTypes.arrayOf(PropTypes.shape({
-            type: PropTypes.string,
-            name: PropTypes.string,
-            dispaly_name: PropTypes.string,
-            items(props, ...rest) {
-                if (props.type == "ListPicker") {
-                    return PropTypes.arrayOf(Proptypes.string);
-                }     
-                return PropTypes.any(props, ...rest);
-            },
-            minValue(props, ...rest) {
-                if (props.type == "Slider") {
-                    return PropTypes.number;
-                }     
-                return PropTypes.any(props, ...rest);
-            },
-            maxValue(props, ...rest) {
-                if (props.type == "Slider") {
-                    return PropTypes.number;
-                }     
-                return PropTypes.any(props, ...rest);
-            },
- 
-            value: PropTypes.number,
- 
-        })).isRequired,
-
-    }),
+    deviceList: PropTypes.any.isRequired,
     onSelectDevice: PropTypes.func.isRequired,
     onFieldChange: PropTypes.func.isRequired,
 };

@@ -66,27 +66,79 @@ export const useBLEScanAndAccEffect = (isServerScan, devices, setDevices) => {
  * @returns {Promise<obj>} - json settings object within a promise
  */
 export const readDeviceSettings = (deviceID) => {
-    const settingsUUID = '51ff12bb-3ed8-46e5-b4f9-d64e2fec021b';
-    return manager.connectToDevice(deviceID) 
-        .then((device) => {
-            return device.discoverAllServicesAndCharacteristics();
-        })
-        .then((services) => {
-            return BLEStream.streamRead(manager, deviceID, settingsUUID);
 
-        })
-        .then((resStr) => {
-              let obj : any;
-              try {
-                return JSON.parse(resStr);
-              }
-              catch {
-                console.log("Not a valid JSON: " + resStr);
-                throw new Error(resStr);  
-              }
-        })
+    const json = {
+        "inputdevices": {
+            "selected_devices": ["Nexus Test Device", "Test Device"],
+            "devices":[
+                {
+                    "device_name":"Test Device",
+                    "device_settings":[
+                        {
+                            "type":"discrete",
+                            "name":"_selected_max_value_index",
+                            "display_name":"Maximum Value",
+                            "items":[1,2,3,4,5,6,7,8,9,10],
+                            "value":3,
+                            "dependencies":[]
+                        }
+                    ]
+                },
+                {
+                    "device_name":"Nexus Test Device",
+                    "device_settings":[
+                        {
+                            "type":"discrete",
+                            "name":"selected_decoder_index",
+                            "display_name":"Decoder",
+                            "items":["Move Rest Decoder","Left Right Decoder","Sensory Decoder","Arm Decoder"],
+                            "value":0,
+                            "dependencies":[
+                                {
+                                    "type": "discrete",
+                                    "name":"selected_training_state_index",
+                                    "display_name":"Training State",
+                                    "items_directory":[
+                                        {
+                                            "parent_value": 3,
+                                            "items": ["Ordered","Random"],
+                                            "value": 0,
+                                            "dependencies":[],
+                                        }
+                                    ],
+                                },
+                            ]
+                        },
+                        {
+                            "type":"continuous",
+                            "name":"threshold",
+                            "display_name":"Threshold",
+                            "lowerBound":"0",
+                            "upperBound":"1",
+                            "value":0.6896782478794892,
+                            "dependencies":[],
+                        },
+                    ]
+                },
+            ],        
+        },
+        "outputdevices":{
+            "selected_devices":["Test Output Device1", "Test Output Device2"],
+            "devices":[
+                {
+                    "device_name":"Test Output Device1",
+                    "device_settings":[]
+                },
+                {
+                    "device_name":"Test Output Device2",
+                    "device_settings":[]
+                }
+            ]
+        }
+    };
 
- };
+    return new Promise((resolve, reject) => resolve(json));
+};
 
 /*
  * Name: WriteDeviceSettings
@@ -213,11 +265,11 @@ export const verifySettingsObj = (obj) => {
 export const getEmptySettings = () => {
     return {
         inputdevices: {
-            selected_device: "",
+            selected_devices: [""],
             devices: [{device_name: "", device_settings:[]}]
         },
         outputdevices: {
-            selected_device: "",
+            selected_devices: [""],
             devices: [{device_name: "", device_settings:[]}]
         },
     };
@@ -236,6 +288,52 @@ export const getInputDeviceList = (obj) => {
 
 export const getOutputDeviceList = (obj) => {
     return obj.outputdevices;
+};
+
+export const setFieldValueForDeviceNameInDeviceList = (devList, devName, fieldName, value) => {
+    const devices = devList.devices;
+    const modifiedDevices = devices.map((device) => {
+        if (device.device_name != devName) {
+            return device;
+        }    
+        return setFieldValueForDevice(device, fieldName, value);
+    });
+    return {...devList, devices: modifiedDevices};
+
+};
+
+const setFieldValueForDevice = (device, fieldName, value) => {
+    const modifiedSettings = device.device_settings.map(
+        (setting) => setFieldValueForSetting(setting, fieldName, value));
+    return {...device, device_settings: modifiedSettings};
+};
+
+const setFieldValueForSetting = (setting, fieldName, value) => {
+    if (setting.name == fieldName) {
+        return {...setting, value: value};
+    }
+    const modifiedDep = setting.dependencies.map(
+        (dep) => 
+            setFieldValueForDependency(dep, setting.value, fieldName, value)    
+        );
+    return {...setting, dependencies: modifiedDep};
+
+};
+
+const setFieldValueForDependency = (dep, parentValue, fieldName, value) => {
+       const n_items_directory = dep.items_directory.map(
+           (item) => {
+               if (item.parent_value != parentValue) {
+                   return item;
+               }                    
+               if (dep.name == fieldName) {
+                   return {...item, value: value};
+               }
+               const modifiedDependencies = item.dependencies.map((dep) =>
+                setFieldValueForDependency(dep, item.value, fieldName, value));
+                return {...item, dependencies: modifiedDependencies};
+           });
+       return {...dep, items_directory: n_items_directory};
 };
 
 
@@ -276,6 +374,7 @@ export default Controller = {
     setCalibrationTrue,
     verifySettingsObj,
     getEmptySettings,
+    setFieldValueForDeviceNameInDeviceList,    
     getEmptyPreset,
     addPreset,
     deletePreset,
