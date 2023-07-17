@@ -290,6 +290,13 @@ export const getOutputDeviceList = (obj) => {
     return obj.outputdevices;
 };
 
+export const switchSelectedDeviceNameInDeviceList = (devList, formerDev, newDev) => {
+    const modifiedSelected = devList.selected_devices.map((name) => 
+        (name == formerDev ? newDev : name)
+    );
+    return {...devList, selected_devices: modifiedSelected};
+};
+
 export const setFieldValueForDeviceNameInDeviceList = (devList, devName, fieldName, value) => {
     const devices = devList.devices;
     const modifiedDevices = devices.map((device) => {
@@ -375,6 +382,7 @@ export default Controller = {
     verifySettingsObj,
     getEmptySettings,
     setFieldValueForDeviceNameInDeviceList,    
+    switchSelectedDeviceNameInDeviceList,
     getEmptyPreset,
     addPreset,
     deletePreset,

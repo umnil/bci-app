@@ -38,7 +38,6 @@ const settings2DeviceSettings = (settings, onChange, display) => {
 const settings2DepSettings = (setting) => {
     let arr = [];        
     for (var currDep of setting.dependencies) {
-        console.log(currDep); 
         const item = [];
         for (var itemObj of currDep.items_directory) {
             if (itemObj.parent_value == setting.value) {

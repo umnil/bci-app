@@ -19,10 +19,7 @@ import { readDeviceSettings,
          getOutputDeviceList,
          getEmptySettings,
          setFieldValueForDeviceNameInDeviceList,    
-         setSelectedInputName,
-         setSelectedInputValue,
-         setSelectedOutputName,
-         setSelectedOutputValue,
+         switchSelectedDeviceNameInDeviceList,
         } from '../controllers/presetController';
 import PropTypes from "prop-types";
 
@@ -131,7 +128,10 @@ function PresetCreationForm(props) {
                 display={display}
                 deviceList={getInputDeviceList(props.preset.settings)}
                 deviceName={getInputDeviceList(props.preset.settings).selected_devices[0]}
-                onSelectDevice={(fdname, ndname) => {}}
+                onSelectDevice={(fdname, ndname) => props.onSettingsChange({
+                    ...props.preset.settings,
+                    inputdevices: switchSelectedDeviceNameInDeviceList(props.preset.settings.inputdevices, fdname, ndname)
+                })}
                 onFieldChange={(dname, fieldName, value) => 
                     props.onSettingsChange({
                         ...props.preset.settings,
