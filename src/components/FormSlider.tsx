@@ -51,6 +51,7 @@ const useComponentSize = () => {
 
 
 export default function FormSlider(props) {
+    const [editing, setEditing] = useState(false);
     const [size, onLayout] = useComponentSize();
     const slideStart = 10;
     const slideEnd = size ? size.width - 22 : 0;
@@ -106,6 +107,8 @@ export default function FormSlider(props) {
                 text: text.value,
         }));
 
+        useEffect(() => {if (!editing) text.value = props.initial.toString()}, [offset.value]);
+
     return (
         <>
         { props.display ?
@@ -124,6 +127,7 @@ export default function FormSlider(props) {
                   <Text> Value: </Text>
                   <AnimatedTextInput style={{flex: 1, color: 'black'}} value={text.value} 
                   editable={true} onChangeText={(e) => {
+                    setEditing(true);
                     const empty = e.length == 0;
                     if(empty) {
                         e = '0'; 
@@ -144,8 +148,9 @@ export default function FormSlider(props) {
                                  : flt > props.upper ? props.upper.toString()
                                  : empty ? ""
                                  : e; 
-                    props.onSlide(parseFloat(e)); 
+                  props.onSlide(parseFloat(e)); 
                   }}
+                  onEndEditing={() => setEditing(false)}
                   animatedProps={textInputProps}/> 
 
                </View>
