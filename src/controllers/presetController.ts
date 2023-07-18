@@ -103,20 +103,64 @@ export const readDeviceSettings = (deviceID) => {
                                             "parent_value": 3,
                                             "items": ["Ordered","Random"],
                                             "value": 0,
-                                            "dependencies":[],
+                                            "dependencies":[
+                                                {
+                                                    "type": "discrete",
+                                                    "name": "ordering",
+                                                    "display_name": "Ordering",
+                                                    "items_directory": [
+                                                        {
+                                                            "parent_value": 0,
+                                                            "items": ["Left", "Right"],
+                                                            "value": 0,
+                                                            "dependencies": []
+                                                        },
+                                                    ]
+                                                },
+                                            ],
                                         }
                                     ],
                                 },
+                                {
+                                    "type": "continuous",
+                                    "name":"threshold",
+                                    "display_name":"Threshold",
+                                    "items_directory":[
+                                        {
+                                            "parent_value": 0,
+                                            "upperBound": 1,
+                                            "lowerBound": 0,
+                                            "value": 0,
+                                            "dependencies":[
+                                            ],
+                                        },
+                                        {
+                                            "parent_value": 1,
+                                            "upperBound": 1,
+                                            "lowerBound": 0,
+                                            "value": 0,
+                                            "dependencies":[
+                                            ],
+                                        },
+                                        {
+                                            "parent_value": 2,
+                                            "upperBound": 1,
+                                            "lowerBound": 0,
+                                            "value": 0,
+                                            "dependencies":[
+                                            ],
+                                        },
+                                        {
+                                            "parent_value": 3,
+                                            "upperBound": 1,
+                                            "lowerBound": 0,
+                                            "value": 0,
+                                            "dependencies":[
+                                            ],
+                                        },
+                                    ],
+                                }
                             ]
-                        },
-                        {
-                            "type":"continuous",
-                            "name":"threshold",
-                            "display_name":"Threshold",
-                            "lowerBound":"0",
-                            "upperBound":"1",
-                            "value":0.6896782478794892,
-                            "dependencies":[],
                         },
                     ]
                 },
@@ -233,6 +277,22 @@ export const getUnselectedDeviceNamesInDeviceList = (devList) => {
     return lst;
 };
 
+export const addSelectedDeviceNameInDeviceList = (devList, newName) => {
+    const devices = devList.selected_devices;
+    return (devices.find(newName) ? devList : {
+        ...devList, 
+        selected_devices: [...devices, newName]
+    });
+};
+
+export const removeSelectedDeviceNameInDeviceList = (devList, oldName) => {
+    return {
+        ...devList, 
+        selected_devices: devList.selected_devices.filter((name) => name != oldName)
+    };
+};
+
+
 export const switchSelectedDeviceNameInDeviceList = (devList, formerDev, newDev) => {
     const modifiedSelected = devList.selected_devices.map((name) => 
         (name == formerDev ? newDev : name)
@@ -286,6 +346,22 @@ const setFieldValueForDependency = (dep, parentValue, fieldName, value) => {
        return {...dep, items_directory: n_items_directory};
 };
 
+export const getDependencySettingsForSetting = (setting) => {
+    return setting.dependencies.reduce((acc, dep) => {
+        const itemsObj = dep.items_directory
+            .filter((itemsObj) => itemsObj.parent_value == setting.value);
+        if (itemsObj.length > 0) {
+            acc.push({
+                ...dep,
+                items_directory: null,
+                ...itemsObj[0],
+                parent_value: null,
+            })
+        }
+        return acc;
+    }, []);
+};
+
 
 /*
  *
@@ -317,6 +393,9 @@ export default Controller = {
     getUnselectedDeviceNamesInDeviceList,
     setFieldValueForDeviceNameInDeviceList,    
     switchSelectedDeviceNameInDeviceList,
+    addSelectedDeviceNameInDeviceList,
+    removeSelectedDeviceNameInDeviceList,
+    getDependencySettingsForSetting,
     getEmptyPreset,
     addPreset,
     deletePreset,

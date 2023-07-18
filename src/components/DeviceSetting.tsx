@@ -1,6 +1,7 @@
 import FormDropdownMenu from "./FormDropdownMenu";
 import FormSlider from "./FormSlider";
 import PropTypes from "prop-types";
+import { getDependencySettingsForSetting } from "../controllers/presetController";
 
 function DeviceSettingTopLevel(props){
     const setting = props.setting;
@@ -35,34 +36,9 @@ const settings2DeviceSettings = (settings, onChange, display) => {
     return arr;
 };
 
-const settings2DepSettings = (setting) => {
-    let arr = [];        
-    for (var currDep of setting.dependencies) {
-        const item = [];
-        for (var itemObj of currDep.items_directory) {
-            if (itemObj.parent_value == setting.value) {
-                item.push(itemObj);
-            }
-        }
-        if (item.length != 0) {
-            arr.push({
-                type: currDep.type,
-                name: currDep.name,
-                display_name: currDep.display_name,
-                items: item[0].items,
-                value: item[0].value,
-                dependencies: item[0].dependencies,
-            });
-        }
-    }
-    return arr;
-};
-
-
-
 export default function DeviceSetting(props) {
     
-    const depObjList = settings2DepSettings(props.setting);
+    const depObjList = getDependencySettingsForSetting(props.setting);
     return (
         <>
             <DeviceSettingTopLevel setting={props.setting} onChange={props.onChange} display={props.display}/>

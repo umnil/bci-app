@@ -58,7 +58,7 @@ export default function FormSlider(props) {
     const ballSlideEnd =  slideEnd - 15;
 
     const isPressed = useSharedValue(false);
-    const text = useSharedValue(props.initial.toString());
+    const text = useDerivedValue(() => props.initial.toString());
     
     const offset = useDerivedValue(() => 
         value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial)
