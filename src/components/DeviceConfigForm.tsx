@@ -3,20 +3,19 @@ import FormDropdownMenu from "./FormDropdownMenu";
 import PropTypes from "prop-types";
 import { 
         name2settings,
-        getSelectedDeviceNameFromList,
-        setSelectedDeviceNameForList,
-        setSelectedDeviceValueForList,
+        getUnselectedDeviceNamesInDeviceList,
+        getSelectedDeviceNamesInDeviceList,
        } from "../controllers/presetController"
 import React, { useState, useEffect } from 'react';
 
-const device2Item = (device) => (
-    { label: device.device_name, value: device.device_name }
+const device2Item = (dname) => (
+    { label: dname, value: dname }
 );
 
-const devices2Items = (devices) => { 
+const devices2Items = (deviceNames) => { 
    const items = []; 
-   for (const dev of devices) {
-        items.push(device2Item(dev)); 
+   for (const dname of deviceNames) {
+        items.push(device2Item(dname)); 
     }
    return items;
 };
@@ -28,7 +27,7 @@ export default function DeviceConfigForm(props) {
         <>
             <FormDropdownMenu label={props.label} 
             display={props.display}
-            items={devices2Items(props.deviceList.devices)} 
+            items={devices2Items(getUnselectedDeviceNamesInDeviceList(props.deviceList))} 
             selected={selected}
             onSelect={(e)=>{
                 props.onSelectDevice(devName, e.label);}}/>
