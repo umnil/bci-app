@@ -110,7 +110,7 @@ export default function FormSlider(props) {
 
         useDerivedValue(() => {
             if (!editing) text.value = pos2value(ballSlideStart, ballSlideEnd, props.lower, props.upper, offset.value).toString();
-            }, [editing, offset.value, ballSlideStart, ballSlideEnd]);
+            }, [editing, offset.value, props.initial, ballSlideStart, ballSlideEnd]);
 
     return (
         <>
