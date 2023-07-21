@@ -69,7 +69,7 @@ export const readDeviceSettings = (deviceID) => {
 
     const json = {
         "inputdevices": {
-            "selected_devices": ["Nexus Test Device"],
+            "selected_devices": ["Test Device"],
             "devices":[
                 {
                     "device_name":"Test Device",
@@ -78,90 +78,47 @@ export const readDeviceSettings = (deviceID) => {
                             "type":"discrete",
                             "name":"_selected_max_value_index",
                             "display_name":"Maximum Value",
-                            "items":[1,2,3,4,5,6,7,8,9,10],
-                            "value":3,
-                            "dependencies":[]
-                        }
-                    ]
-                },
-                {
-                    "device_name":"Nexus Test Device",
-                    "device_settings":[
-                        {
-                            "type":"discrete",
-                            "name":"selected_decoder_index",
-                            "display_name":"Decoder",
-                            "items":["Move Rest Decoder","Left Right Decoder","Sensory Decoder","Arm Decoder"],
-                            "value":0,
-                            "dependencies":[
+                            "value": 0,
+                            "items":[
                                 {
-                                    "type": "discrete",
-                                    "name":"selected_training_state_index",
-                                    "display_name":"Training State",
-                                    "items_directory":[
-                                        {
-                                            "parent_value": 3,
-                                            "items": ["Ordered","Random"],
-                                            "value": 0,
-                                            "dependencies":[
-                                                {
-                                                    "type": "discrete",
-                                                    "name": "ordering",
-                                                    "display_name": "Ordering",
-                                                    "items_directory": [
-                                                        {
-                                                            "parent_value": 0,
-                                                            "items": ["Left", "Right"],
-                                                            "value": 0,
-                                                            "dependencies": []
-                                                        },
-                                                    ]
-                                                },
-                                            ],
-                                        }
-                                    ],
+                                    "label": 1,
+                                    "dependencies":[{
+                                        "type": "continuous",
+                                        "name": "threshold",
+                                        "display_name": "Threshold",
+                                        "lower_bound": 0,
+                                        "upper_bound": 1,
+                                        "value": 0
+                                    }]
                                 },
                                 {
-                                    "type": "continuous",
-                                    "name":"threshold",
-                                    "display_name":"Threshold",
-                                    "items_directory":[
+                                    "label": 2,
+                                    "dependencies":[
                                         {
-                                            "parent_value": 0,
-                                            "upperBound": 1,
-                                            "lowerBound": 0,
-                                            "value": 0,
-                                            "dependencies":[
+                                            "type": "discrete",
+                                            "name": "d",
+                                            "display_name": "Told",
+                                            "items": [
+                                                {
+                                                    "label": "A",
+                                                    "dependencies":[]
+                                                }
                                             ],
-                                        },
-                                        {
-                                            "parent_value": 1,
-                                            "upperBound": 1,
-                                            "lowerBound": 0,
-                                            "value": 0,
-                                            "dependencies":[
-                                            ],
-                                        },
-                                        {
-                                            "parent_value": 2,
-                                            "upperBound": 1,
-                                            "lowerBound": 0,
-                                            "value": 0,
-                                            "dependencies":[
-                                            ],
-                                        },
-                                        {
-                                            "parent_value": 3,
-                                            "upperBound": 1,
-                                            "lowerBound": 0,
-                                            "value": 0,
-                                            "dependencies":[
-                                            ],
-                                        },
-                                    ],
-                                }
-                            ]
-                        },
+                                            "value": 0
+                                        }
+                                    ]
+                                },
+                                {
+                                    "label": 3,
+                                    "dependencies":[]
+                                },
+                                {
+                                    "label": 4,
+                                    "dependencies":[]
+                                },
+ 
+                            ],
+                        }
                     ]
                 },
             ],        
@@ -320,46 +277,30 @@ const setFieldValueForDevice = (device, fieldName, value) => {
 
 const setFieldValueForSetting = (setting, fieldName, value) => {
     if (setting.name == fieldName) {
-        return {...setting, value: value};
+        const new_setting = {...setting, value: value};
+        return new_setting;
     }
-    const modifiedDep = setting.dependencies.map(
-        (dep) => 
-            setFieldValueForDependency(dep, setting.value, fieldName, value)    
-        );
-    return {...setting, dependencies: modifiedDep};
 
-};
+    if (setting.type == "discrete") {
+        const new_setting = {
+            ...setting, 
+            items: setting.items.map((item, idx) => {
+                if (idx != setting.value) return item;
+                return { ...item, dependencies: item.dependencies.map((dep) => 
+                                                                      setFieldValueForSetting(dep, fieldName, value))} 
+            })
+        };
+        return new_setting;
+    }
 
-const setFieldValueForDependency = (dep, parentValue, fieldName, value) => {
-       const n_items_directory = dep.items_directory.map(
-           (item) => {
-               if (item.parent_value != parentValue) {
-                   return item;
-               }                    
-               if (dep.name == fieldName) {
-                   return {...item, value: value};
-               }
-               const modifiedDependencies = item.dependencies.map((dep) =>
-                setFieldValueForDependency(dep, item.value, fieldName, value));
-                return {...item, dependencies: modifiedDependencies};
-           });
-       return {...dep, items_directory: n_items_directory};
-};
+    return setting;
+}; 
 
 export const getDependencySettingsForSetting = (setting) => {
-    return setting.dependencies.reduce((acc, dep) => {
-        const itemsObj = dep.items_directory
-            .filter((itemsObj) => itemsObj.parent_value == setting.value);
-        if (itemsObj.length > 0) {
-            acc.push({
-                ...dep,
-                items_directory: null,
-                ...itemsObj[0],
-                parent_value: null,
-            })
-        }
-        return acc;
-    }, []);
+    if (setting.type == "discrete") {
+        return setting.items[setting.value].dependencies;
+    }
+    return [];
 };
 
 

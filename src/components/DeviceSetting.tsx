@@ -11,8 +11,8 @@ function DeviceSettingTopLevel(props){
             key={setting.name}
             display={props.display}
             items={setting.items.map((curr, index) => 
-                ({label: curr + "", value: index}))} 
-            selected={{label: setting.items[parseInt(setting.value)] + "", value: parseInt(setting.value)}}
+                ({label: curr.label, value: index}))} 
+            selected={{label: setting.items[parseInt(setting.value)].label, value: parseInt(setting.value)}}
             label={setting.display_name}
             onSelect={(item) => props.onChange(setting.name, item.value)}/>);
             
@@ -20,8 +20,8 @@ function DeviceSettingTopLevel(props){
             return (<FormSlider 
             key={setting.name}
             display={props.display}
-            lower={parseFloat(setting.lowerBound)} 
-            upper={parseFloat(setting.upperBound)} 
+            lower={parseFloat(setting.lower_bound)} 
+            upper={parseFloat(setting.upper_bound)} 
             initial={parseFloat(setting.value)} 
             label={setting.display_name}
             onSlide={(item) => props.onChange(setting.name, item)}/>);
@@ -30,6 +30,7 @@ function DeviceSettingTopLevel(props){
 
 const settings2DeviceSettings = (settings, onChange, display) => {
     let arr = []
+    console.log(settings);
     for (var setting of settings) {
         arr.push(<DeviceSetting setting={setting} onChange={onChange} display={display}/>)
     }
@@ -39,6 +40,7 @@ const settings2DeviceSettings = (settings, onChange, display) => {
 export default function DeviceSetting(props) {
     
     const depObjList = getDependencySettingsForSetting(props.setting);
+
     return (
         <>
             <DeviceSettingTopLevel setting={props.setting} onChange={props.onChange} display={props.display}/>

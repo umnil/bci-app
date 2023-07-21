@@ -109,8 +109,9 @@ export default function FormSlider(props) {
         }));
 
         useDerivedValue(() => {
-            if (!editing) text.value = pos2value(ballSlideStart, ballSlideEnd, props.lower, props.upper, offset.value).toString();
-            }, [editing, offset.value, props.initial, ballSlideStart, ballSlideEnd]);
+            if (!editing && !isPressed.value) text.value = pos2value(ballSlideStart, ballSlideEnd, props.lower, props.upper, offset.value).toString();
+
+            }, [editing, isPressed.value, ballSlideStart, ballSlideEnd, props.upper, props.lower, offset.value, props.initial]);
 
     return (
         <>
@@ -132,6 +133,11 @@ export default function FormSlider(props) {
                   editable={true} onChangeText={(e) => {
                     setEditing(true);
                     const empty = e.length == 0;
+                    const oneNeg = e == "-";
+                    if (oneNeg) {
+                        text.value = e;
+                        return;
+                    }
                     if(empty) {
                         e = '0'; 
                     }
