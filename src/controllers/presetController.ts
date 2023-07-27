@@ -128,8 +128,8 @@ export const name2settings = (deviceName, deviceList) => {
 };
 
 
-export const setCalibrationTrue = (obj) => {
-    const new_obj = {...obj, inputdevices: setFieldValueForDeviceNameInDeviceList(obj.inputdevices, obj.inputdevices.selected_devices[0], "calibrate", true) }
+export const setCalibrationTrue = (devName, obj) => {
+    const new_obj = {...obj, inputdevices: setFieldValueForDeviceNameInDeviceList(obj.inputdevices, devName, "calibrate", true) }
     return new_obj
 };
 

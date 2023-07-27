@@ -21,12 +21,12 @@ import {decode as atob, encode as btoa} from 'base-64'
  * @param {serverID} serverID - ID for the device running the server
  * @param {promptHandler} promptHandler - callback receiving the monitored prompt 
  */
-export const useToggleTestingEffect = (serverID, settings, promptHandler, watchArr) =>
+export const useToggleTestingEffect = (devName, serverID, settings, promptHandler, watchArr) =>
 {
     const targetServUUID = "a07498ca-ad5b-474e-940d-16f1fbe7e8cd";
     const promptCharUUID = "E58AC8E3-615A-45C4-A96B-590F64D3492A";
      useEffect(() => {
-      const subscriptionPromise = writeDeviceSettings(serverID, setCalibrationTrue(settings))
+      const subscriptionPromise = writeDeviceSettings(serverID, setCalibrationTrue(devName, settings))
         .then(() => manager
         .monitorCharacteristicForDevice(serverID, targetServUUID, promptCharUUID, (e,v) => 
            promptHandler(atob(v.value))));

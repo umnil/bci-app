@@ -18,7 +18,7 @@ function PresetManagerScreen({presets, deletePreset, route, navigation, isEdit, 
         <PresetList
             presets={presets}
             isEdit={isEdit}
-            onRegularPress={(item) => navigation.navigate("Data Collection", {preset: item})}
+            onRegularPress={(item) => {}}
             onEditPress={(item)=>{}}
             onDeletePress={(item) => deletePreset(item.id)}
         />

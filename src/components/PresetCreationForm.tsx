@@ -118,7 +118,6 @@ function PresetCreationForm(props) {
                     onPressLeft={() => setForm(true)} 
                     onPressRight={() => setForm(false)}
                     disabledRight={true}/>  
-                  <FormButton disabled={connecting} onPress={props.onTestPress} label="Check Accuracy" />
             </View>    
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
                <BLEDeviceDropdownMenu 
@@ -173,7 +172,7 @@ function PresetCreationForm(props) {
                         });
                     }}
 
-                    onTestPress={() => {}}
+                    onTestPress={(devName) => props.onTestPress(devName)}
  
  
                 />

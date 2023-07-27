@@ -39,6 +39,20 @@ export default function DeviceConfigList(props) {
                 selectedInDevs.map((devName, index) =>     
                     (<> 
                         <HorizontalRule display={props.display} label={"Device Pair #" + (index + 1)}/> 
+                        <View style={{flexDirection: "row", justifyContent: 'space-between'}}>
+                            <FormButton 
+                                label="Check Input Accuracy" 
+                                onPress={() => props.onTestPress(devName)} 
+                                display={props.display}
+                            />  
+                            <FormButton 
+                                label="Remove Device Pair" 
+                                onPress={() => props.onRemovePress(devName, selectedOutDevs[index]) } 
+                                display={props.display}
+                            />  
+ 
+                        </View>
+
                         <DeviceConfigForm
                             label={"Select Input Device"}
                             display={props.display}   
@@ -57,18 +71,6 @@ export default function DeviceConfigList(props) {
                             deviceNameList={unselectedOutDevs}
                             deviceList={props.outputdevices}
                             />
-                        <View style={{flexDirection: "row", justifyContent: 'space-between'}}>
-                            <FormButton 
-                                label="Remove Device Pair" 
-                                onPress={() => props.onRemovePress(devName, selectedOutDevs[index]) } 
-                                display={props.display}
-                            />  
-                             <FormButton 
-                                label="Check Accuracy" 
-                                onPress={props.onTestPress} 
-                                display={props.display}
-                            />  
-                        </View>
                         
                     </>)
                 )
