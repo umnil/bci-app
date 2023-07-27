@@ -1,6 +1,7 @@
 import {SafeAreaView} from 'react-native';
 import { useEffect } from 'react';
 import PresetList from '../components/PresetList';
+import { writeDeviceSettings } from '../controllers/presetController';
 import * as ActionCreators from '../actionCreators';
 import { connect } from 'react-redux';
 
@@ -18,7 +19,7 @@ function PresetManagerScreen({presets, deletePreset, route, navigation, isEdit, 
         <PresetList
             presets={presets}
             isEdit={isEdit}
-            onRegularPress={(item) => {}}
+            onRegularPress={(item) => writeDeviceSettings(item.deviceID, item.settings)}
             onEditPress={(item)=>{}}
             onDeletePress={(item) => deletePreset(item.id)}
         />
