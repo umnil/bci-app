@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderWidth: 1,
         justifyContent: 'center',
+        backgroundColor: 'white',
     },
     slideCircle: {
         width: 25,
@@ -229,6 +230,7 @@ const styles = StyleSheet.create({
         zIndex: 2,
     },
     displayContainer: {
+        backgroundColor: 'white',
         flexDirection: 'row',
         margin: 12,
         padding: 10,

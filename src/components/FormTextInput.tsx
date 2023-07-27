@@ -40,6 +40,7 @@ FormTextInput.propTypes = {
 
 const styles = StyleSheet.create({
     textInput: {
+        backgroundColor: 'white',
         height: 40,
         margin: 12,
         borderWidth: 1,

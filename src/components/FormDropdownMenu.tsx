@@ -17,7 +17,7 @@ export default function FormDropdownMenu(props) {
         });
     }
     const dropHeight = 300;
-    const timing = 5;
+    const timing = 10;
     const height = useSharedValue(0);
     const rotation = useSharedValue(0);
 
@@ -40,16 +40,17 @@ export default function FormDropdownMenu(props) {
     useEffect(() => {
         if (props.lock) {
             props.onClose();
-            height.value = withTiming(0, timing);
-            rotation.value = withTiming(0, timing);
-        }
+            height.value = 0
+            rotation.value = 0
+        } 
     }, [props.lock]); 
     return (
         <>
         { props.display ?
             <>
                 <Text> {props.label} </Text>
-                <Pressable style={styles.text} onPress={() => 
+                <Pressable style={[styles.text, ]} 
+                onPress={() => 
                     {
                         if (props.lock) { 
                             return;
@@ -79,14 +80,8 @@ export default function FormDropdownMenu(props) {
                  style={[styles.scrollView, animatedDropStyles]}
                  refreshControl={props.refreshControl}
                 >
-                    {props.items.map(item => { return (<Pressable onPress={() => {
-                    if (props.lock) {
-                        return; 
-                    }
-                    props.onSelect(item);
-                   }} style={props.itemStyle} key={item.key}> 
-                        {props.renderItem(item)} 
-                        </Pressable>);})}
+                    {props.items.map(item => 
+                        <DropDownItem {...props} item={item} />)}
                 </Animated.ScrollView>
             </>
             : <View/>
@@ -94,6 +89,33 @@ export default function FormDropdownMenu(props) {
         </>
     );
 }
+
+const DropDownItem = (props) => {
+    const [isPressing, setPressing] = useState(false);
+    return (
+        <Pressable 
+            onPress={() => {
+                if (props.lock) {
+                    return; 
+                }
+                props.onSelect(props.item);
+            }} 
+            style={
+                [
+                    props.itemStyle, 
+                    {
+                        backgroundColor: isPressing ? 'grey' : 'white'
+                    }
+                ]
+            } 
+            onPressIn={() => setPressing(true)}
+            onPressOut={() => setPressing(false)}
+            key={props.item.key}
+        > 
+        {props.renderItem(props.item)} 
+        </Pressable>
+);
+};
 
 FormDropdownMenu.defaultProps = {
     display: true,
@@ -156,12 +178,14 @@ const styles = StyleSheet.create({
         marginLeft: 12,
         marginRight: 12,
         borderWidth: 1,
+        backgroundColor: 'white',
     },
     scrollView: {
         zIndex: 2,
         marginLeft: 12,
         marginRight: 12,
         marginBottom: 12,
+        backgroundColor: 'white',
     },
     label: {
        fontSize: 15, 
