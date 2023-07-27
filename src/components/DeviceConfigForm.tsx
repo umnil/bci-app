@@ -21,13 +21,13 @@ const devices2Items = (deviceNames) => {
 };
 
 export default function DeviceConfigForm(props) {
-    const devName = props.deviceName;
+    const devName = props.selectedDeviceName;
     const selected = {label: devName, value: devName} 
     return (
         <>
             <FormDropdownMenu label={props.label} 
             display={props.display}
-            items={devices2Items(getUnselectedDeviceNamesInDeviceList(props.deviceList))} 
+            items={props.deviceNameList.map(name => ({label: name, value: name}))} 
             selected={selected}
             onSelect={(e)=>{
                 props.onSelectDevice(devName, e.label);}}/>
@@ -43,11 +43,14 @@ DeviceConfigForm.defaultProps = {
     display: true, 
     onSelectDevice: (formerDeviceName, newDeviceName) => {},
     onFieldChange: (deviceName, fieldName, value) => {},
+    deviceNameList: [],
+    selectedDeviceName: ""
 };
 
 DeviceConfigForm.propTypes = {
     display: PropTypes.bool.isRequired,
     deviceList: PropTypes.any.isRequired,
+    deviceNameList: PropTypes.arrayOf(PropTypes.string),
     onSelectDevice: PropTypes.func.isRequired,
     onFieldChange: PropTypes.func.isRequired,
 };

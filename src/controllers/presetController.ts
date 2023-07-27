@@ -66,80 +66,27 @@ export const useBLEScanAndAccEffect = (isServerScan, devices, setDevices) => {
  * @returns {Promise<obj>} - json settings object within a promise
  */
 export const readDeviceSettings = (deviceID) => {
+   const settingsUUID = '51ff12bb-3ed8-46e5-b4f9-d64e2fec021b';
+    return manager.connectToDevice(deviceID) 
+        .then((device) => {
+            return device.discoverAllServicesAndCharacteristics();
+        })
+        .then((services) => {
+            return BLEStream.streamRead(manager, deviceID, settingsUUID);
 
-    const json = {
-        "inputdevices": {
-            "selected_devices": ["Test Device"],
-            "devices":[
-                {
-                    "device_name":"Test Device",
-                    "device_settings":[
-                        {
-                            "type":"discrete",
-                            "name":"_selected_max_value_index",
-                            "display_name":"Maximum Value",
-                            "value": 0,
-                            "items":[
-                                {
-                                    "label": 1,
-                                    "dependencies":[{
-                                        "type": "continuous",
-                                        "name": "threshold",
-                                        "display_name": "Threshold",
-                                        "lower_bound": 0,
-                                        "upper_bound": 1,
-                                        "value": 0
-                                    }]
-                                },
-                                {
-                                    "label": 2,
-                                    "dependencies":[
-                                        {
-                                            "type": "discrete",
-                                            "name": "d",
-                                            "display_name": "Told",
-                                            "items": [
-                                                {
-                                                    "label": "A",
-                                                    "dependencies":[]
-                                                }
-                                            ],
-                                            "value": 0
-                                        }
-                                    ]
-                                },
-                                {
-                                    "label": 3,
-                                    "dependencies":[]
-                                },
-                                {
-                                    "label": 4,
-                                    "dependencies":[]
-                                },
- 
-                            ],
-                        }
-                    ]
-                },
-            ],        
-        },
-        "outputdevices":{
-            "selected_devices":["Test Output Device1", "Test Output Device2"],
-            "devices":[
-                {
-                    "device_name":"Test Output Device1",
-                    "device_settings":[]
-                },
-                {
-                    "device_name":"Test Output Device2",
-                    "device_settings":[]
-                }
-            ]
-        }
-    };
+        })
+        .then((resStr) => {
+              let obj : any;
+              try {
+                return JSON.parse(resStr);
+              }
+              catch {
+                console.log("Not a valid JSON: " + resStr);
+                throw new Error(resStr);  
+              }
+        })
 
-    return new Promise((resolve, reject) => resolve(json));
-};
+ };
 
 /*
  * Name: WriteDeviceSettings
@@ -182,7 +129,8 @@ export const name2settings = (deviceName, deviceList) => {
 
 
 export const setCalibrationTrue = (obj) => {
-    return setSelectedInputValue(obj, "calibrating", true);    
+    const new_obj = {...obj, inputdevices: setFieldValueForDeviceNameInDeviceList(obj.inputdevices, obj.inputdevices.selected_devices[0], "calibrate", true) }
+    return new_obj
 };
 
 export const verifySettingsObj = (obj) => {
@@ -236,7 +184,7 @@ export const getUnselectedDeviceNamesInDeviceList = (devList) => {
 
 export const addSelectedDeviceNameInDeviceList = (devList, newName) => {
     const devices = devList.selected_devices;
-    return (devices.find(newName) ? devList : {
+    return (devices.find((name) => name == newName) ? devList : {
         ...devList, 
         selected_devices: [...devices, newName]
     });
@@ -248,6 +196,7 @@ export const removeSelectedDeviceNameInDeviceList = (devList, oldName) => {
         selected_devices: devList.selected_devices.filter((name) => name != oldName)
     };
 };
+
 
 
 export const switchSelectedDeviceNameInDeviceList = (devList, formerDev, newDev) => {

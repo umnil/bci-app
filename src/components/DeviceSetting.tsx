@@ -30,7 +30,6 @@ function DeviceSettingTopLevel(props){
 
 const settings2DeviceSettings = (settings, onChange, display) => {
     let arr = []
-    console.log(settings);
     for (var setting of settings) {
         arr.push(<DeviceSetting setting={setting} onChange={onChange} display={display}/>)
     }

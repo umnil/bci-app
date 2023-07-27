@@ -7,6 +7,7 @@ import {
         ActivityIndicator } from 'react-native';
 import FormTextInput from "../components/FormTextInput";
 import FormButton from "../components/FormButton";
+import DeviceConfigList from "../components/DeviceConfigList";
 import TwoPanelButton from "../components/TwoPanelButton";
 import DragDropItemList from "../components/DragDropItemList";
 import DeviceConfigForm from "../components/DeviceConfigForm";
@@ -20,6 +21,11 @@ import { readDeviceSettings,
          getEmptySettings,
          setFieldValueForDeviceNameInDeviceList,    
          switchSelectedDeviceNameInDeviceList,
+         addSelectedDeviceNameInDeviceList,
+         removeSelectedDeviceNameInDeviceList,
+         getUnselectedDeviceNamesInDeviceList,
+         getSelectedDeviceNamesInDeviceList,
+ 
         } from '../controllers/presetController';
 import PropTypes from "prop-types";
 
@@ -124,22 +130,53 @@ function PresetCreationForm(props) {
                  props.onSettingsChange, setShouldDisplay, setSelectedDev, setConnecting) 
                  }
                 />
-               <DeviceConfigForm label="Selected Input Device"
-                display={display}
-                deviceList={getInputDeviceList(props.preset.settings)}
-                deviceName={getInputDeviceList(props.preset.settings).selected_devices[0]}
-                onSelectDevice={(fdname, ndname) => props.onSettingsChange({
-                    ...props.preset.settings,
-                    inputdevices: switchSelectedDeviceNameInDeviceList(props.preset.settings.inputdevices, fdname, ndname)
-                })}
-                onFieldChange={(dname, fieldName, value) => 
-                    props.onSettingsChange({
+               <DeviceConfigList 
+                    display={display}
+                    inputdevices={getInputDeviceList(props.preset.settings)}
+                    outputdevices={getOutputDeviceList(props.preset.settings)}
+                    onSelectInputDevice={(fdname, ndname) => props.onSettingsChange({
                         ...props.preset.settings,
-                        inputdevices: setFieldValueForDeviceNameInDeviceList(props.preset.settings.inputdevices, dname, fieldName, value)
-                    })
-                        
-                }
-               />
+                        inputdevices: switchSelectedDeviceNameInDeviceList(props.preset.settings.inputdevices, fdname, ndname)
+                    })}
+                    onInputFieldChange={(dname, fieldName, value) => 
+                        props.onSettingsChange({
+                            ...props.preset.settings,
+                            inputdevices: setFieldValueForDeviceNameInDeviceList(props.preset.settings.inputdevices, dname, fieldName, value)
+                        })
+                    }
+                    onSelectOutputDevice={(fdname, ndname) => props.onSettingsChange({
+                        ...props.preset.settings,
+                        outputdevices: switchSelectedDeviceNameInDeviceList(props.preset.settings.outputdevices, fdname, ndname)
+                    })}
+                    onOutputFieldChange={(dname, fieldName, value) => 
+                        props.onSettingsChange({
+                            ...props.preset.settings,
+                            outputdevices: setFieldValueForDeviceNameInDeviceList(props.preset.settings.outputdevices, dname, fieldName, value)
+                        })
+                    }
+                    onAddPress={() =>{
+                        const potentialInList = getUnselectedDeviceNamesInDeviceList(props.preset.settings.inputdevices)
+                        const potentialOutList = getUnselectedDeviceNamesInDeviceList(props.preset.settings.outputdevices)
+                        if (potentialInList.length > 0 && potentialOutList.length > 0) {
+                            props.onSettingsChange({
+                                ...props.preset.settings,
+                                inputdevices: addSelectedDeviceNameInDeviceList(props.preset.settings.inputdevices, potentialInList[0]),
+                                outputdevices: addSelectedDeviceNameInDeviceList(props.preset.settings.outputdevices, potentialOutList[0]),
+                            });
+                        }
+                    }}
+                    onRemovePress={(inName, outName) =>{
+                        props.onSettingsChange({
+                                    ...props.preset.settings,
+                                    inputdevices: removeSelectedDeviceNameInDeviceList(props.preset.settings.inputdevices, inName),
+                                    outputdevices: removeSelectedDeviceNameInDeviceList(props.preset.settings.outputdevices, outName),
+                        });
+                    }}
+
+                    onTestPress={() => {}}
+ 
+ 
+                />
                <FormButton label="Cancel Connection" onPress={()=>cancelDeviceOperation(selectedDev.id)} display={connecting}/>
                <ActivityIndicator size="large" animating={isConnecting}/>
          </ScrollView>
