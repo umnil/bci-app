@@ -5,10 +5,11 @@ import { useToggleTestingEffect } from '../controllers/dataCollectionController.
 export default function DataCollectionScreen(props) {
     const [prompt, setPrompt] = useState("Loading"); 
     const preset = props.route.params.preset;
+    const devName = props.route.params.devName;
     const deviceID = preset.deviceID;
     const settings = preset.settings;
 
-    useToggleTestingEffect(preset.deviceID, settings, (v) => setPrompt(v), []);
+    useToggleTestingEffect(devName, preset.deviceID, settings, (v) => setPrompt(v), []);
 
     return (
         <SafeAreaView style={styles.container}>

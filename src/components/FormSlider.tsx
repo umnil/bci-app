@@ -51,6 +51,7 @@ const useComponentSize = () => {
 
 
 export default function FormSlider(props) {
+    const [editing, setEditing] = useState(false);
     const [size, onLayout] = useComponentSize();
     const slideStart = 10;
     const slideEnd = size ? size.width - 22 : 0;
@@ -58,7 +59,8 @@ export default function FormSlider(props) {
     const ballSlideEnd =  slideEnd - 15;
 
     const isPressed = useSharedValue(false);
-    const text = useDerivedValue(() => props.initial.toString(), []);
+
+    const text = useSharedValue(props.initial.toString());
     
     const offset = useDerivedValue(() => 
         value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial)
@@ -106,6 +108,11 @@ export default function FormSlider(props) {
                 text: text.value,
         }));
 
+        useDerivedValue(() => {
+            if (!editing && !isPressed.value) text.value = pos2value(ballSlideStart, ballSlideEnd, props.lower, props.upper, offset.value).toString();
+
+            }, [editing, isPressed.value, ballSlideStart, ballSlideEnd, props.upper, props.lower, offset.value, props.initial]);
+
     return (
         <>
         { props.display ?
@@ -122,9 +129,15 @@ export default function FormSlider(props) {
                </View>
                <View style={styles.displayContainer}>
                   <Text> Value: </Text>
-                  <AnimatedTextInput style={{color: 'black'}} value={text.value} 
+                  <AnimatedTextInput style={{flex: 1, color: 'black'}} value={text.value} 
                   editable={true} onChangeText={(e) => {
+                    setEditing(true);
                     const empty = e.length == 0;
+                    const oneNeg = e == "-";
+                    if (oneNeg) {
+                        text.value = e;
+                        return;
+                    }
                     if(empty) {
                         e = '0'; 
                     }
@@ -144,8 +157,9 @@ export default function FormSlider(props) {
                                  : flt > props.upper ? props.upper.toString()
                                  : empty ? ""
                                  : e; 
-                    props.onSlide(parseFloat(e)); 
+                  props.onSlide(parseFloat(e)); 
                   }}
+                  onEndEditing={() => setEditing(false)}
                   animatedProps={textInputProps}/> 
 
                </View>
@@ -184,6 +198,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderWidth: 1,
         justifyContent: 'center',
+        backgroundColor: 'white',
     },
     slideCircle: {
         width: 25,
@@ -215,6 +230,7 @@ const styles = StyleSheet.create({
         zIndex: 2,
     },
     displayContainer: {
+        backgroundColor: 'white',
         flexDirection: 'row',
         margin: 12,
         padding: 10,

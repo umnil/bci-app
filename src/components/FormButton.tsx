@@ -1,5 +1,6 @@
 import {View, StyleSheet, Pressable, Text} from 'react-native';
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 export default function FormButton(props) {
     return (
@@ -10,7 +11,19 @@ export default function FormButton(props) {
     </>
     );
  
-}
+};
+
+const processText = (charLimit, strLabel) => {
+//    let retStr = "";
+//    for (let i = 0; i < strLabel.length; i += charLimit) {
+//        let j = (i + charLimit > strLabel.length ? 
+//            strLabel.length :
+//            i + charLimit);
+//        retStr += strLabel.substring(i, j) + "\n";
+//    }
+//    return retStr;
+    return strLabel;
+};
 
 function Button(props) {
     const [pressing, setPressing] = useState(false); 
@@ -21,7 +34,12 @@ function Button(props) {
          onPressOut={() => setPressing(false)}
          onPress={props.onPress}> 
         <View style={[styles.pressableContainer,{backgroundColor: pressing ? 'grey' : 'white'} ]}>
-                <Text> {props.label} </Text> 
+                <Text> 
+                    { props.charLimit != null ? 
+                            processText(props.charLimit, props.label) :
+                            props.label
+                    } 
+                </Text> 
         </View>
       </Pressable> 
     );
@@ -32,6 +50,13 @@ FormButton.defaultProps = {
     display: true,
     label: "Button",
     disabled: false,
+}
+
+FormButton.propTypes = {
+    display: PropTypes.bool.isRequired,
+    label: PropTypes.string.isRequired,
+    disabled: PropTypes.bool.isRequired,
+    charLimit: PropTypes.int,
 }
 const styles = StyleSheet.create({
     pressableContainer: {

@@ -54,7 +54,7 @@ function PresetCreationScreen(props) {
          onSettingsChange={(s)=>setPreset(p=>({...p, settings:s}))}
          onDeviceIDChange={(d)=>setPreset(p=>({...p, deviceID:d}))}
          onNameChange={(n)=>setPreset(p=>({...p, name:n}))}
-         onTestPress={()=>{
+         onTestPress={(devName)=>{
                     if (preset.deviceID == "") {
                        return Alert.alert('Missing Server', 
                                'Please select a server.', [
@@ -65,6 +65,7 @@ function PresetCreationScreen(props) {
                            ]); 
                    }
                    props.navigation.navigate("Data Collection", { 
+                       devName: devName,
                        preset: preset
                    });
         }}

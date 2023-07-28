@@ -7,6 +7,7 @@ import {
         ActivityIndicator } from 'react-native';
 import FormTextInput from "../components/FormTextInput";
 import FormButton from "../components/FormButton";
+import DeviceConfigList from "../components/DeviceConfigList";
 import TwoPanelButton from "../components/TwoPanelButton";
 import DragDropItemList from "../components/DragDropItemList";
 import DeviceConfigForm from "../components/DeviceConfigForm";
@@ -18,10 +19,13 @@ import { readDeviceSettings,
          getInputDeviceList,
          getOutputDeviceList,
          getEmptySettings,
-         setSelectedInputName,
-         setSelectedInputValue,
-         setSelectedOutputName,
-         setSelectedOutputValue,
+         setFieldValueForDeviceNameInDeviceList,    
+         switchSelectedDeviceNameInDeviceList,
+         addSelectedDeviceNameInDeviceList,
+         removeSelectedDeviceNameInDeviceList,
+         getUnselectedDeviceNamesInDeviceList,
+         getSelectedDeviceNamesInDeviceList,
+ 
         } from '../controllers/presetController';
 import PropTypes from "prop-types";
 
@@ -114,7 +118,6 @@ function PresetCreationForm(props) {
                     onPressLeft={() => setForm(true)} 
                     onPressRight={() => setForm(false)}
                     disabledRight={true}/>  
-                  <FormButton disabled={connecting} onPress={props.onTestPress} label="Check Accuracy" />
             </View>    
                <FormTextInput onChangeText={(e)=>props.onNameChange(e)} label="Preset Name" />
                <BLEDeviceDropdownMenu 
@@ -126,19 +129,53 @@ function PresetCreationForm(props) {
                  props.onSettingsChange, setShouldDisplay, setSelectedDev, setConnecting) 
                  }
                 />
-               <DeviceConfigForm label="Selected Input Device"
-                display={display}
-                deviceList={getInputDeviceList(props.preset.settings)}
-                onSelectDevice={(dname) => props.onSettingsChange(setSelectedInputName(props.preset.settings, dname))}
-                onFieldChange={(fieldName, value) => props.onSettingsChange(setSelectedInputValue(props.preset.settings,fieldName,value))}
-               />
-               <DeviceConfigForm label="Selected Output Device"
-                display={display}
-                deviceList={getOutputDeviceList(props.preset.settings)}
-                onSelectDevice={(dname) => props.onSettingsChange(setSelectedOutputName(props.preset.settings, dname))}
-                onFieldChange={(fieldName, value) => props.onSettingsChange(setSelectedOutputValue(props.preset.settings,fieldName,value))}
-               />
+               <DeviceConfigList 
+                    display={display}
+                    inputdevices={getInputDeviceList(props.preset.settings)}
+                    outputdevices={getOutputDeviceList(props.preset.settings)}
+                    onSelectInputDevice={(fdname, ndname) => props.onSettingsChange({
+                        ...props.preset.settings,
+                        inputdevices: switchSelectedDeviceNameInDeviceList(props.preset.settings.inputdevices, fdname, ndname)
+                    })}
+                    onInputFieldChange={(dname, fieldName, value) => 
+                        props.onSettingsChange({
+                            ...props.preset.settings,
+                            inputdevices: setFieldValueForDeviceNameInDeviceList(props.preset.settings.inputdevices, dname, fieldName, value)
+                        })
+                    }
+                    onSelectOutputDevice={(fdname, ndname) => props.onSettingsChange({
+                        ...props.preset.settings,
+                        outputdevices: switchSelectedDeviceNameInDeviceList(props.preset.settings.outputdevices, fdname, ndname)
+                    })}
+                    onOutputFieldChange={(dname, fieldName, value) => 
+                        props.onSettingsChange({
+                            ...props.preset.settings,
+                            outputdevices: setFieldValueForDeviceNameInDeviceList(props.preset.settings.outputdevices, dname, fieldName, value)
+                        })
+                    }
+                    onAddPress={() =>{
+                        const potentialInList = getUnselectedDeviceNamesInDeviceList(props.preset.settings.inputdevices)
+                        const potentialOutList = getUnselectedDeviceNamesInDeviceList(props.preset.settings.outputdevices)
+                        if (potentialInList.length > 0 && potentialOutList.length > 0) {
+                            props.onSettingsChange({
+                                ...props.preset.settings,
+                                inputdevices: addSelectedDeviceNameInDeviceList(props.preset.settings.inputdevices, potentialInList[0]),
+                                outputdevices: addSelectedDeviceNameInDeviceList(props.preset.settings.outputdevices, potentialOutList[0]),
+                            });
+                        }
+                    }}
+                    onRemovePress={(inName, outName) =>{
+                        props.onSettingsChange({
+                                    ...props.preset.settings,
+                                    inputdevices: removeSelectedDeviceNameInDeviceList(props.preset.settings.inputdevices, inName),
+                                    outputdevices: removeSelectedDeviceNameInDeviceList(props.preset.settings.outputdevices, outName),
+                        });
+                    }}
 
+                    onTestPress={(devName) => props.onTestPress(devName)}
+ 
+ 
+                />
                <FormButton label="Cancel Connection" onPress={()=>cancelDeviceOperation(selectedDev.id)} display={connecting}/>
                <ActivityIndicator size="large" animating={isConnecting}/>
          </ScrollView>
@@ -150,69 +187,8 @@ PresetCreationForm.defaultProps = {
 }
 PresetCreationForm.propTypes = {
     preset: PropTypes.shape({
-        settings: PropTypes.shape({
-            inputdevices: PropTypes.shape({
-                selected_device: PropTypes.string,
-                devices: PropTypes.arrayOf(PropTypes.shape({
-                    type: PropTypes.string,
-                    name: PropTypes.string,
-                    dispaly_name: PropTypes.string,
-                    items(props, ...rest) {
-                        if (props.type == "ListPicker") {
-                            return PropTypes.arrayOf(Proptypes.string);
-                        }     
-                        return PropTypes.any(props, ...rest);
-                    },
-                    minValue(props, ...rest) {
-                        if (props.type == "Slider") {
-                            return PropTypes.number;
-                        }     
-                        return PropTypes.any(props, ...rest);
-                    },
-                    maxValue(props, ...rest) {
-                        if (props.type == "Slider") {
-                            return PropTypes.number;
-                        }     
-                        return PropTypes.any(props, ...rest);
-                    },
- 
-                    value: PropTypes.number,
- 
-                })).isRequired
-            }).isRequired,
-            outputdevices: PropTypes.shape({
-                selected_device: PropTypes.string.isRequired,
-                devices: PropTypes.arrayOf(PropTypes.shape({
-                    type: PropTypes.string,
-                    name: PropTypes.string,
-                    dispaly_name: PropTypes.string,
-                    items(props, ...rest) {
-                        if (props.type == "ListPicker") {
-                            return PropTypes.arrayOf(Proptypes.string);
-                        }     
-                        return PropTypes.any(props, ...rest);
-                    },
-                    minValue(props, ...rest) {
-                        if (props.type == "Slider") {
-                            return PropTypes.number;
-                        }     
-                        return PropTypes.any(props, ...rest);
-                    },
-                    maxValue(props, ...rest) {
-                        if (props.type == "Slider") {
-                            return PropTypes.number;
-                        }     
-                        return PropTypes.any(props, ...rest);
-                    },
- 
-                    value: PropTypes.number,
- 
-                })).isRequired
-            }).isRequired,
-        }).isRequired,
-        name: PropTypes.string.isRequired,
-        deviceID: PropTypes.string.isRequired,
-    }).isRequired,
+        settings: PropTypes.any,
+    }),
     onSettingsChange: PropTypes.func.isRequired,
     onDeviceIDChange: PropTypes.func.isRequired,
     onNameChange: PropTypes.func.isRequired,

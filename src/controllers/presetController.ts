@@ -66,7 +66,7 @@ export const useBLEScanAndAccEffect = (isServerScan, devices, setDevices) => {
  * @returns {Promise<obj>} - json settings object within a promise
  */
 export const readDeviceSettings = (deviceID) => {
-    const settingsUUID = '51ff12bb-3ed8-46e5-b4f9-d64e2fec021b';
+   const settingsUUID = '51ff12bb-3ed8-46e5-b4f9-d64e2fec021b';
     return manager.connectToDevice(deviceID) 
         .then((device) => {
             return device.discoverAllServicesAndCharacteristics();
@@ -113,11 +113,9 @@ export const writeDeviceSettings = (deviceID, obj) => {
         .then((dataStr) => BLEStream.streamWrite(manager, deviceID, settingsUUID, dataStr));
 };
 
-export const cancelDeviceOperation = (deviceID) =>
-{
+export const cancelDeviceOperation = (deviceID) => {
     return manager.cancelDeviceConnection(deviceID);
 }
-
 
 /*
  *
@@ -129,81 +127,10 @@ export const name2settings = (deviceName, deviceList) => {
     return filteredSettings[0].device_settings; 
 };
 
-export const getSelectedDeviceNameFromList = (list) => {
-    return list.selected_device;    
-};
 
-export const setSelectedDeviceNameForList = (list, deviceName) => {
-    return { ...list, selected_device: deviceName };    
-};
-
-export const setSelectedDeviceValueForList = (list, fieldName, value) => {
-    return { ...list, devices: list.devices.map((dev) => {
-        if (dev.device_name == list.selected_device) {
-            return { 
-                    ...dev, 
-                    device_settings: dev.device_settings.map((setting) => {
-                        if (setting.name == fieldName) {
-                            return {...setting, value: value};    
-                        }
-                        return setting;
-                    }) 
-            };
-        }    
-        return dev;
-        }),
-    };
-};
-
-export const getSelectedInputSettings = (obj) => {
-    return name2settings(getSelectedInputName(obj), obj.inputdevices);
-};
-
-export const getSelectedOutputSettings = (obj) => {
-    return name2settings(getSelectedOutputName(obj), obj.outputdevices);
-};
-
-export const getSelectedInputName = (obj) => {
-    return obj.inputdevices.selected_device; 
-};
-
-export const getSelectedOutputName = (obj) => {
-    return obj.outputdevices.selected_device; 
-};
-
-export const setSelectedInputName = (obj, deviceName) => {
-    return {...obj, inputdevices: { ...obj.inputdevices, selected_device: deviceName } }; 
-};
-
-export const setSelectedOutputName = (obj, deviceName) => {
-    return {...obj, outputdevices: { ...obj.outputdevices, selected_device: deviceName } }; 
-};
-
-export const setSelectedInputValue = (obj, fieldName, value) => {
-    const selectName = obj.inputdevices.selected_device;
-    const selectDev = obj.inputdevices.devices.filter((item) => item.device_name == selectName)[0];
-    const selectSetting = selectDev.device_settings.filter((item) => item.name == fieldName)[0];
-    const modifiedSetting = {...selectSetting, value: value};
-    const modifiedSettingList = selectDev.device_settings.map((item) => item.name == fieldName ? modifiedSetting : item); 
-    const modifiedDev = {...selectDev, device_settings: modifiedSettingList};
-    const modifiedDevList = obj.inputdevices.devices.map((item) => item.device_name == selectName ? modifiedDev : item); 
-    return {...obj, inputdevices: { ...obj.inputdevices, devices: modifiedDevList} }; 
-};
-
-export const setSelectedOutputValue = (obj, fieldName, value) => {
-    const selectName = obj.outputdevices.selected_device;
-    const selectDev = obj.outputdevices.devices.filter((item) => item.device_name == selectName)[0];
-    const selectSetting = selectDev.device_settings.filter((item) => item.name == fieldName)[0];
-    const modifiedSetting = {...selectSetting, value: value};
-    const modifiedSettingList = selectDev.device_settings.map((item) => item.name == fieldName ? modifiedSetting : item); 
-    const modifiedDev = {...selectDev, device_settings: modifiedSettingList};
-    const modifiedDevList = obj.outputdevices.devices.map((item) => item.device_name == selectName ? modifiedDev : item); 
-    return {...obj, outputdevices: { ...obj.outputdevices, devices: modifiedDevList} }; 
-};
-
-
-export const setCalibrationTrue = (obj) => {
-    return setSelectedInputValue(obj, "calibrating", true);    
+export const setCalibrationTrue = (devName, obj) => {
+    const new_obj = {...obj, inputdevices: setFieldValueForDeviceNameInDeviceList(obj.inputdevices, devName, "calibrate", true) }
+    return new_obj
 };
 
 export const verifySettingsObj = (obj) => {
@@ -213,11 +140,11 @@ export const verifySettingsObj = (obj) => {
 export const getEmptySettings = () => {
     return {
         inputdevices: {
-            selected_device: "",
+            selected_devices: [""],
             devices: [{device_name: "", device_settings:[]}]
         },
         outputdevices: {
-            selected_device: "",
+            selected_devices: [""],
             devices: [{device_name: "", device_settings:[]}]
         },
     };
@@ -236,6 +163,93 @@ export const getInputDeviceList = (obj) => {
 
 export const getOutputDeviceList = (obj) => {
     return obj.outputdevices;
+};
+
+export const getSelectedDeviceNamesInDeviceList = (devList) => {
+    return devList.selected_devices;
+};
+
+export const getUnselectedDeviceNamesInDeviceList = (devList) => {
+    const lst = devList.devices.reduce((acc, curr) => {
+        const search = devList.selected_devices.find(dname => {
+            return dname == curr.device_name;
+        });
+        if (search == undefined) {
+            acc.push(curr.device_name);
+        }
+        return acc;
+    }, []);
+    return lst;
+};
+
+export const addSelectedDeviceNameInDeviceList = (devList, newName) => {
+    const devices = devList.selected_devices;
+    return (devices.find((name) => name == newName) ? devList : {
+        ...devList, 
+        selected_devices: [...devices, newName]
+    });
+};
+
+export const removeSelectedDeviceNameInDeviceList = (devList, oldName) => {
+    return {
+        ...devList, 
+        selected_devices: devList.selected_devices.filter((name) => name != oldName)
+    };
+};
+
+
+
+export const switchSelectedDeviceNameInDeviceList = (devList, formerDev, newDev) => {
+    const modifiedSelected = devList.selected_devices.map((name) => 
+        (name == formerDev ? newDev : name)
+    );
+    return {...devList, selected_devices: modifiedSelected};
+};
+
+export const setFieldValueForDeviceNameInDeviceList = (devList, devName, fieldName, value) => {
+    const devices = devList.devices;
+    const modifiedDevices = devices.map((device) => {
+        if (device.device_name != devName) {
+            return device;
+        }    
+        return setFieldValueForDevice(device, fieldName, value);
+    });
+    return {...devList, devices: modifiedDevices};
+
+};
+
+const setFieldValueForDevice = (device, fieldName, value) => {
+    const modifiedSettings = device.device_settings.map(
+        (setting) => setFieldValueForSetting(setting, fieldName, value));
+    return {...device, device_settings: modifiedSettings};
+};
+
+const setFieldValueForSetting = (setting, fieldName, value) => {
+    if (setting.name == fieldName) {
+        const new_setting = {...setting, value: value};
+        return new_setting;
+    }
+
+    if (setting.type == "discrete") {
+        const new_setting = {
+            ...setting, 
+            items: setting.items.map((item, idx) => {
+                if (idx != setting.value) return item;
+                return { ...item, dependencies: item.dependencies.map((dep) => 
+                                                                      setFieldValueForSetting(dep, fieldName, value))} 
+            })
+        };
+        return new_setting;
+    }
+
+    return setting;
+}; 
+
+export const getDependencySettingsForSetting = (setting) => {
+    if (setting.type == "discrete") {
+        return setting.items[setting.value].dependencies;
+    }
+    return [];
 };
 
 
@@ -260,22 +274,18 @@ export default Controller = {
     writeDeviceSettings,
     cancelDeviceOperation,
     name2settings,
-    getSelectedInputName,
-    getSelectedOutputName,
     getInputDeviceList,
     getOutputDeviceList,
-    setSelectedInputName,
-    setSelectedOutputName,
-    getSelectedInputSettings,
-    getSelectedOutputSettings,
-    getSelectedDeviceNameFromList,
-    setSelectedDeviceNameForList,
-    setSelectedDeviceValueForList,
-    setSelectedInputValue,       
-    setSelectedOutputValue,       
     setCalibrationTrue,
     verifySettingsObj,
     getEmptySettings,
+    getSelectedDeviceNamesInDeviceList,
+    getUnselectedDeviceNamesInDeviceList,
+    setFieldValueForDeviceNameInDeviceList,    
+    switchSelectedDeviceNameInDeviceList,
+    addSelectedDeviceNameInDeviceList,
+    removeSelectedDeviceNameInDeviceList,
+    getDependencySettingsForSetting,
     getEmptyPreset,
     addPreset,
     deletePreset,

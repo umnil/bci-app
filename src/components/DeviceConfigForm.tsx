@@ -3,81 +3,54 @@ import FormDropdownMenu from "./FormDropdownMenu";
 import PropTypes from "prop-types";
 import { 
         name2settings,
-        getSelectedDeviceNameFromList,
-        setSelectedDeviceNameForList,
-        setSelectedDeviceValueForList,
+        getUnselectedDeviceNamesInDeviceList,
+        getSelectedDeviceNamesInDeviceList,
        } from "../controllers/presetController"
 import React, { useState, useEffect } from 'react';
 
-const device2Item = (device) => (
-    { label: device.device_name, value: device.device_name }
+const device2Item = (dname) => (
+    { label: dname, value: dname }
 );
 
-const devices2Items = (devices) => { 
+const devices2Items = (deviceNames) => { 
    const items = []; 
-   for (const dev of devices) {
-        items.push(device2Item(dev)); 
+   for (const dname of deviceNames) {
+        items.push(device2Item(dname)); 
     }
    return items;
 };
 
 export default function DeviceConfigForm(props) {
-    const devName = getSelectedDeviceNameFromList(props.deviceList);
+    const devName = props.selectedDeviceName;
     const selected = {label: devName, value: devName} 
     return (
         <>
             <FormDropdownMenu label={props.label} 
             display={props.display}
-            items={devices2Items(props.deviceList.devices)} 
+            items={props.deviceNameList.map(name => ({label: name, value: name}))} 
             selected={selected}
             onSelect={(e)=>{
-                props.onSelectDevice(e.label);}}/>
-            <DeviceSettingsList settings={name2settings(getSelectedDeviceNameFromList(props.deviceList), props.deviceList)} 
+                props.onSelectDevice(devName, e.label);}}/>
+            <DeviceSettingsList settings={name2settings(devName, props.deviceList)} 
             display={props.display}
             onChange={(fieldName,value)=>{
-                props.onFieldChange(fieldName, value)}}/>
+                props.onFieldChange(devName, fieldName, value)}}/>
         </>
     );
 };
 
 DeviceConfigForm.defaultProps = {
     display: true, 
-    onSelectDevice: (deviceName) => {},
-    onFieldChange: (fieldName, value) => {},
+    onSelectDevice: (formerDeviceName, newDeviceName) => {},
+    onFieldChange: (deviceName, fieldName, value) => {},
+    deviceNameList: [],
+    selectedDeviceName: ""
 };
 
 DeviceConfigForm.propTypes = {
     display: PropTypes.bool.isRequired,
-    deviceList: PropTypes.shape({
-        selected_device: PropTypes.string.isRequired,
-        devices: PropTypes.arrayOf(PropTypes.shape({
-            type: PropTypes.string,
-            name: PropTypes.string,
-            dispaly_name: PropTypes.string,
-            items(props, ...rest) {
-                if (props.type == "ListPicker") {
-                    return PropTypes.arrayOf(Proptypes.string);
-                }     
-                return PropTypes.any(props, ...rest);
-            },
-            minValue(props, ...rest) {
-                if (props.type == "Slider") {
-                    return PropTypes.number;
-                }     
-                return PropTypes.any(props, ...rest);
-            },
-            maxValue(props, ...rest) {
-                if (props.type == "Slider") {
-                    return PropTypes.number;
-                }     
-                return PropTypes.any(props, ...rest);
-            },
- 
-            value: PropTypes.number,
- 
-        })).isRequired,
-
-    }),
+    deviceList: PropTypes.any.isRequired,
+    deviceNameList: PropTypes.arrayOf(PropTypes.string),
     onSelectDevice: PropTypes.func.isRequired,
     onFieldChange: PropTypes.func.isRequired,
 };
