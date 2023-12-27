@@ -32,7 +32,7 @@
          "foregroundImage": "./assets/adaptive-icon.png",
          "backgroundColor": "#ffffff"
        },
-       "package": "edu.miami.umnil.bci-app"
+       "package": "edu.umnil.app"
      },
      "web": {
        "favicon": "./assets/favicon.png"
