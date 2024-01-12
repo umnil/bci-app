@@ -1,5 +1,10 @@
 import { ActionType } from "./actionTypes";
 
+/* 
+the reducer manages action on the global redux state. It takes in a current state(initialized using
+the default below) and an action, which is a payload + action type.
+The SET_PRESET action type is currently a no-op, and is not used anywhere in the app 
+*/
 export default function reducer(state = { presets: [], idgen: 0, presetInProgress: {} }, action) {
     switch(action.type) {
         case ActionType.GET_PRESETS:

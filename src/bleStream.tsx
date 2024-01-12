@@ -2,11 +2,20 @@ import {decode as atob, encode as btoa} from 'base-64'
 
 const size = 400;
 
+/* 
+converts a string UUID in the form of DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD
+to a list of integers. each dash-delimeted string of Ds 
+is interpreted as a hexadecimal
+integer, and the output is decimal.
+*/
 const uuid2int = (uuid) => {
     const segments = uuid.split('-');
     return segments.map((segment) => parseInt(segment, 16));
 };
 
+/* 
+converts a list of ints into a string UUID
+*/
 const int2uuid = (numbers) => {
     let segments: string[] = [
         (numbers[0] % 0xFFFFFFFF).toString(16).padStart(8, "0"),
@@ -19,12 +28,28 @@ const int2uuid = (numbers) => {
     return uuid;
 };
 
+/* 
+increments a UUID, which means taking the first hex int in
+the dash-delim string and incrementing it.
+Ex: 
+Input:  0000000f-0000-0000-0000-000000000000
+Output: 00000010-0000-0000-0000-000000000000
+*/
 const incrementUUID = (uuid, value) => {
     let numbers = uuid2int(uuid);
     numbers[0] += value;
     return int2uuid(numbers);
 };
 
+/* 
+takes in an integer i and returns a 4 byte string representation
+in network-byte order(nbo). This is also known as big-endian form
+EX:
+Input: 0xF0000000
+
+   IDX:    0     1     2     3 
+Output: { 0xF0, 0x00, 0x00, 0x00 } 
+*/
 const int2nbo = (i) => {
     const hexRaw = i.toString(16);
     const hexPadded = hexRaw.padStart(8, '0');
@@ -35,6 +60,15 @@ const int2nbo = (i) => {
     return hexStr;
 };
 
+/* 
+takes in a network byte order (nbo, otherwise known as big-endian) 4 byte
+string and converts to an int
+EX:
+   IDX:    0     1     2     3 
+Input: { 0xF0, 0x00, 0x00, 0x00 } 
+
+Output: 0xF0000000
+*/
 const nbo2int = (byteStr) => {
     const byteArr = byteStr.split('');
     const hexArr = byteArr.map(c => c.charCodeAt(0).toString(16).padStart(2,'0')).reverse();
@@ -43,6 +77,18 @@ const nbo2int = (byteStr) => {
     return num;
 };
 
+/* 
+takes in a string and converts to a network byte 
+order (nbo, otherwise known as big-endian) string 
+EX:
+Input: "abc" 
+
+                 IDX:  0    1    2
+ASCII Representation: 0x97 0x98 0x99
+
+   IDX:    0     1     2   
+Output: { 0x99  0x98  0x97 }
+*/
 const str2nbo = (str) => {
     const charArr = str.split('');
     const hexArr = charArr.map(c => c.charCodeAt(0).toString(16));
@@ -52,6 +98,9 @@ const str2nbo = (str) => {
     return hexStr;
 };
 
+/* 
+converts a json type to a payload.
+*/
 const json2payload = (json) => ({
         type: json["type"],
         total: json["total"],
@@ -60,16 +109,29 @@ const json2payload = (json) => ({
         data: json["data"],
 });        
 
+/* 
+converts a string representation of a json payload into a payload object
+*/
 const str2payload = (str) => {
     return json2payload(JSON.parse(str));
 };
 
+/* 
+takes a manager object, deviceID(to send to) and serviceUUID(the service to which
+we are streaming) and the index(# of the packet to send) and writes the index to
+the remote device. this essentially tells the remote device which packet we
+intend to send.
+*/
 const writeIdx = (manager, deviceID, serviceUUID, index) => {
     const data = btoa(int2nbo(index));
     const charUUID = incrementUUID(serviceUUID, 2);
     return manager.writeCharacteristicWithResponseForDevice(deviceID, serviceUUID, charUUID, data);
 };
 
+/* 
+takes a manager object, deviceID(to send to) and serviceUUID(the service to and from which
+we are ble streaming) and receives an index. This indicates which packet we are getting
+*/
 const readIdx = (manager, deviceID, serviceUUID) => {
     const charUUID = incrementUUID(serviceUUID, 2);
     return manager.readCharacteristicForDevice(deviceID, serviceUUID, charUUID)
@@ -85,12 +147,22 @@ const readIdx = (manager, deviceID, serviceUUID) => {
     });
 };
 
+/* 
+takes a manager object, deviceID(to send to), serviceUUID(the service to and from which
+we are ble streaming), and payload,  and writes a byte
+representation of the payload to the device at the service. 
+*/
 const writePayload = (manager, deviceID, serviceUUID, payload) => { 
     const data = btoa(JSON.stringify(payload));
     const charUUID = incrementUUID(serviceUUID, 1);
     return manager.writeCharacteristicWithResponseForDevice(deviceID, serviceUUID, charUUID, data);
 };
 
+/* 
+takes a manager object, deviceID(to send to), serviceUUID(the service to and from which
+we are ble streaming), and payload, and reads a byte
+representation of the payload from the device at the service. 
+*/
 const readPayload = (manager, deviceID, serviceUUID, index) => {
     const charUUID = incrementUUID(serviceUUID, 1);
     return manager.readCharacteristicForDevice(deviceID, serviceUUID, charUUID) 
@@ -104,6 +176,14 @@ const readPayload = (manager, deviceID, serviceUUID, index) => {
     })
 };
 
+/* 
+takes a boolean function condition and a promise action and 
+sequences the action based off of the truth of the condition. For
+example, suppose we had a global state of a = 0, condition = () => {a != 5} and 
+action sleeps for 10 seconds and increments a by 1. We have
+promiseWhile(condition, action) will check if a is not 5, sleep for 10 seconds,
+increment a five times.
+*/
 const promiseWhile = (condition, action) => {
     const nextIter = () => {
         if (!condition()) return; 
@@ -112,7 +192,21 @@ const promiseWhile = (condition, action) => {
     return nextIter();
 };
 
+/* 
+this function takes in a manager, deviceID, and serviceUUID, and
+creates a notifyHandler which writes a 0 index and on success sets 
+an indicator variable to 1. This indicator variable can be read in the readIndicator
+function. The purpose of this combination is to provide a callback 
+for the characteristic monitoring function of the BleManager and also providing
+a way to see if a notification has occured.
 
+For example, if after we have started the monitor service, we are in
+a promiseWhile loop conditioned on readIndicator == 1, then once 
+we receive a notification, the monitor service will call the notification
+handler, which will write Index 0 and then set the indicator state to 1,
+which is shared between the handler and thre readIndicator function, thus
+breaking the while loop
+*/
 const notifyHandlerFactory = (manager, deviceID, serviceUUID) => {
     let indicator = 0;
     const notifyHandler = () => {
@@ -121,6 +215,10 @@ const notifyHandlerFactory = (manager, deviceID, serviceUUID) => {
     return { callback: notifyHandler, readIndicator: (() => indicator) };
 };
 
+/* 
+create an instantly resolving promise which instantiates the 
+notify service on the serviceUUID pointing at the deviceID
+*/
 const notifyInit = (manager, deviceID, serviceUUID) => {
     return new Promise ((resolve, reject) => {
         const charUUID = incrementUUID(serviceUUID, 3);
@@ -130,6 +228,12 @@ const notifyInit = (manager, deviceID, serviceUUID) => {
     });
 };
 
+/* 
+writes the initial payload to the serviceUUID on the device at deviceID, which
+indicates the number of segments that are going to come. Then waits
+in a promiseWhile for a notify to show up through the readIndicator function,
+sleeping for 500 ms in between successive checks
+*/
 const writeInit = (manager, deviceID, serviceUUID, numSegments, readIndicator) => {
     let payload = { type: 1, total: numSegments, index: 0, size: size, data:"" }; 
     return writePayload(manager, deviceID, serviceUUID, payload)
@@ -139,6 +243,11 @@ const writeInit = (manager, deviceID, serviceUUID, numSegments, readIndicator) =
     );
 };
 
+/* 
+streamWrite and streamRead functions. These functions
+send and receive data from a service at serviceUUID on the device
+with deviceID. 
+*/
 const [streamWrite, streamRead] = (() => {
     let devqueues = [];
     return [
