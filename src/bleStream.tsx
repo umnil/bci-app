@@ -238,9 +238,9 @@ const writeInit = (manager, deviceID, serviceUUID, numSegments, readIndicator) =
     let payload = { type: 1, total: numSegments, index: 0, size: size, data:"" }; 
     return writePayload(manager, deviceID, serviceUUID, payload)
     .then(() => promiseWhile(
-        () => (readIndicator) == 0),
+        () => readIndicator() == 0,
         () => new Promise(resolve => setTimeout(resolve, 500))
-    );
+    ));
 };
 
 /* 
