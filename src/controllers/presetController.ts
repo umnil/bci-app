@@ -118,25 +118,54 @@ export const cancelDeviceOperation = (deviceID) => {
 }
 
 /*
- *
- * Device Settings Object Methods
- *
+ * Device Settings Object Functions. There are two types of functions. 
+ * One type take in an object o representing the state of the devices'
+ * settings (referred to as the object state) 
+ * along with some optional associated data and outputs another
+ * object o' representing the original object state with a transformation 
+ * applied using the associated data. The second type takes in an object state
+ * with some associated data and queries the object for data containing fields
+ * matching the associated data. Some of the latter type of functions take in
+ * a different type of object representing a list of devices.
+ */
+
+/*
+ * Name: name2settings      
+ * Takes in a device list and name and queries for the device matching the name
+ * @param {deviceName} deviceName - name of device to query for.
+ * @param {deviceList} deviceList - device list to query.
  */
 export const name2settings = (deviceName, deviceList) => {
     const filteredSettings = deviceList.devices.filter((item) => (item.device_name == deviceName));    
     return filteredSettings[0].device_settings; 
 };
 
-
+/*
+ * Name: setCalibrationTrue 
+ * Takes in an object state and a device name and outputs a new object
+ * state with calibration for that device set to true
+ * @param {devName} devName - name of device to set calibration to true for.
+ * @param {obj} obj - initial obj state.
+ */
 export const setCalibrationTrue = (devName, obj) => {
     const new_obj = {...obj, inputdevices: setFieldValueForDeviceNameInDeviceList(obj.inputdevices, devName, "calibrate", true) }
     return new_obj
 };
 
+/*
+ * Name: verifySettingsObj 
+ * Takes in an object state and performs very minimal verification. I don't believe
+ * this is used anywhere 
+ * @param {obj} obj - initial obj state.
+ */
 export const verifySettingsObj = (obj) => {
     return obj.hasOwnProperty("inputdevices") && obj.hasOwnProperty("outputdevices");
 };
 
+/*
+ * Name: getEmtpySettings 
+ * Returns an initialized empty object state 
+ */
 export const getEmptySettings = () => {
     return {
         inputdevices: {
@@ -150,6 +179,12 @@ export const getEmptySettings = () => {
     };
   
 };
+
+/*
+ * Name: getEmptyPreset 
+ * Returns an initialized empty preset, which represents a stored
+ * named settings + authority combo
+ */
 export const getEmptyPreset = () => ({
         name: "",
         deviceID: "",
@@ -157,18 +192,40 @@ export const getEmptyPreset = () => ({
    
 });
 
+/*
+ * Name: getInputDeviceList
+ * Takes in an object state and extracts the input devices object
+ * @param {obj} obj - object state
+ */
 export const getInputDeviceList = (obj) => {
     return obj.inputdevices;
 };
 
+/*
+ * Name: getOutputDeviceList
+ * Takes in an object state and extracts the output devices object
+ * @param {obj} obj - object state
+ */
 export const getOutputDeviceList = (obj) => {
     return obj.outputdevices;
 };
 
+/*
+ * Name: getSelectedDeviceNamesInDeviceList
+ * Takes in a device list object and outputs the list of selected 
+ * devices
+ * @param {devList} devList - device list object 
+ */
 export const getSelectedDeviceNamesInDeviceList = (devList) => {
     return devList.selected_devices;
 };
 
+/*
+ * Name: getUnselectedDeviceNamesInDeviceList
+ * Takes in a device list object and outputs the list of unselected 
+ * devices
+ * @param {devList} devList - device list object 
+ */
 export const getUnselectedDeviceNamesInDeviceList = (devList) => {
     const lst = devList.devices.reduce((acc, curr) => {
         const search = devList.selected_devices.find(dname => {
@@ -182,6 +239,16 @@ export const getUnselectedDeviceNamesInDeviceList = (devList) => {
     return lst;
 };
 
+/*
+ * Name: addSelectedDeviceNameInDeviceList   
+ * Takes in a device list object and a device name 
+ * and adds that device name to the selected list if 
+ * a device matches that name, else it leaves the devList
+ * unchanged. The returned result is new devList object with
+ * the described transfromation
+ * @param {devList} devList - device list object 
+ * @param {newName} newName - name to query for + select 
+ */
 export const addSelectedDeviceNameInDeviceList = (devList, newName) => {
     const devices = devList.selected_devices;
     return (devices.find((name) => name == newName) ? devList : {
@@ -190,6 +257,15 @@ export const addSelectedDeviceNameInDeviceList = (devList, newName) => {
     });
 };
 
+/*
+ * Name: removeSelectedDeviceNameInDeviceList   
+ * Takes in a device list object and a device name 
+ * and removes that device name from the selected list
+ * The returned result is new devList object with
+ * the described transfromation
+ * @param {devList} devList - device list object 
+ * @param {oldName} oldName - name to unselect 
+ */
 export const removeSelectedDeviceNameInDeviceList = (devList, oldName) => {
     return {
         ...devList, 
@@ -197,8 +273,17 @@ export const removeSelectedDeviceNameInDeviceList = (devList, oldName) => {
     };
 };
 
-
-
+/*
+ * Name: switchSelectedDeviceNameInDeviceList   
+ * Takes in a device list object and an old and new device name 
+ * and removes the old device name from the selected list and adds
+ * the new device name
+ * The returned result is new devList object with
+ * the described transfromation
+ * @param {devList} devList - device list object 
+ * @param {formerDev} formerDev - name to unselect 
+ * @param {newDev} newDev - name to select 
+ */
 export const switchSelectedDeviceNameInDeviceList = (devList, formerDev, newDev) => {
     const modifiedSelected = devList.selected_devices.map((name) => 
         (name == formerDev ? newDev : name)
@@ -206,6 +291,17 @@ export const switchSelectedDeviceNameInDeviceList = (devList, formerDev, newDev)
     return {...devList, selected_devices: modifiedSelected};
 };
 
+/*
+ * Name: setFieldValueForDeviceNameInDeviceList 
+ * Takes in a device list object, device name, field name, and value.
+ * Returns a new device list object with the device corresponding to
+ * the device name containing the field corresponding to field name
+ * set to the value corresponding to value.
+ * @param {devList} devList - device list object 
+ * @param {devName} devName - name of device to update 
+ * @param {fieldName} fieldName - name of field in device to update 
+ * @param {value} value - value to set field to 
+ */
 export const setFieldValueForDeviceNameInDeviceList = (devList, devName, fieldName, value) => {
     const devices = devList.devices;
     const modifiedDevices = devices.map((device) => {
@@ -218,12 +314,32 @@ export const setFieldValueForDeviceNameInDeviceList = (devList, devName, fieldNa
 
 };
 
+/*
+ * Name: setFieldValueForDevice
+ * Takes in a device object, field name, and value.
+ * Returns a new device object 
+ * containing the field corresponding to field name
+ * set to the value corresponding to value.
+ * @param {device} device - device to update 
+ * @param {fieldName} fieldName - name of field in device to update 
+ * @param {value} value - value to set field to 
+ */
 const setFieldValueForDevice = (device, fieldName, value) => {
     const modifiedSettings = device.device_settings.map(
         (setting) => setFieldValueForSetting(setting, fieldName, value));
     return {...device, device_settings: modifiedSettings};
 };
 
+/*
+ * Name: setFieldValueForSetting
+ * Takes in a new settings object, field name, and value.
+ * Returns a new settings object 
+ * containing the field corresponding to field name
+ * set to the value corresponding to value.
+ * @param {setting} setting - setting to update 
+ * @param {fieldName} fieldName - name of field in device to update 
+ * @param {value} value - value to set field to 
+ */
 const setFieldValueForSetting = (setting, fieldName, value) => {
     if (setting.name == fieldName) {
         const new_setting = {...setting, value: value};
@@ -245,6 +361,14 @@ const setFieldValueForSetting = (setting, fieldName, value) => {
     return setting;
 }; 
 
+/*
+ * Name: getDependencySettingsForSetting 
+ * Takes in a settings object.
+ * Returns a list of dependency settings objects 
+ * @param {setting} setting - setting to update 
+ * @param {fieldName} fieldName - name of field in device to update 
+ * @param {value} value - value to set field to 
+ */
 export const getDependencySettingsForSetting = (setting) => {
     if (setting.type == "discrete") {
         return setting.items[setting.value].dependencies;
