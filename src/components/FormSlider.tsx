@@ -18,6 +18,13 @@ Animated.addWhitelistedNativeProps({ text: true });
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
+/* 
+ * takes in a graphical lower and upper horizontal bound (gLower and gUpper) 
+ * , a bounded interval (lower and upper), and a graphical horizontal
+ * position (pos), and converts the position to the logical value in the bounded
+ * interval, with any position outside of glower and gupper getting clipped to those
+ * bounds 
+ */
 const pos2value = (gLower, gUpper, lower, upper, pos) => {
     'worklet';
     const cutoffPos = pos < gLower ? gLower :
@@ -28,6 +35,10 @@ const pos2value = (gLower, gUpper, lower, upper, pos) => {
     return toValue;
 };
 
+/* 
+ * inverse of pos2value. only difference is this is marked as a worklet, which means we
+ * decide which thread (JS or UI) this gets executed on
+ */
 const value2pos = (gLower, gUpper, lower, upper, value) => {
     'worklet';
     const cutoffValue = value < lower ? lower :
@@ -38,6 +49,15 @@ const value2pos = (gLower, gUpper, lower, upper, value) => {
     return toPos;
 
 };
+
+/* 
+ * useComponentSize is a closure creating a binding between a piece of state (size + setSize)
+ * and a callback (onLayout). The callback fires whenever the layout is changed,
+ * and tells us the new size our component is alloted, and then the callback
+ * sets the state to this new size. This allows us to resize
+ * ourself when the phone changes orientation. This is hacky, we should replace this
+ * with something that makes more sense. 
+ */
 const useComponentSize = () => {
   const [size, setSize] = useState(null);
 
@@ -65,6 +85,7 @@ export default function FormSlider(props) {
     const offset = useDerivedValue(() => 
         value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial)
     );
+
     const start = useDerivedValue(() => 
         value2pos(ballSlideStart, ballSlideEnd, props.lower, props.upper, props.initial)
     );
